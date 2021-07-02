@@ -1,0 +1,210 @@
+From 16064411d336cd5987f00ca3ddd9466434a306e5 Mon Sep 17 00:00:00 2001
+From: Felix Radensky <felix.r@variscite.com>
+Date: Wed, 30 Dec 2020 19:58:07 +0200
+Subject: [PATCH 19/31] imx8mm-var-dart: Remove support for VAR-SOM-MX8M-MINI
+ SOM revision 1.0
+
+---
+ arch/arm/dts/Makefile                         |  1 -
+ .../imx8mm-var-som-rev10-symphony-u-boot.dtsi |  5 --
+ .../arm/dts/imx8mm-var-som-rev10-symphony.dts | 59 -------------------
+ .../imx8mm_var_dart/imx8mm_var_dart.c         | 33 -----------
+ board/variscite/imx8mm_var_dart/spl.c         | 15 +----
+ include/configs/imx8mm_var_dart.h             |  6 +-
+ 6 files changed, 4 insertions(+), 115 deletions(-)
+ delete mode 100644 arch/arm/dts/imx8mm-var-som-rev10-symphony-u-boot.dtsi
+ delete mode 100644 arch/arm/dts/imx8mm-var-som-rev10-symphony.dts
+
+diff --git a/arch/arm/dts/Makefile b/arch/arm/dts/Makefile
+index 78b7a5c5dc..10eceb20f7 100644
+--- a/arch/arm/dts/Makefile
++++ b/arch/arm/dts/Makefile
+@@ -792,7 +792,6 @@ dtb-$(CONFIG_ARCH_IMX8M) += \
+ 	imx8mn-evk.dtb \
+ 	imx8mm-var-dart-customboard.dtb \
+ 	imx8mm-var-som-symphony.dtb \
+-	imx8mm-var-som-rev10-symphony.dtb \
+ 	imx8mq-ddr3l-val.dtb \
+ 	imx8mq-ddr4-val.dtb \
+ 	imx8mq-evk.dtb \
+diff --git a/arch/arm/dts/imx8mm-var-som-rev10-symphony-u-boot.dtsi b/arch/arm/dts/imx8mm-var-som-rev10-symphony-u-boot.dtsi
+deleted file mode 100644
+index b57381792f..0000000000
+--- a/arch/arm/dts/imx8mm-var-som-rev10-symphony-u-boot.dtsi
++++ /dev/null
+@@ -1,5 +0,0 @@
+-#include "imx8mm-var-common-u-boot.dtsi"
+-
+-&uart4 {
+-	u-boot,dm-spl;
+-};
+diff --git a/arch/arm/dts/imx8mm-var-som-rev10-symphony.dts b/arch/arm/dts/imx8mm-var-som-rev10-symphony.dts
+deleted file mode 100644
+index 75a214c212..0000000000
+--- a/arch/arm/dts/imx8mm-var-som-rev10-symphony.dts
++++ /dev/null
+@@ -1,59 +0,0 @@
+-/*
+- * Copyright 2018 NXP
+- * Copyright 2019-2020 Variscite Ltd.
+- *
+- * This program is free software; you can redistribute it and/or
+- * modify it under the terms of the GNU General Public License
+- * as published by the Free Software Foundation; either version 2
+- * of the License, or (at your option) any later version.
+- *
+- * This program is distributed in the hope that it will be useful,
+- * but WITHOUT ANY WARRANTY; without even the implied warranty of
+- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+- * GNU General Public License for more details.
+- */
+-
+-/dts-v1/;
+-
+-#include "imx8mm-var-som-symphony.dts"
+-
+-/ {
+-	model = "Variscite VAR-SOM-MX8M-MINI Rev1.0";
+-};
+-
+-&iomuxc {
+-	pinctrl_typec: typecgrp {
+-		fsl,pins = <
+-			MX8MM_IOMUXC_GPIO1_IO10_GPIO1_IO10	0x16
+-		>;
+-	};
+-
+-	pinctrl_usdhc2_cd_rev10: usdhc2grpcd {
+-		fsl,pins = <
+-			MX8MM_IOMUXC_SD2_CD_B_GPIO2_IO12	0x1c0
+-		>;
+-	};
+-};
+-
+-&i2c2 {
+-	/* USB-C controller */
+-	typec_ptn5150: typec@3d {
+-		status = "okay";
+-		compatible = "nxp,ptn5150";
+-		reg = <0x3d>;
+-		pinctrl-names = "default";
+-		pinctrl-0 = <&pinctrl_typec>;
+-		connect-gpios = <&gpio1 10 GPIO_ACTIVE_HIGH>;
+-	};
+-};
+-
+-&usbotg1 {
+-	extcon = <0>, <&typec_ptn5150>;
+-};
+-
+-&usdhc2 {
+-	cd-gpios = <&gpio2 12 GPIO_ACTIVE_LOW>;
+-	pinctrl-0 = <&pinctrl_usdhc2>, <&pinctrl_usdhc2_cd_rev10>;
+-	pinctrl-1 = <&pinctrl_usdhc2_100mhz>, <&pinctrl_usdhc2_cd_rev10>;
+-	pinctrl-2 = <&pinctrl_usdhc2_200mhz>, <&pinctrl_usdhc2_cd_rev10>;
+-};
+diff --git a/board/variscite/imx8mm_var_dart/imx8mm_var_dart.c b/board/variscite/imx8mm_var_dart/imx8mm_var_dart.c
+index b5b4874949..b3a88ee4c5 100644
+--- a/board/variscite/imx8mm_var_dart/imx8mm_var_dart.c
++++ b/board/variscite/imx8mm_var_dart/imx8mm_var_dart.c
+@@ -130,12 +130,6 @@ static int setup_fec(void)
+ #endif
+ 
+ #ifdef CONFIG_CI_UDC
+-#define USB_OTG1_ID_GPIO  IMX_GPIO_NR(1, 10)
+-
+-static iomux_v3_cfg_t const usb_pads[] = {
+-	IMX8MM_PAD_GPIO1_IO10_GPIO1_IO10  | MUX_PAD_CTRL(NO_PAD_CTRL),
+-};
+-
+ int board_usb_init(int index, enum usb_init_type init)
+ {
+ 	imx8m_usb_power(index, true);
+@@ -149,29 +143,6 @@ int board_usb_cleanup(int index, enum usb_init_type init)
+ 
+ 	return 0;
+ }
+-
+-/* Used only on VAR-SOM-MX8M-MINI Rev1.0 (with extcon) */
+-int board_ehci_usb_phy_mode(struct udevice *dev)
+-{
+-	if (dev->seq == 1)
+-		return USB_INIT_HOST;
+-	else
+-		return gpio_get_value(USB_OTG1_ID_GPIO) ?
+-			USB_INIT_DEVICE : USB_INIT_HOST;
+-}
+-
+-static void setup_usb(void)
+-{
+-	struct var_eeprom *ep = VAR_EEPROM_DATA;
+-	int som_rev = var_get_som_rev(ep);
+-
+-	if ((get_board_id() == VAR_SOM_MX8M_MINI) &&
+-	    (som_rev == SOM_REV_10)) {
+-		imx_iomux_v3_setup_multiple_pads(usb_pads, ARRAY_SIZE(usb_pads));
+-		gpio_request(USB_OTG1_ID_GPIO, "usb_otg1_id");
+-		gpio_direction_input(USB_OTG1_ID_GPIO);
+-	}
+-}
+ #endif
+ 
+ int board_init(void)
+@@ -180,10 +151,6 @@ int board_init(void)
+ 	setup_fec();
+ #endif
+ 
+-#ifdef CONFIG_CI_UDC
+-	setup_usb();
+-#endif
+-
+ 	return 0;
+ }
+ 
+diff --git a/board/variscite/imx8mm_var_dart/spl.c b/board/variscite/imx8mm_var_dart/spl.c
+index 0538b79038..dbcf81a520 100644
+--- a/board/variscite/imx8mm_var_dart/spl.c
++++ b/board/variscite/imx8mm_var_dart/spl.c
+@@ -249,19 +249,10 @@ int board_fit_config_name_match(const char *name)
+ {
+ 	int id = get_board_id();
+ 
+-	if ((id == DART_MX8M_MINI) && !strcmp(name, "imx8mm-var-dart-customboard")) {
++	if ((id == DART_MX8M_MINI) && !strcmp(name, "imx8mm-var-dart-customboard"))
++		return 0;
++	else if ((id == VAR_SOM_MX8M_MINI) && !strcmp(name, "imx8mm-var-som-symphony"))
+ 		return 0;
+-	} else if (id == VAR_SOM_MX8M_MINI) {
+-		struct var_eeprom *ep = VAR_EEPROM_DATA;
+-		int rev = var_get_som_rev(ep);
+-
+-		if ((rev == SOM_REV_11) && !strcmp(name, "imx8mm-var-som-symphony"))
+-			return 0;
+-		else if ((rev == SOM_REV_10) && !strcmp(name, "imx8mm-var-som-rev10-symphony"))
+-			return 0;
+-		else
+-			return -1;
+-	}
+ 	else
+ 		return -1;
+ }
+diff --git a/include/configs/imx8mm_var_dart.h b/include/configs/imx8mm_var_dart.h
+index 4ba7eb8980..d9d523192d 100644
+--- a/include/configs/imx8mm_var_dart.h
++++ b/include/configs/imx8mm_var_dart.h
+@@ -102,11 +102,7 @@
+ 	"findfdt=" \
+ 		"if test $fdt_file = undefined; then " \
+ 			"if test $board_name = VAR-SOM-MX8M-MINI; then " \
+-				"if test $som_rev = som_rev10; then " \
+-					"setenv fdt_file imx8mm-var-som-rev10-symphony.dtb; " \
+-				"else " \
+-					"setenv fdt_file imx8mm-var-som-symphony.dtb; " \
+-				"fi;" \
++				"setenv fdt_file imx8mm-var-som-symphony.dtb; " \
+ 			"else " \
+ 				"setenv fdt_file imx8mm-var-dart-customboard.dtb;" \
+ 			"fi; " \
+-- 
+2.25.1
+

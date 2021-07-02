@@ -1,0 +1,111 @@
+From 805ccca1c8a114ec518fab4b1d8bba1ae940c25f Mon Sep 17 00:00:00 2001
+From: Felix Radensky <felix.r@variscite.com>
+Date: Tue, 16 Feb 2021 16:33:45 +0200
+Subject: [PATCH 26/31] imx8mm-var-dart: Add support for DT8MCustomBoard V2.0
+
+---
+ .../imx8mm_var_dart/imx8mm_var_dart.c         | 38 ++++++++++++++++++-
+ .../imx8mm_var_dart/imx8mm_var_dart.h         |  6 +++
+ include/configs/imx8mm_var_dart.h             |  6 ++-
+ 3 files changed, 47 insertions(+), 3 deletions(-)
+
+diff --git a/board/variscite/imx8mm_var_dart/imx8mm_var_dart.c b/board/variscite/imx8mm_var_dart/imx8mm_var_dart.c
+index d95e02266e..b1101df4e2 100644
+--- a/board/variscite/imx8mm_var_dart/imx8mm_var_dart.c
++++ b/board/variscite/imx8mm_var_dart/imx8mm_var_dart.c
+@@ -24,8 +24,9 @@ DECLARE_GLOBAL_DATA_PTR;
+ 
+ extern int var_setup_mac(struct var_eeprom *eeprom);
+ 
+-#ifdef CONFIG_SPL_BUILD
+ #define GPIO_PAD_CTRL	(PAD_CTL_DSE6 | PAD_CTL_FSEL1 | PAD_CTL_PUE | PAD_CTL_PE)
++
++#ifdef CONFIG_SPL_BUILD
+ #define ID_GPIO 	IMX_GPIO_NR(2, 11)
+ 
+ static iomux_v3_cfg_t const id_pads[] = {
+@@ -154,6 +155,30 @@ int board_init(void)
+ 	return 0;
+ }
+ 
++#define DART_CARRIER_DETECT_GPIO IMX_GPIO_NR(3, 14)
++
++static iomux_v3_cfg_t const dart_carrier_detect_pads[] = {
++	IMX8MM_PAD_NAND_DQS_GPIO3_IO14 | MUX_PAD_CTRL(GPIO_PAD_CTRL),
++};
++
++static int var_detect_dart_carrier_rev(void)
++{
++	static int dart_carrier_rev = DART_CARRIER_REV_UNDEF;
++
++	imx_iomux_v3_setup_multiple_pads(dart_carrier_detect_pads,
++				ARRAY_SIZE(dart_carrier_detect_pads));
++
++	gpio_request(DART_CARRIER_DETECT_GPIO, "dart_carrier_detect");
++	gpio_direction_input(DART_CARRIER_DETECT_GPIO);
++
++	if (gpio_get_value(DART_CARRIER_DETECT_GPIO))
++		dart_carrier_rev = DART_CARRIER_REV_1;
++	else
++		dart_carrier_rev = DART_CARRIER_REV_2;
++
++	return dart_carrier_rev;
++}
++
+ #define SDRAM_SIZE_STR_LEN 5
+ int board_late_init(void)
+ {
+@@ -186,9 +211,18 @@ int board_late_init(void)
+ 		var_carrier_eeprom_get_revision(&carrier_eeprom, carrier_rev, sizeof(carrier_rev));
+ 		env_set("carrier_rev", carrier_rev);
+ 	}
+-	else if (id == DART_MX8M_MINI)
++	else if (id == DART_MX8M_MINI) {
++
++		int carrier_rev = var_detect_dart_carrier_rev();
++
+ 		env_set("board_name", "DART-MX8M-MINI");
+ 
++		if (carrier_rev == DART_CARRIER_REV_2)
++			env_set("carrier_rev", "dt8m-2.x");
++		else
++			env_set("carrier_rev", "legacy");
++	}
++
+ #ifdef CONFIG_ENV_IS_IN_MMC
+ 	board_late_mmc_env_init();
+ #endif
+diff --git a/board/variscite/imx8mm_var_dart/imx8mm_var_dart.h b/board/variscite/imx8mm_var_dart/imx8mm_var_dart.h
+index 03c0307b70..0f3b1a5694 100644
+--- a/board/variscite/imx8mm_var_dart/imx8mm_var_dart.h
++++ b/board/variscite/imx8mm_var_dart/imx8mm_var_dart.h
+@@ -12,3 +12,9 @@ enum {
+ 	SOM_REV_11,
+ 	UNKNOWN_REV
+ };
++
++enum {
++	DART_CARRIER_REV_1,
++	DART_CARRIER_REV_2,
++	DART_CARRIER_REV_UNDEF,
++};
+diff --git a/include/configs/imx8mm_var_dart.h b/include/configs/imx8mm_var_dart.h
+index 5fcebcc0e6..3fa6db9ddb 100644
+--- a/include/configs/imx8mm_var_dart.h
++++ b/include/configs/imx8mm_var_dart.h
+@@ -108,7 +108,11 @@
+ 					"setenv fdt_file imx8mm-var-som-symphony.dtb; " \
+ 				"fi; " \
+ 			"else " \
+-				"setenv fdt_file imx8mm-var-dart-customboard.dtb;" \
++				"if test $carrier_rev = legacy; then " \
++					"setenv fdt_file imx8mm-var-dart-dt8mcustomboard-legacy.dtb; " \
++				"else " \
++					"setenv fdt_file imx8mm-var-dart-dt8mcustomboard.dtb; " \
++				"fi; " \
+ 			"fi; " \
+ 		"fi; \0" \
+ 	"loadfdt=run findfdt; " \
+-- 
+2.25.1
+

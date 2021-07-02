@@ -1,0 +1,39 @@
+From 9bc263d116c41be514ab19342d0f018c085e92d3 Mon Sep 17 00:00:00 2001
+From: Mohit Singh <mohit.p@variscite.com>
+Date: Mon, 23 Nov 2020 12:24:08 -0800
+Subject: [PATCH 18/31] variscite: imx8_eeprom: exposed
+ var_scu_eeprom_read_header
+
+---
+ board/variscite/common/imx8_eeprom.c | 2 +-
+ board/variscite/common/imx8_eeprom.h | 1 +
+ 2 files changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/board/variscite/common/imx8_eeprom.c b/board/variscite/common/imx8_eeprom.c
+index 5ce2cfa890..a0f73aa615 100644
+--- a/board/variscite/common/imx8_eeprom.c
++++ b/board/variscite/common/imx8_eeprom.c
+@@ -47,7 +47,7 @@ static int var_scu_eeprom_read(u8 *buf, u32 size)
+ 	return ret;
+ }
+ 
+-static int var_scu_eeprom_read_header(struct var_eeprom *e)
++int var_scu_eeprom_read_header(struct var_eeprom *e)
+ {
+ 	int ret;
+ 
+diff --git a/board/variscite/common/imx8_eeprom.h b/board/variscite/common/imx8_eeprom.h
+index 2907b57856..7fcb99a272 100644
+--- a/board/variscite/common/imx8_eeprom.h
++++ b/board/variscite/common/imx8_eeprom.h
+@@ -63,6 +63,7 @@ static inline int var_eeprom_is_valid(struct var_eeprom *ep)
+ }
+ 
+ extern int var_eeprom_read_header(struct var_eeprom *e);
++extern int var_scu_eeprom_read_header(struct var_eeprom *e);
+ extern int var_eeprom_get_dram_size(struct var_eeprom *e, phys_size_t *size);
+ extern int var_eeprom_get_mac(struct var_eeprom *e, u8 *mac);
+ extern int var_eeprom_get_storage(struct var_eeprom *e, int *storage);
+-- 
+2.25.1
+

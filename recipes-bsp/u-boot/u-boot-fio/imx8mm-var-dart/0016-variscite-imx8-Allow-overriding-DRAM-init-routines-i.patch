@@ -1,0 +1,83 @@
+From 51e792cc5c7d66b57f55b14e4649571b5ad137e3 Mon Sep 17 00:00:00 2001
+From: Mohit Singh <mohit.p@variscite.com>
+Date: Mon, 23 Nov 2020 11:29:18 -0800
+Subject: [PATCH 16/31] variscite: imx8: Allow overriding DRAM init routines in
+ board code
+
+---
+ arch/arm/mach-imx/imx8/Kconfig |  6 ++++++
+ arch/arm/mach-imx/imx8/cpu.c   | 13 +++++++++----
+ 2 files changed, 15 insertions(+), 4 deletions(-)
+
+diff --git a/arch/arm/mach-imx/imx8/Kconfig b/arch/arm/mach-imx/imx8/Kconfig
+index fd2e3fd317..f9ada3e889 100644
+--- a/arch/arm/mach-imx/imx8/Kconfig
++++ b/arch/arm/mach-imx/imx8/Kconfig
+@@ -79,6 +79,12 @@ config IMX_CONTAINER_CFG
+ 	  This is to specific the cfg file for generating container
+ 	  image which will be loaded by SPL.
+ 
++config IMX8_BOARD_INIT_DRAM
++        bool
++        default n
++        help
++         This option enables DRAM configuration in board code
++
+ choice
+ 	prompt "i.MX8 board select"
+ 	optional
+diff --git a/arch/arm/mach-imx/imx8/cpu.c b/arch/arm/mach-imx/imx8/cpu.c
+index 5ca226fca4..d33f81cc60 100644
+--- a/arch/arm/mach-imx/imx8/cpu.c
++++ b/arch/arm/mach-imx/imx8/cpu.c
+@@ -549,6 +549,7 @@ __weak void board_mem_get_layout(uint64_t *phys_sdram_1_start,
+ 	*phys_sdram_2_size = PHYS_SDRAM_2_SIZE;
+ }
+ 
++#ifndef CONFIG_IMX8_BOARD_INIT_DRAM
+ phys_size_t get_effective_memsize(void)
+ {
+ 	sc_rm_mr_t mr;
+@@ -730,7 +731,7 @@ int dram_init_banksize(void)
+ 	return 0;
+ }
+ 
+-static u64 get_block_attrs(sc_faddr_t addr_start)
++static u64 get_dram_block_attrs(sc_faddr_t addr_start)
+ {
+ 	u64 attr = PTE_BLOCK_MEMTYPE(MT_DEVICE_NGNRNE) | PTE_BLOCK_NON_SHARE |
+ 		PTE_BLOCK_PXN | PTE_BLOCK_UXN;
+@@ -753,7 +754,7 @@ static u64 get_block_attrs(sc_faddr_t addr_start)
+ 	return attr;
+ }
+ 
+-static u64 get_block_size(sc_faddr_t addr_start, sc_faddr_t addr_end)
++static u64 get_dram_block_size(sc_faddr_t addr_start, sc_faddr_t addr_end)
+ {
+ 	sc_faddr_t end1, end2;
+ 	uint64_t phys_sdram_1_start, phys_sdram_1_size;
+@@ -776,6 +777,10 @@ static u64 get_block_size(sc_faddr_t addr_start, sc_faddr_t addr_end)
+ 
+ 	return (addr_end - addr_start + 1);
+ }
++#else
++extern u64 get_dram_block_attrs(sc_faddr_t addr_start);
++extern u64 get_dram_block_size(sc_faddr_t addr_start, sc_faddr_t addr_end);
++#endif
+ 
+ #define MAX_PTE_ENTRIES 512
+ #define MAX_MEM_MAP_REGIONS 16
+@@ -846,8 +851,8 @@ void enable_caches(void)
+ 		if (!err) {
+ 			imx8_mem_map[i].virt = start;
+ 			imx8_mem_map[i].phys = start;
+-			imx8_mem_map[i].size = get_block_size(start, end);
+-			imx8_mem_map[i].attrs = get_block_attrs(start);
++			imx8_mem_map[i].size = get_dram_block_size(start, end);
++			imx8_mem_map[i].attrs = get_dram_block_attrs(start);
+ 			i++;
+ 		}
+ 	}
+-- 
+2.25.1
+

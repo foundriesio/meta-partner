@@ -1,0 +1,171 @@
+From b9a417d74da4e3dc94f3047f7659f8e1a07fbd4c Mon Sep 17 00:00:00 2001
+From: Vanessa Maegima <vanessa.maegima@foundries.io>
+Date: Mon, 5 Jul 2021 14:13:00 -0300
+Subject: [PATCH] arch: arm: dts: imx8mm-var-som: add pmic support
+
+Signed-off-by: Vanessa Maegima <vanessa.maegima@foundries.io>
+---
+ .../dts/imx8mm-var-som-symphony-u-boot.dtsi   |  12 ++
+ arch/arm/dts/imx8mm-var-som.dtsi              | 119 ++++++++++++++++++
+ 2 files changed, 131 insertions(+)
+
+diff --git a/arch/arm/dts/imx8mm-var-som-symphony-u-boot.dtsi b/arch/arm/dts/imx8mm-var-som-symphony-u-boot.dtsi
+index b57381792f..840fe57de1 100644
+--- a/arch/arm/dts/imx8mm-var-som-symphony-u-boot.dtsi
++++ b/arch/arm/dts/imx8mm-var-som-symphony-u-boot.dtsi
+@@ -3,3 +3,15 @@
+ &uart4 {
+ 	u-boot,dm-spl;
+ };
++
++&pmic {
++	u-boot,dm-spl;
++
++	regulators {
++		u-boot,dm-spl;
++	};
++};
++
++&pinctrl_pmic {
++	u-boot,dm-spl;
++};
+diff --git a/arch/arm/dts/imx8mm-var-som.dtsi b/arch/arm/dts/imx8mm-var-som.dtsi
+index 68dfe76f93..c1f4ae1727 100644
+--- a/arch/arm/dts/imx8mm-var-som.dtsi
++++ b/arch/arm/dts/imx8mm-var-som.dtsi
+@@ -88,6 +88,12 @@
+ 		>;
+ 	};
+ 
++	pinctrl_pmic: pmicgrp {
++		fsl,pins = <
++			MX8MM_IOMUXC_SD1_DATA6_GPIO2_IO8		0x140
++		>;
++	};
++
+ 	pinctrl_i2c3: i2c3grp {
+ 		fsl,pins = <
+ 			MX8MM_IOMUXC_I2C3_SCL_I2C3_SCL			0x400001c3
+@@ -172,6 +178,119 @@
+ 	scl-gpios = <&gpio5 14 GPIO_ACTIVE_HIGH>;
+ 	sda-gpios = <&gpio5 15 GPIO_ACTIVE_HIGH>;
+ 	status = "okay";
++
++	pmic: pmic@4b {
++		compatible = "rohm,bd71847";
++		reg = <0x4b>;
++		pinctrl-0 = <&pinctrl_pmic>;
++		interrupt-parent = <&gpio2>;
++		interrupts = <8 IRQ_TYPE_LEVEL_LOW>;
++		rohm,reset-snvs-powered;
++
++		regulators {
++			buck1_reg: BUCK1 {
++				regulator-name = "BUCK1";
++				regulator-min-microvolt = <700000>;
++				regulator-max-microvolt = <1300000>;
++				regulator-boot-on;
++				regulator-always-on;
++				regulator-ramp-delay = <1250>;
++			};
++
++			buck2_reg: BUCK2 {
++				regulator-name = "BUCK2";
++				regulator-min-microvolt = <700000>;
++				regulator-max-microvolt = <1300000>;
++				regulator-boot-on;
++				regulator-always-on;
++				regulator-ramp-delay = <1250>;
++				rohm,dvs-run-voltage = <1000000>;
++				rohm,dvs-idle-voltage = <900000>;
++			};
++
++			buck3_reg: BUCK3 {
++				// BUCK5 in datasheet
++				regulator-name = "BUCK3";
++				regulator-min-microvolt = <700000>;
++				regulator-max-microvolt = <1350000>;
++				regulator-boot-on;
++				regulator-always-on;
++			};
++
++			buck4_reg: BUCK4 {
++				// BUCK6 in datasheet
++				regulator-name = "BUCK4";
++				regulator-min-microvolt = <2600000>;
++				regulator-max-microvolt = <3300000>;
++				regulator-boot-on;
++				regulator-always-on;
++			};
++
++			buck5_reg: BUCK5 {
++				// BUCK7 in datasheet
++				regulator-name = "BUCK5";
++				regulator-min-microvolt = <1605000>;
++				regulator-max-microvolt = <1995000>;
++				regulator-boot-on;
++				regulator-always-on;
++			};
++
++			buck6_reg: BUCK6 {
++				// BUCK8 in datasheet
++				regulator-name = "BUCK6";
++				regulator-min-microvolt = <800000>;
++				regulator-max-microvolt = <1400000>;
++				regulator-boot-on;
++				regulator-always-on;
++			};
++
++			ldo1_reg: LDO1 {
++				regulator-name = "LDO1";
++				regulator-min-microvolt = <1600000>;
++				regulator-max-microvolt = <1900000>;
++				regulator-boot-on;
++				regulator-always-on;
++			};
++
++			ldo2_reg: LDO2 {
++				regulator-name = "LDO2";
++				regulator-min-microvolt = <800000>;
++				regulator-max-microvolt = <900000>;
++				regulator-boot-on;
++				regulator-always-on;
++			};
++
++			ldo3_reg: LDO3 {
++				regulator-name = "LDO3";
++				regulator-min-microvolt = <1800000>;
++				regulator-max-microvolt = <3300000>;
++				regulator-boot-on;
++				regulator-always-on;
++			};
++
++			ldo4_reg: LDO4 {
++				regulator-name = "LDO4";
++				regulator-min-microvolt = <900000>;
++				regulator-max-microvolt = <1800000>;
++				regulator-always-on;
++			};
++
++			ldo5_reg: LDO5 {
++				regulator-name = "LDO5";
++				regulator-min-microvolt = <1800000>;
++				regulator-max-microvolt = <1800000>;
++				regulator-always-on;
++			};
++
++			ldo6_reg: LDO6 {
++				regulator-name = "LDO6";
++				regulator-min-microvolt = <900000>;
++				regulator-max-microvolt = <1800000>;
++				regulator-boot-on;
++				regulator-always-on;
++			};
++		};
++	};
+ };
+ 
+ &i2c3 {
+-- 
+2.25.1
+

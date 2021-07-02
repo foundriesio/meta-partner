@@ -1,0 +1,28 @@
+From 01bd3b9f7ab62379676114b914076dfc3b4844b5 Mon Sep 17 00:00:00 2001
+From: Felix Radensky <felix.r@variscite.com>
+Date: Sun, 13 Dec 2020 18:48:25 +0200
+Subject: [PATCH 20/31] imx8mm-var-dart: Enable PMIC LDO5
+
+PMIC LDO5 is required to power-up audio codec on SOM.
+Without it accessing I2C bus 3 is impossible.
+---
+ board/variscite/imx8mm_var_dart/spl.c | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/board/variscite/imx8mm_var_dart/spl.c b/board/variscite/imx8mm_var_dart/spl.c
+index dbcf81a520..bc45cf7286 100644
+--- a/board/variscite/imx8mm_var_dart/spl.c
++++ b/board/variscite/imx8mm_var_dart/spl.c
+@@ -220,6 +220,9 @@ int power_init_board(void)
+ 	if (get_board_id() == VAR_SOM_MX8M_MINI)
+ 		pmic_reg_write(p, BD71837_BUCK8_VOLT, 0x28);
+ 
++	/* enable LDO5 - required to access I2C bus 3 */
++	pmic_reg_write(p, BD71837_LDO5_VOLT, 0xc0);
++
+ 	/* lock the PMIC regs */
+ 	pmic_reg_write(p, BD71837_REGLOCK, 0x11);
+ 
+-- 
+2.25.1
+

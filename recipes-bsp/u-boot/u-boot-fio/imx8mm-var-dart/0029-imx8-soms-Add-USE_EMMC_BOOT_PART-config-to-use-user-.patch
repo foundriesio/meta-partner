@@ -1,0 +1,76 @@
+From 8818fa897a805eff3957eaf618cba97dbb96e7ca Mon Sep 17 00:00:00 2001
+From: Harshesh Valera <harshesh.v@variscite.com>
+Date: Mon, 15 Mar 2021 19:33:15 -0700
+Subject: [PATCH 29/31] imx8 soms: Add USE_EMMC_BOOT_PART config to use user
+ partition for fastboot
+
+CONFIG_USE_EMMC_BOOT_PART=y in defconfig to use user partition
+
+This patch allows to switch to user partition instead of BOOT0/BOOT1 parition
+
+Signed-off-by: Harshesh Valera <harshesh.v@variscite.com>
+---
+ drivers/fastboot/fb_fsl/fb_fsl_partitions.c | 14 +++++++++++++-
+ lib/Kconfig                                 |  6 ++++++
+ 2 files changed, 19 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/fastboot/fb_fsl/fb_fsl_partitions.c b/drivers/fastboot/fb_fsl/fb_fsl_partitions.c
+index 777700f23d..340f3cdff8 100644
+--- a/drivers/fastboot/fb_fsl/fb_fsl_partitions.c
++++ b/drivers/fastboot/fb_fsl/fb_fsl_partitions.c
+@@ -79,14 +79,22 @@ static ulong bootloader_mmc_offset(void)
+ 	else if (is_imx8qm() || (is_imx8qxp() && !is_soc_rev(CHIP_REV_B))) {
+ 		if (MEK_8QM_EMMC == fastboot_devinfo.dev_id)
+ 		/* target device is eMMC boot0 partition, bootloader offset is 0x0 */
++		#ifdef CONFIG_USE_EMMC_BOOT_PART
++			return 0x8000;
++		#else
+ 			return 0x0;
++		#endif
+ 		else
+ 		/* target device is SD card, bootloader offset is 0x8000 */
+ 			return 0x8000;
+ 	} else if (is_imx8mn() || is_imx8mp() || is_imx8dxl()) {
+ 		/* target device is eMMC boot0 partition, bootloader offset is 0x0 */
+ 		if (env_get_ulong("emmc_dev", 10, 2) == fastboot_devinfo.dev_id)
++		#ifdef CONFIG_USE_EMMC_BOOT_PART
++			return 0x8000;
++		#else
+ 			return 0;
++		#endif
+ 		else
+ 			return 0x8000;
+ 	}
+@@ -203,7 +211,11 @@ static int _fastboot_parts_load_from_ptable(void)
+ 
+ 		/* multiple boot paritions for eMMC 4.3 later */
+ 		if (mmc->part_config != MMCPART_NOAVAILABLE) {
+-			boot_partition = FASTBOOT_MMC_BOOT_PARTITION_ID;
++			#ifdef CONFIG_USE_EMMC_BOOT_PART
++				boot_partition = FASTBOOT_MMC_USER_PARTITION_ID;
++			#else
++				boot_partition = FASTBOOT_MMC_BOOT_PARTITION_ID;
++			#endif
+ 			user_partition = FASTBOOT_MMC_USER_PARTITION_ID;
+ 		}
+ 	} else {
+diff --git a/lib/Kconfig b/lib/Kconfig
+index a1d274c184..dd53492e1a 100644
+--- a/lib/Kconfig
++++ b/lib/Kconfig
+@@ -381,6 +381,12 @@ config TRUSTY_UNLOCK_PERMISSION
+ 	bool "Support unlock permission protection in trusty"
+ 	depends on IMX_TRUSTY_OS
+ 
++config VIRTUAL_AB_SUPPORT
++	bool "Support virtual AB update"
++
++config USE_EMMC_BOOT_PART
++	bool "Use userdata eMMC partition for bootloader"
++
+ endmenu
+ 
+ menu "Hashing Support"
+-- 
+2.25.1
+

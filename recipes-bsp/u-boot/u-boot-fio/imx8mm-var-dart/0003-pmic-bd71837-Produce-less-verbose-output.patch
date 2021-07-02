@@ -1,0 +1,25 @@
+From 5ec3ab6e7671e92375d66c92386722c769fd4684 Mon Sep 17 00:00:00 2001
+From: Felix Radensky <felix.r@variscite.com>
+Date: Mon, 18 Feb 2019 14:14:51 +0200
+Subject: [PATCH 03/31] pmic: bd71837: Produce less verbose output
+
+---
+ drivers/power/pmic/pmic_bd71837.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/power/pmic/pmic_bd71837.c b/drivers/power/pmic/pmic_bd71837.c
+index 74195ccae8..59f3596196 100644
+--- a/drivers/power/pmic/pmic_bd71837.c
++++ b/drivers/power/pmic/pmic_bd71837.c
+@@ -27,7 +27,7 @@ int power_bd71837_init (unsigned char bus) {
+ 	p->hw.i2c.tx_num = 1;
+ 	p->bus = bus;
+ 
+-	printf("power_bd71837_init\n");
++	debug("power_bd71837_init\n");
+ 
+ 	return 0;
+ }
+-- 
+2.25.1
+

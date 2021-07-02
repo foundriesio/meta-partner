@@ -1,0 +1,33 @@
+From 4dc2cdd197c4e8528ac73b36473c0fd119b10c61 Mon Sep 17 00:00:00 2001
+From: Vanessa Maegima <vanessa.maegima@foundries.io>
+Date: Fri, 25 Jun 2021 14:04:33 -0300
+Subject: [PATCH 31/31] board: variscite: imx8mm_var_dar: drop do_reset func
+
+Drop the board specific do_reset() implementation to match the expected
+by the FIO tree.
+
+Signed-off-by: Vanessa Maegima <vanessa.maegima@foundries.io>
+---
+ board/variscite/imx8mm_var_dart/spl.c | 9 ---------
+ 1 file changed, 9 deletions(-)
+
+diff --git a/board/variscite/imx8mm_var_dart/spl.c b/board/variscite/imx8mm_var_dart/spl.c
+index bc45cf7286..1168f85cc0 100644
+--- a/board/variscite/imx8mm_var_dart/spl.c
++++ b/board/variscite/imx8mm_var_dart/spl.c
+@@ -309,12 +309,3 @@ void board_init_f(ulong dummy)
+ 
+ 	board_init_r(NULL, 0);
+ }
+-
+-int do_reset(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
+-{
+-	puts ("resetting ...\n");
+-
+-	reset_cpu(WDOG1_BASE_ADDR);
+-
+-	return 0;
+-}
+-- 
+2.25.1
+
