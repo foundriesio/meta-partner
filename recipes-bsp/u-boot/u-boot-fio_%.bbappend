@@ -33,6 +33,5 @@ SRC_URI_append_imx8mm-var-dart = " \
     file://0030-imx8mm-var-som-Use-default-DDR4-QoS-settings.patch \
     file://0031-board-variscite-imx8mm_var_dar-drop-do_reset-func.patch \
     file://0001-configs-imx8mm_var_dart-avoid-config-fallback-error.patch \
-    file://0001-test.patch \
     file://0001-arch-arm-dts-imx8mm-var-som-add-pmic-support.patch \
 "
