@@ -1,0 +1,50 @@
+From 85ff2d93dc94e34dde3f4ea1219d5f3f8b1f5df7 Mon Sep 17 00:00:00 2001
+From: Vanessa Maegima <vanessa.maegima@foundries.io>
+Date: Thu, 8 Jul 2021 18:08:58 -0300
+Subject: [PATCH] imx8mm_var_dart: force to use the uart entry for the som
+ board
+
+Signed-off-by: Vanessa Maegima <vanessa.maegima@foundries.io>
+---
+ board/variscite/imx8mm_var_dart/imx8mm_var_dart.c | 11 +++--------
+ include/configs/imx8mm_var_dart.h                 |  2 +-
+ 2 files changed, 4 insertions(+), 9 deletions(-)
+
+diff --git a/board/variscite/imx8mm_var_dart/imx8mm_var_dart.c b/board/variscite/imx8mm_var_dart/imx8mm_var_dart.c
+index b78c675058..1154deb30d 100644
+--- a/board/variscite/imx8mm_var_dart/imx8mm_var_dart.c
++++ b/board/variscite/imx8mm_var_dart/imx8mm_var_dart.c
+@@ -113,14 +113,9 @@ int board_early_init_f(void)
+ 
+ 	id = get_board_id();
+ 
+-	if (id == DART_MX8M_MINI) {
+-		init_uart_clk(0);
+-		imx_iomux_v3_setup_multiple_pads(uart1_pads, ARRAY_SIZE(uart1_pads));
+-	}else if (id == VAR_SOM_MX8M_MINI) {
+-		init_uart_clk(3);
+-		mxc_base = (struct mxc_uart *)UART4_BASE_ADDR;
+-		imx_iomux_v3_setup_multiple_pads(uart4_pads, ARRAY_SIZE(uart4_pads));
+-	}
++	mxc_base = (struct mxc_uart *)UART4_BASE_ADDR;
++	imx_iomux_v3_setup_multiple_pads(uart4_pads, ARRAY_SIZE(uart4_pads));
++	init_uart_clk(3);
+ 
+ 	return 0;
+ }
+diff --git a/include/configs/imx8mm_var_dart.h b/include/configs/imx8mm_var_dart.h
+index ea6eebc33e..5be769e3b6 100644
+--- a/include/configs/imx8mm_var_dart.h
++++ b/include/configs/imx8mm_var_dart.h
+@@ -216,7 +216,7 @@
+ #define CONFIG_SYS_MEMTEST_START	PHYS_SDRAM
+ #define CONFIG_SYS_MEMTEST_END		(CONFIG_SYS_MEMTEST_START + (DEFAULT_SDRAM_SIZE >> 1))
+ 
+-#define CONFIG_MXC_UART_BASE		UART1_BASE_ADDR
++#define CONFIG_MXC_UART_BASE		UART4_BASE_ADDR
+ 
+ /* Monitor Command Prompt */
+ #define CONFIG_SYS_PROMPT_HUSH_PS2	"> "
+-- 
+2.25.1
+
