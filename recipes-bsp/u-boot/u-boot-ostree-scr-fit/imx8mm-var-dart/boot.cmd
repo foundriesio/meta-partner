@@ -8,6 +8,7 @@ setenv bootpart 1
 setenv rootpart 2
 
 # Boot image files
+setenv initrd_addr 0x43800000
 setenv fdt_file_final imx8mm-var-som-symphony.dtb
 setenv fit_addr ${initrd_addr}
 
