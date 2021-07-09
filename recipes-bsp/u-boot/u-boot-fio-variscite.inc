@@ -32,4 +32,5 @@ SRC_URI_append_imx8mm-var-dart = " \
     file://0031-board-variscite-imx8mm_var_dar-drop-do_reset-func.patch \
     file://0001-configs-imx8mm_var_dart-avoid-config-fallback-error.patch \
     file://0001-imx8mm_var_dart-force-to-use-the-uart-entry-for-the-.patch \
+    file://0001-include-configs-imx8mm_var_dart-allow-setting-CONFIG.patch \
 "
