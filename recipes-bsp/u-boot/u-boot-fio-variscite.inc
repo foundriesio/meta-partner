@@ -33,4 +33,5 @@ SRC_URI_append_imx8mm-var-dart = " \
     file://0001-configs-imx8mm_var_dart-avoid-config-fallback-error.patch \
     file://0001-imx8mm_var_dart-force-to-use-the-uart-entry-for-the-.patch \
     file://0001-include-configs-imx8mm_var_dart-allow-setting-CONFIG.patch \
+    file://0001-imx8mm_var_dart-define-CONFIG_SYS_BOOTM_LEN.patch \
 "
