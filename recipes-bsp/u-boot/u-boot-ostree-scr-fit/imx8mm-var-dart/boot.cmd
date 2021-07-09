@@ -9,8 +9,9 @@ setenv rootpart 2
 
 # Boot image files
 setenv initrd_addr 0x43800000
+setenv fdt_addr 0x43000000
 setenv fdt_file_final imx8mm-var-som-symphony.dtb
-setenv fit_addr 0x40480000
+setenv fit_addr 0x43800000
 
 # Boot firmware updates
 setenv bootloader 42
