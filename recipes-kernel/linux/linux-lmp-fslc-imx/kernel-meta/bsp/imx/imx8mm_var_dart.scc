@@ -40,7 +40,6 @@ include features/usb/serial-all.scc
 include features/usb-net/usb-net.scc
 include features/wifi/wifi-pci.scc
 include features/pwm/pwm.scc
-include features/crypto/arm64-crypto.scc
 include features/power/cpu-freq.scc
 include features/tee/tee.scc
 
