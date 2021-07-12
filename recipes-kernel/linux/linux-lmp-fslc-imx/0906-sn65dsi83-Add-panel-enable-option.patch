@@ -1,0 +1,68 @@
+From fb9fb96ca687a651bc09b53c950dc09ed38dbd9a Mon Sep 17 00:00:00 2001
+From: Valentin Raevsky <valentin@compulab.co.il>
+Date: Mon, 2 Sep 2019 14:59:50 +0300
+Subject: [PATCH 906/981] sn65dsi83: Add panel-enable option
+
+---
+ drivers/gpu/drm/bridge/sn65dsi83/sn65dsi83_brg.c | 6 ++++++
+ drivers/gpu/drm/bridge/sn65dsi83/sn65dsi83_brg.h | 1 +
+ drivers/gpu/drm/bridge/sn65dsi83/sn65dsi83_drv.c | 7 +++++++
+ 3 files changed, 14 insertions(+)
+
+diff --git a/drivers/gpu/drm/bridge/sn65dsi83/sn65dsi83_brg.c b/drivers/gpu/drm/bridge/sn65dsi83/sn65dsi83_brg.c
+index 2938ae3e365e..9a81eb127fd7 100644
+--- a/drivers/gpu/drm/bridge/sn65dsi83/sn65dsi83_brg.c
++++ b/drivers/gpu/drm/bridge/sn65dsi83/sn65dsi83_brg.c
+@@ -167,6 +167,9 @@ static int sn65dsi83_brg_start_stream(struct sn65dsi83_brg *brg)
+     dev_dbg(&client->dev, "CHA (0x%02x) = 0x%02x",
+          SN65DSI83_CHA_ERR, regval);
+ 
++    if (!IS_ERR(brg->gpio_panel_enable))
++        gpiod_set_value_cansleep(brg->gpio_panel_enable, 1);
++
+     return 0;
+ }
+ 
+@@ -176,6 +179,9 @@ static void sn65dsi83_brg_stop_stream(struct sn65dsi83_brg *brg)
+     dev_dbg(&client->dev,"%s\n",__func__);
+     /* Clear the PLL_EN bit (CSR 0x0D.0) */
+     SN65DSI83_WRITE(SN65DSI83_PLL_EN, 0x00);
++
++    if (!IS_ERR(brg->gpio_panel_enable))
++        gpiod_set_value_cansleep(brg->gpio_panel_enable, 0);
+ }
+ 
+ static int sn65dsi83_calk_clk_range(int min_regval, int max_regval,
+diff --git a/drivers/gpu/drm/bridge/sn65dsi83/sn65dsi83_brg.h b/drivers/gpu/drm/bridge/sn65dsi83/sn65dsi83_brg.h
+index 950ded1b6e03..8e3d2412a0c5 100644
+--- a/drivers/gpu/drm/bridge/sn65dsi83/sn65dsi83_brg.h
++++ b/drivers/gpu/drm/bridge/sn65dsi83/sn65dsi83_brg.h
+@@ -18,6 +18,7 @@ struct sn65dsi83_brg_funcs {
+ struct sn65dsi83_brg {
+     struct i2c_client *client;
+     struct gpio_desc *gpio_enable;
++    struct gpio_desc *gpio_panel_enable;
+     /* Bridge Panel Parameters */
+     struct videomode vm;
+     u32 width_mm;
+diff --git a/drivers/gpu/drm/bridge/sn65dsi83/sn65dsi83_drv.c b/drivers/gpu/drm/bridge/sn65dsi83/sn65dsi83_drv.c
+index 3bcf9f7eebba..31974feddb76 100644
+--- a/drivers/gpu/drm/bridge/sn65dsi83/sn65dsi83_drv.c
++++ b/drivers/gpu/drm/bridge/sn65dsi83/sn65dsi83_drv.c
+@@ -238,6 +238,13 @@ static int sn65dsi83_parse_dt(struct device_node *np,
+         return PTR_ERR(sn65dsi83->brg->gpio_enable);
+     }
+ 
++    sn65dsi83->brg->gpio_panel_enable = devm_gpiod_get(dev, "enable-panel", GPIOD_OUT_LOW);
++    if (!IS_ERR(sn65dsi83->brg->gpio_panel_enable)) {
++        gpiod_set_value_cansleep(sn65dsi83->brg->gpio_panel_enable, 0);
++        msleep(200);
++    } else
++        dev_dbg(dev, "failed to parse enable panel gpio");
++
+     sn65dsi83->brg->format = format;
+     sn65dsi83->brg->bpp = bpp;
+ 
+-- 
+2.30.2
+

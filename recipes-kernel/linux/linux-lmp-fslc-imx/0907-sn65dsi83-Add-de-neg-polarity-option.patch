@@ -1,0 +1,67 @@
+From 84fc0e3154fd7fb1ffd33021cb9ad663fb28550c Mon Sep 17 00:00:00 2001
+From: Valentin Raevsky <valentin@compulab.co.il>
+Date: Mon, 2 Sep 2019 14:59:50 +0300
+Subject: [PATCH 907/981] sn65dsi83: Add de-neg-polarity option
+
+---
+ drivers/gpu/drm/bridge/sn65dsi83/sn65dsi83_brg.c | 2 +-
+ drivers/gpu/drm/bridge/sn65dsi83/sn65dsi83_brg.h | 1 +
+ drivers/gpu/drm/bridge/sn65dsi83/sn65dsi83_drv.c | 3 +++
+ 3 files changed, 5 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/gpu/drm/bridge/sn65dsi83/sn65dsi83_brg.c b/drivers/gpu/drm/bridge/sn65dsi83/sn65dsi83_brg.c
+index 9a81eb127fd7..d402c12d5332 100644
+--- a/drivers/gpu/drm/bridge/sn65dsi83/sn65dsi83_brg.c
++++ b/drivers/gpu/drm/bridge/sn65dsi83/sn65dsi83_brg.c
+@@ -292,7 +292,7 @@ static int sn65dsi83_brg_configure(struct sn65dsi83_brg *brg)
+     if (FLAGS & DISPLAY_FLAGS_VSYNC_LOW)
+         regval |= (1 << VS_NEG_POLARITY_SHIFT);
+ 
+-    if (FLAGS & DISPLAY_FLAGS_DE_LOW)
++    if (brg->de_neg_polarity)
+         regval |= (1 << DE_NEG_POLARITY_SHIFT);
+ 
+     if (BPP(brg) == 24)
+diff --git a/drivers/gpu/drm/bridge/sn65dsi83/sn65dsi83_brg.h b/drivers/gpu/drm/bridge/sn65dsi83/sn65dsi83_brg.h
+index 8e3d2412a0c5..0aceb0a16952 100644
+--- a/drivers/gpu/drm/bridge/sn65dsi83/sn65dsi83_brg.h
++++ b/drivers/gpu/drm/bridge/sn65dsi83/sn65dsi83_brg.h
+@@ -28,6 +28,7 @@ struct sn65dsi83_brg {
+ 
+     u8 num_dsi_lanes;
+     u8 burst_mode;
++    u8 de_neg_polarity;
+     struct sn65dsi83_brg_funcs *funcs;
+ };
+ struct sn65dsi83_brg *sn65dsi83_brg_get(void);
+diff --git a/drivers/gpu/drm/bridge/sn65dsi83/sn65dsi83_drv.c b/drivers/gpu/drm/bridge/sn65dsi83/sn65dsi83_drv.c
+index 31974feddb76..534781255c68 100644
+--- a/drivers/gpu/drm/bridge/sn65dsi83/sn65dsi83_drv.c
++++ b/drivers/gpu/drm/bridge/sn65dsi83/sn65dsi83_drv.c
+@@ -206,6 +206,7 @@ static int sn65dsi83_parse_dt(struct device_node *np,
+     struct device *dev = &sn65dsi83->brg->client->dev;
+     u32 num_lanes = 2, bpp = 24, format = 2, width = 149, height = 93;
+     u8 burst_mode = 0;
++    u8 de_neg_polarity = 0;
+     struct device_node *endpoint;
+ 
+     endpoint = of_graph_get_next_endpoint(np, NULL);
+@@ -224,6 +225,7 @@ static int sn65dsi83_parse_dt(struct device_node *np,
+     of_property_read_u32(np, "ti,width-mm", &width);
+     of_property_read_u32(np, "ti,height-mm", &height);
+     burst_mode = of_property_read_bool(np, "ti,burst-mode");
++    de_neg_polarity = of_property_read_bool(np, "ti,de-neg-polarity");
+ 
+     if (num_lanes < 1 || num_lanes > 4) {
+         dev_err(dev, "Invalid dsi-lanes: %d\n", num_lanes);
+@@ -231,6 +233,7 @@ static int sn65dsi83_parse_dt(struct device_node *np,
+     }
+     sn65dsi83->brg->num_dsi_lanes = num_lanes;
+     sn65dsi83->brg->burst_mode = burst_mode;
++    sn65dsi83->brg->de_neg_polarity = de_neg_polarity;
+ 
+     sn65dsi83->brg->gpio_enable = devm_gpiod_get(dev, "enable", GPIOD_OUT_LOW);
+     if (IS_ERR(sn65dsi83->brg->gpio_enable)) {
+-- 
+2.30.2
+

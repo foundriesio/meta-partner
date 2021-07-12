@@ -1,0 +1,348 @@
+From c40c90f2d3265167edd6384dd8691dc88f78308d Mon Sep 17 00:00:00 2001
+From: Robert Chiras <robert.chiras@nxp.com>
+Date: Mon, 8 Oct 2018 19:47:43 +0300
+Subject: [PATCH 107/981] LF-811-1: drm/bridge: Add driver for legacy Freescale
+ Seiko 43WVFIG adapter
+
+This is an adapter card made for the 4.3", 800x480, LCD panel Seiko
+43WVFIG. The LCD panel is a 24bit DPI bus, while the adapter card has
+two ports: 18-bit and 24-bit data input. For the 18-bit data input, the
+adapter card is demuxing some of the data lines, in order to feed all of
+the 24 lines needed by the LCD.
+This driver handles both this use-cases.
+
+Signed-off-by: Robert Chiras <robert.chiras@nxp.com>
+---
+ .../display/bridge/nxp,seiko-43wvfig.txt      |  40 +++
+ drivers/gpu/drm/bridge/Kconfig                |   5 +
+ drivers/gpu/drm/bridge/Makefile               |   1 +
+ drivers/gpu/drm/bridge/nxp-seiko-43wvfig.c    | 245 ++++++++++++++++++
+ 4 files changed, 291 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/display/bridge/nxp,seiko-43wvfig.txt
+ create mode 100644 drivers/gpu/drm/bridge/nxp-seiko-43wvfig.c
+
+diff --git a/Documentation/devicetree/bindings/display/bridge/nxp,seiko-43wvfig.txt b/Documentation/devicetree/bindings/display/bridge/nxp,seiko-43wvfig.txt
+new file mode 100644
+index 000000000000..9021e6ad9299
+--- /dev/null
++++ b/Documentation/devicetree/bindings/display/bridge/nxp,seiko-43wvfig.txt
+@@ -0,0 +1,40 @@
++Legacy Freescale RA169Z20 adapter card for Seiko 43WVFIG panel, driver bindings
++
++This is an adapter card made for the 4.3", 800x480, LCD panel Seiko 43WVFIG.
++The LCD panel is a 24bit DPI bus, while the adapter card has two ports:
++18-bit and 24-bit data input. For the 18-bit data input, the adapter card
++is demuxing some of the data lines, in order to feed all of the 24 lines
++needed by the LCD.
++
++Required properties:
++- compatible: 	"nxp,seiko-43wvfig"
++- bus_mode:	must be one of <18> or <24>, depending on the input port
++		used (18-bit or 24-bit)
++- port:		input and output port nodes with endpoint definitions as
++		defined in Documentation/devicetree/bindings/graph.txt;
++		the input port should be connected to an lcd controller
++		while the output port should be connected to the Seiko
++		43wvfig LCD panel
++
++Example:
++	seiko_adapter: seiko-adapter {
++		#address-cells = <1>;
++		#size-cells = <0>;
++		compatible = "nxp,seiko-43wvfig";
++		bus_mode = <18>;
++
++		port@0 {
++			reg = <0>;
++			adapter_in: endpoint {
++				remote-endpoint = <&lcdif_out>;
++			};
++		};
++		port@1 {
++			reg = <1>;
++			adapter_out: endpoint {
++				remote-endpoint = <&panel_in>;
++			};
++		};
++	};
++
++-
+diff --git a/drivers/gpu/drm/bridge/Kconfig b/drivers/gpu/drm/bridge/Kconfig
+index 8b2e5d975590..9e1a90627c4f 100644
+--- a/drivers/gpu/drm/bridge/Kconfig
++++ b/drivers/gpu/drm/bridge/Kconfig
+@@ -83,6 +83,11 @@ config DRM_SEC_MIPI_DSIM
+ 	help
+ 	  The Samsung MPI DSIM Bridge driver.
+ 
++config DRM_NXP_SEIKO_43WVFIG
++	tristate "Legacy Freescale Seiko 43WVFIG panel DPI adapter bridge"
++	select DRM_KMS_HELPER
++	select DRM_PANEL
++
+ config DRM_NXP_PTN3460
+ 	tristate "NXP PTN3460 DP/LVDS bridge"
+ 	depends on OF
+diff --git a/drivers/gpu/drm/bridge/Makefile b/drivers/gpu/drm/bridge/Makefile
+index 7c755b93a3c5..103466b50b2a 100644
+--- a/drivers/gpu/drm/bridge/Makefile
++++ b/drivers/gpu/drm/bridge/Makefile
+@@ -22,3 +22,4 @@ obj-y += cadence/
+ obj-y += synopsys/
+ obj-$(CONFIG_DRM_ITE_IT6263) += it6263.o
+ obj-$(CONFIG_DRM_SEC_MIPI_DSIM) += sec-dsim.o
++obj-$(CONFIG_DRM_NXP_SEIKO_43WVFIG) += nxp-seiko-43wvfig.o
+diff --git a/drivers/gpu/drm/bridge/nxp-seiko-43wvfig.c b/drivers/gpu/drm/bridge/nxp-seiko-43wvfig.c
+new file mode 100644
+index 000000000000..aa76560be145
+--- /dev/null
++++ b/drivers/gpu/drm/bridge/nxp-seiko-43wvfig.c
+@@ -0,0 +1,245 @@
++/*
++ * DRM driver for the legacy Freescale adapter card holding
++ * Seiko RA169Z20 43WVFIG LCD panel
++ *
++ * Copyright (C) 2018 NXP
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version 2
++ * of the License, or (at your option) any later version.
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ */
++
++#include <drm/drmP.h>
++#include <drm/drm_atomic_helper.h>
++#include <drm/drm_crtc_helper.h>
++#include <drm/drm_of.h>
++#include <drm/drm_panel.h>
++#include <drm/drm_probe_helper.h>
++#include <linux/of.h>
++#include <linux/of_graph.h>
++#include <linux/of_platform.h>
++
++struct seiko_adapter {
++	struct device		*dev;
++	struct drm_panel	*panel;
++	struct drm_bridge	bridge;
++	struct drm_connector	connector;
++
++	u32			bpc;
++	u32			bus_format;
++};
++
++static enum drm_connector_status seiko_adapter_connector_detect(
++	struct drm_connector *connector, bool force)
++{
++	return connector_status_connected;
++}
++
++static int seiko_adapter_connector_get_modes(struct drm_connector *connector)
++{
++	int num_modes;
++
++	struct seiko_adapter *adap = container_of(connector,
++						struct seiko_adapter,
++						connector);
++
++	num_modes = drm_panel_get_modes(adap->panel);
++
++	/*
++	 * The panel will populate the connector display_info properties with
++	 * fixed numbers, but we need to change them according to our
++	 * configuration.
++	 */
++	connector->display_info.bpc = adap->bpc;
++	drm_display_info_set_bus_formats(&connector->display_info,
++						 &adap->bus_format, 1);
++
++	return num_modes;
++}
++
++static const struct drm_connector_funcs seiko_adapter_connector_funcs = {
++	.detect = seiko_adapter_connector_detect,
++	.fill_modes = drm_helper_probe_single_connector_modes,
++	.destroy = drm_connector_cleanup,
++	.reset = drm_atomic_helper_connector_reset,
++	.atomic_duplicate_state = drm_atomic_helper_connector_duplicate_state,
++	.atomic_destroy_state = drm_atomic_helper_connector_destroy_state,
++};
++
++static const struct drm_connector_helper_funcs
++	seiko_adapter_connector_helper_funcs = {
++	.get_modes = seiko_adapter_connector_get_modes,
++};
++
++static int seiko_adapter_bridge_attach(struct drm_bridge *bridge)
++{
++	struct seiko_adapter *adap = bridge->driver_private;
++	struct device *dev = adap->dev;
++	struct drm_encoder *encoder = bridge->encoder;
++	struct drm_device *drm;
++	int ret = 0;
++
++	if (!encoder) {
++		DRM_DEV_ERROR(dev, "Parent encoder object not found\n");
++		return -ENODEV;
++	}
++
++	drm = encoder->dev;
++
++	/*
++	 * Create the connector for our panel
++	 */
++
++	ret = drm_connector_init(drm, &adap->connector,
++				 &seiko_adapter_connector_funcs,
++				 DRM_MODE_CONNECTOR_DPI);
++	if (ret) {
++		DRM_DEV_ERROR(dev, "Failed to init drm connector: %d\n", ret);
++		return ret;
++	}
++
++	drm_connector_helper_add(&adap->connector,
++				 &seiko_adapter_connector_helper_funcs);
++
++	adap->connector.dpms = DRM_MODE_DPMS_OFF;
++	drm_connector_attach_encoder(&adap->connector, encoder);
++
++	ret = drm_panel_attach(adap->panel, &adap->connector);
++	if (ret) {
++		DRM_DEV_ERROR(dev, "Failed to attach panel: %d\n", ret);
++		drm_connector_cleanup(&adap->connector);
++		return ret;
++	}
++
++	return ret;
++}
++
++static void seiko_adapter_bridge_detach(struct drm_bridge *bridge)
++{
++	struct seiko_adapter *adap = bridge->driver_private;
++
++	drm_panel_detach(adap->panel);
++	drm_connector_cleanup(&adap->connector);
++}
++
++static void seiko_adapter_bridge_enable(struct drm_bridge *bridge)
++{
++	struct seiko_adapter *adap = bridge->driver_private;
++	struct device *dev = adap->dev;
++
++	if (drm_panel_prepare(adap->panel)) {
++		DRM_DEV_ERROR(dev, "Failed to prepare panel\n");
++		return;
++	}
++
++	if (drm_panel_enable(adap->panel)) {
++		DRM_DEV_ERROR(dev, "Failed to enable panel\n");
++		drm_panel_unprepare(adap->panel);
++	}
++}
++
++static void seiko_adapter_bridge_disable(struct drm_bridge *bridge)
++{
++	struct seiko_adapter *adap = bridge->driver_private;
++	struct device *dev = adap->dev;
++
++	if (drm_panel_disable(adap->panel)) {
++		DRM_DEV_ERROR(dev, "failed to disable panel\n");
++		return;
++	}
++
++	if (drm_panel_unprepare(adap->panel))
++		DRM_DEV_ERROR(dev, "failed to unprepare panel\n");
++}
++
++static const struct drm_bridge_funcs seiko_adapter_bridge_funcs = {
++	.enable = seiko_adapter_bridge_enable,
++	.disable = seiko_adapter_bridge_disable,
++	.attach = seiko_adapter_bridge_attach,
++	.detach = seiko_adapter_bridge_detach,
++};
++
++static int seiko_adapter_probe(struct platform_device *pdev)
++{
++	struct device *dev = &pdev->dev;
++	struct seiko_adapter *adap;
++	struct device_node *remote;
++	u32 bus_mode;
++	int port;
++
++	adap = devm_kzalloc(dev, sizeof(*adap), GFP_KERNEL);
++	if (!adap)
++		return -ENOMEM;
++
++	of_property_read_u32(dev->of_node, "bus_mode", &bus_mode);
++	if (bus_mode != 18 && bus_mode != 24) {
++		dev_err(dev, "Invalid bus_mode: %d\n", bus_mode);
++		return -EINVAL;
++	}
++
++	switch (bus_mode) {
++	case 18:
++		adap->bpc = 6;
++		adap->bus_format = MEDIA_BUS_FMT_RGB666_1X18;
++		break;
++	case 24:
++		adap->bpc = 8;
++		adap->bus_format = MEDIA_BUS_FMT_RGB888_1X24;
++		break;
++	}
++
++	for (port = 0; port < 2; port++) {
++		remote = of_graph_get_remote_node(dev->of_node, port, -1);
++		if (!remote) {
++			dev_err(dev, "No remote for port %d\n", port);
++			return -ENODEV;
++		}
++		adap->panel = of_drm_find_panel(remote);
++		if (!IS_ERR(adap->panel))
++			break;
++	}
++	if (IS_ERR(adap->panel)) {
++		dev_err(dev, "No panel found: %ld\n", PTR_ERR(adap->panel));
++		return PTR_ERR(adap->panel);
++	}
++
++	adap->dev = dev;
++	adap->bridge.driver_private = adap;
++	adap->bridge.funcs = &seiko_adapter_bridge_funcs;
++	adap->bridge.of_node = dev->of_node;
++
++	drm_bridge_add(&adap->bridge);
++
++	return 0;
++}
++
++static int seiko_adapter_remove(struct platform_device *pdev)
++{
++	return 0;
++}
++
++static const struct of_device_id seiko_adapter_dt_ids[] = {
++	{ .compatible = "nxp,seiko-43wvfig" },
++	{ /* sentinel */ }
++};
++MODULE_DEVICE_TABLE(of, seiko_adapter_dt_ids);
++
++static struct platform_driver seiko_adapter_driver = {
++	.probe		= seiko_adapter_probe,
++	.remove		= seiko_adapter_remove,
++	.driver		= {
++		.of_match_table = seiko_adapter_dt_ids,
++		.name	= "nxp-seiko-adapter",
++	},
++};
++
++module_platform_driver(seiko_adapter_driver);
++
++MODULE_AUTHOR("NXP Semiconductor");
++MODULE_DESCRIPTION("Seiko 43WVFIG adapter card driver");
++MODULE_LICENSE("GPL");
+-- 
+2.30.2
+

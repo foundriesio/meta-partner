@@ -1,0 +1,202 @@
+From cacf89a70a56790aa44d5b767e6ebcdf008b5381 Mon Sep 17 00:00:00 2001
+From: Felix Radensky <felix.r@variscite.com>
+Date: Sun, 31 May 2020 16:24:26 +0300
+Subject: [PATCH 904/981] sn65dsi83: Convert debug messages from dev_info() to
+ dev_dbg()
+
+---
+ .../gpu/drm/bridge/sn65dsi83/sn65dsi83_brg.c  | 18 +++++++--------
+ .../gpu/drm/bridge/sn65dsi83/sn65dsi83_drv.c  | 22 +++++++++----------
+ 2 files changed, 20 insertions(+), 20 deletions(-)
+
+diff --git a/drivers/gpu/drm/bridge/sn65dsi83/sn65dsi83_brg.c b/drivers/gpu/drm/bridge/sn65dsi83/sn65dsi83_brg.c
+index f4a7713635d6..2938ae3e365e 100644
+--- a/drivers/gpu/drm/bridge/sn65dsi83/sn65dsi83_brg.c
++++ b/drivers/gpu/drm/bridge/sn65dsi83/sn65dsi83_brg.c
+@@ -96,7 +96,7 @@
+ 
+ static int sn65dsi83_brg_power_on(struct sn65dsi83_brg *brg)
+ {
+-    dev_info(&brg->client->dev,"%s\n",__func__);
++    dev_dbg(&brg->client->dev,"%s\n",__func__);
+     gpiod_set_value_cansleep(brg->gpio_enable, 1);
+     /* Wait for 1ms for the internal voltage regulator to stabilize */
+     msleep(1);
+@@ -106,7 +106,7 @@ static int sn65dsi83_brg_power_on(struct sn65dsi83_brg *brg)
+ 
+ static void sn65dsi83_brg_power_off(struct sn65dsi83_brg *brg)
+ {
+-    dev_info(&brg->client->dev,"%s\n",__func__);
++    dev_dbg(&brg->client->dev,"%s\n",__func__);
+     gpiod_set_value_cansleep(brg->gpio_enable, 0);
+     /*
+      * The EN pin must be held low for at least 10 ms
+@@ -134,7 +134,7 @@ static int sn65dsi83_read(struct i2c_client *client, u8 reg)
+ {
+     int ret;
+ 
+-    dev_info(&client->dev, "client 0x%p", client);
++    dev_dbg(&client->dev, "client 0x%p", client);
+     ret = i2c_smbus_read_byte_data(client, reg);
+ 
+     if (ret < 0) {
+@@ -153,7 +153,7 @@ static int sn65dsi83_brg_start_stream(struct sn65dsi83_brg *brg)
+     int regval;
+     struct i2c_client *client = I2C_CLIENT(brg);
+ 
+-    dev_info(&client->dev,"%s\n",__func__);
++    dev_dbg(&client->dev,"%s\n",__func__);
+     /* Set the PLL_EN bit (CSR 0x0D.0) */
+     SN65DSI83_WRITE(SN65DSI83_PLL_EN, 0x1);
+     /* Wait for the PLL_LOCK bit to be set (CSR 0x0A.7) */
+@@ -164,7 +164,7 @@ static int sn65dsi83_brg_start_stream(struct sn65dsi83_brg *brg)
+ 
+     /* Read CHA Error register */
+     regval = SN65DSI83_READ(SN65DSI83_CHA_ERR);
+-    dev_info(&client->dev, "CHA (0x%02x) = 0x%02x",
++    dev_dbg(&client->dev, "CHA (0x%02x) = 0x%02x",
+          SN65DSI83_CHA_ERR, regval);
+ 
+     return 0;
+@@ -173,7 +173,7 @@ static int sn65dsi83_brg_start_stream(struct sn65dsi83_brg *brg)
+ static void sn65dsi83_brg_stop_stream(struct sn65dsi83_brg *brg)
+ {
+     struct i2c_client *client = I2C_CLIENT(brg);
+-    dev_info(&client->dev,"%s\n",__func__);
++    dev_dbg(&client->dev,"%s\n",__func__);
+     /* Clear the PLL_EN bit (CSR 0x0D.0) */
+     SN65DSI83_WRITE(SN65DSI83_PLL_EN, 0x00);
+ }
+@@ -228,7 +228,7 @@ static int sn65dsi83_brg_configure(struct sn65dsi83_brg *brg)
+     u32 dsi_clk = (((PIXCLK * BPP(brg)) / DSI_LANES(brg)) >> 1);
+ 
+     dev_info(&client->dev, "DSI clock [ %u ] Hz\n",dsi_clk);
+-    dev_info(&client->dev, "GeoMetry [ %d x %d ] Hz\n",HACTIVE,VACTIVE);
++    dev_info(&client->dev, "Resolution [ %d x %d ]\n",HACTIVE,VACTIVE);
+ 
+     /* Reset PLL_EN and SOFT_RESET registers */
+     SN65DSI83_WRITE(SN65DSI83_SOFT_RESET,0x00);
+@@ -352,7 +352,7 @@ static int sn65dsi83_brg_configure(struct sn65dsi83_brg *brg)
+ static int sn65dsi83_brg_setup(struct sn65dsi83_brg *brg)
+ {
+     struct i2c_client *client = I2C_CLIENT(brg);
+-    dev_info(&client->dev,"%s\n",__func__);
++    dev_dbg(&client->dev,"%s\n",__func__);
+     sn65dsi83_brg_power_on(brg);
+     return sn65dsi83_brg_configure(brg);
+ }
+@@ -362,7 +362,7 @@ static int sn65dsi83_brg_reset(struct sn65dsi83_brg *brg)
+     /* Soft Reset reg value at power on should be 0x00 */
+     struct i2c_client *client = I2C_CLIENT(brg);
+     int ret = SN65DSI83_READ(SN65DSI83_SOFT_RESET);
+-    dev_info(&client->dev,"%s\n",__func__);
++    dev_dbg(&client->dev,"%s\n",__func__);
+     if (ret != 0x00) {
+         dev_err(&client->dev,"Failed to reset the device");
+         return -ENODEV;
+diff --git a/drivers/gpu/drm/bridge/sn65dsi83/sn65dsi83_drv.c b/drivers/gpu/drm/bridge/sn65dsi83/sn65dsi83_drv.c
+index bad1589f8274..b866311a8ec8 100644
+--- a/drivers/gpu/drm/bridge/sn65dsi83/sn65dsi83_drv.c
++++ b/drivers/gpu/drm/bridge/sn65dsi83/sn65dsi83_drv.c
+@@ -54,7 +54,7 @@ static int sn65dsi83_connector_get_modes(struct drm_connector *connector)
+     u32 *bus_flags = &connector->display_info.bus_flags;
+     int ret;
+ 
+-    dev_info(dev, "%s\n",__func__);
++    dev_dbg(dev, "%s\n",__func__);
+     mode = drm_mode_create(connector->dev);
+     if (!mode) {
+         DRM_DEV_ERROR(dev, "Failed to create display mode!\n");
+@@ -97,7 +97,7 @@ sn65dsi83_connector_mode_valid(struct drm_connector *connector,
+ 	if (mode->clock > ( sn65dsi83->brg->vm.pixelclock / 1000 ))
+ 		return MODE_CLOCK_HIGH;
+ 
+-    dev_info(dev, "%s: mode: %d*%d@%d is valid\n",__func__,
++    dev_dbg(dev, "%s: mode: %d*%d@%d is valid\n",__func__,
+             mode->hdisplay,mode->vdisplay,mode->clock);
+     return MODE_OK;
+ }
+@@ -113,7 +113,7 @@ sn65dsi83_connector_detect(struct drm_connector *connector, bool force)
+     struct sn65dsi83 *sn65dsi83 = connector_to_sn65dsi83(connector);
+     struct device *dev = connector->dev->dev;
+     enum drm_connector_status status;
+-    dev_info(dev, "%s\n",__func__);
++    dev_dbg(dev, "%s\n",__func__);
+ 
+     status = connector_status_connected;
+     sn65dsi83->status = status;
+@@ -141,7 +141,7 @@ static struct sn65dsi83 *bridge_to_sn65dsi83(struct drm_bridge *bridge)
+ static void sn65dsi83_bridge_enable(struct drm_bridge *bridge)
+ {
+     struct sn65dsi83 *sn65dsi83 = bridge_to_sn65dsi83(bridge);
+-    dev_info(DRM_DEVICE(bridge),"%s\n",__func__);
++    dev_dbg(DRM_DEVICE(bridge),"%s\n",__func__);
+     sn65dsi83->brg->funcs->setup(sn65dsi83->brg);
+     sn65dsi83->brg->funcs->start_stream(sn65dsi83->brg);
+ }
+@@ -149,7 +149,7 @@ static void sn65dsi83_bridge_enable(struct drm_bridge *bridge)
+ static void sn65dsi83_bridge_disable(struct drm_bridge *bridge)
+ {
+     struct sn65dsi83 *sn65dsi83 = bridge_to_sn65dsi83(bridge);
+-    dev_info(DRM_DEVICE(bridge),"%s\n",__func__);
++    dev_dbg(DRM_DEVICE(bridge),"%s\n",__func__);
+     sn65dsi83->brg->funcs->stop_stream(sn65dsi83->brg);
+     sn65dsi83->brg->funcs->power_off(sn65dsi83->brg);
+ }
+@@ -159,7 +159,7 @@ static void sn65dsi83_bridge_mode_set(struct drm_bridge *bridge,
+                     const struct drm_display_mode *adj_mode)
+ {
+     struct sn65dsi83 *sn65dsi83 = bridge_to_sn65dsi83(bridge);
+-    dev_info(DRM_DEVICE(bridge), "%s: mode: %d*%d@%d\n",__func__,
++    dev_dbg(DRM_DEVICE(bridge), "%s: mode: %d*%d@%d\n",__func__,
+             mode->hdisplay,mode->vdisplay,mode->clock);
+     drm_mode_copy(&sn65dsi83->curr_mode, adj_mode);
+ }
+@@ -169,7 +169,7 @@ static int sn65dsi83_bridge_attach(struct drm_bridge *bridge)
+     struct sn65dsi83 *sn65dsi83 = bridge_to_sn65dsi83(bridge);
+     int ret;
+ 
+-    dev_info(DRM_DEVICE(bridge),"%s\n",__func__);
++    dev_dbg(DRM_DEVICE(bridge),"%s\n",__func__);
+     if (!bridge->encoder) {
+         DRM_ERROR("Parent encoder object not found");
+         return -ENODEV;
+@@ -258,7 +258,7 @@ static int sn65dsi83_probe(struct i2c_client *i2c,
+     struct device *dev = &i2c->dev;
+     int ret;
+ 
+-    dev_info(dev,"%s\n",__func__);
++    dev_dbg(dev,"%s\n",__func__);
+     if (!dev->of_node)
+         return -EINVAL;
+ 
+@@ -308,7 +308,7 @@ static int sn65dsi83_attach_dsi(struct sn65dsi83 *sn65dsi83)
+                            .node = NULL,
+                          };
+ 
+-    dev_info(dev, "%s\n",__func__);
++    dev_dbg(dev, "%s\n",__func__);
+     host = of_find_mipi_dsi_host_by_node(sn65dsi83->host_node);
+     if (!host) {
+         dev_err(dev, "failed to find dsi host\n");
+@@ -340,7 +340,7 @@ static int sn65dsi83_attach_dsi(struct sn65dsi83 *sn65dsi83)
+ static void sn65dsi83_detach_dsi(struct sn65dsi83 *sn65dsi83)
+ {
+     struct device *dev = &sn65dsi83->brg->client->dev;
+-    dev_info(dev, "%s\n",__func__);
++    dev_dbg(dev, "%s\n",__func__);
+     mipi_dsi_detach(sn65dsi83->dsi);
+     mipi_dsi_device_unregister(sn65dsi83->dsi);
+ }
+@@ -349,7 +349,7 @@ static int sn65dsi83_remove(struct i2c_client *i2c)
+ {
+     struct sn65dsi83 *sn65dsi83 = i2c_get_clientdata(i2c);
+     struct device *dev = &sn65dsi83->brg->client->dev;
+-    dev_info(dev, "%s\n",__func__);
++    dev_dbg(dev, "%s\n",__func__);
+ 
+     sn65dsi83_detach_dsi(sn65dsi83);
+     drm_bridge_remove(&sn65dsi83->bridge);
+-- 
+2.30.2
+

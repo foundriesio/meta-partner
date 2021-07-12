@@ -1,0 +1,66 @@
+From baccbe7060086427af9a81807e17936378957b47 Mon Sep 17 00:00:00 2001
+From: Valentin Raevsky <valentin@compulab.co.il>
+Date: Mon, 2 Sep 2019 14:59:50 +0300
+Subject: [PATCH 905/981] sn65dsi83: Add burst/sync option switch
+
+Signed-off-by: Valentin Raevsky <valentin@compulab.co.il>
+---
+ drivers/gpu/drm/bridge/sn65dsi83/sn65dsi83_brg.h | 1 +
+ drivers/gpu/drm/bridge/sn65dsi83/sn65dsi83_drv.c | 9 ++++++++-
+ 2 files changed, 9 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/gpu/drm/bridge/sn65dsi83/sn65dsi83_brg.h b/drivers/gpu/drm/bridge/sn65dsi83/sn65dsi83_brg.h
+index 9f23df8afedc..950ded1b6e03 100644
+--- a/drivers/gpu/drm/bridge/sn65dsi83/sn65dsi83_brg.h
++++ b/drivers/gpu/drm/bridge/sn65dsi83/sn65dsi83_brg.h
+@@ -26,6 +26,7 @@ struct sn65dsi83_brg {
+     u32 bpp;
+ 
+     u8 num_dsi_lanes;
++    u8 burst_mode;
+     struct sn65dsi83_brg_funcs *funcs;
+ };
+ struct sn65dsi83_brg *sn65dsi83_brg_get(void);
+diff --git a/drivers/gpu/drm/bridge/sn65dsi83/sn65dsi83_drv.c b/drivers/gpu/drm/bridge/sn65dsi83/sn65dsi83_drv.c
+index b866311a8ec8..3bcf9f7eebba 100644
+--- a/drivers/gpu/drm/bridge/sn65dsi83/sn65dsi83_drv.c
++++ b/drivers/gpu/drm/bridge/sn65dsi83/sn65dsi83_drv.c
+@@ -205,6 +205,7 @@ static int sn65dsi83_parse_dt(struct device_node *np,
+ {
+     struct device *dev = &sn65dsi83->brg->client->dev;
+     u32 num_lanes = 2, bpp = 24, format = 2, width = 149, height = 93;
++    u8 burst_mode = 0;
+     struct device_node *endpoint;
+ 
+     endpoint = of_graph_get_next_endpoint(np, NULL);
+@@ -222,12 +223,14 @@ static int sn65dsi83_parse_dt(struct device_node *np,
+     of_property_read_u32(np, "ti,lvds-bpp", &bpp);
+     of_property_read_u32(np, "ti,width-mm", &width);
+     of_property_read_u32(np, "ti,height-mm", &height);
++    burst_mode = of_property_read_bool(np, "ti,burst-mode");
+ 
+     if (num_lanes < 1 || num_lanes > 4) {
+         dev_err(dev, "Invalid dsi-lanes: %d\n", num_lanes);
+         return -EINVAL;
+     }
+     sn65dsi83->brg->num_dsi_lanes = num_lanes;
++    sn65dsi83->brg->burst_mode = burst_mode;
+ 
+     sn65dsi83->brg->gpio_enable = devm_gpiod_get(dev, "enable", GPIOD_OUT_LOW);
+     if (IS_ERR(sn65dsi83->brg->gpio_enable)) {
+@@ -326,7 +329,11 @@ static int sn65dsi83_attach_dsi(struct sn65dsi83 *sn65dsi83)
+ 
+     dsi->lanes = sn65dsi83->brg->num_dsi_lanes;
+     dsi->format = MIPI_DSI_FMT_RGB888;
+-    dsi->mode_flags = MIPI_DSI_MODE_VIDEO | MIPI_DSI_MODE_VIDEO_BURST;
++    dsi->mode_flags = MIPI_DSI_MODE_VIDEO;
++    if (sn65dsi83->brg->burst_mode)
++        dsi->mode_flags |= MIPI_DSI_MODE_VIDEO_BURST;
++    else
++        dsi->mode_flags |= MIPI_DSI_MODE_VIDEO_SYNC_PULSE;
+ 
+     ret = mipi_dsi_attach(dsi);
+     if (ret < 0) {
+-- 
+2.30.2
+

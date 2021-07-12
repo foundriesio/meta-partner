@@ -1,0 +1,212 @@
+From 8fe9291280cf8cee0c1bf57f9caafb50f5e450f7 Mon Sep 17 00:00:00 2001
+From: Felix Radensky <felix.r@variscite.com>
+Date: Thu, 18 Jun 2020 18:08:35 +0300
+Subject: [PATCH 908/981] sn65dsi83: Add dual channel support
+
+---
+ .../gpu/drm/bridge/sn65dsi83/sn65dsi83_brg.c  | 70 ++++++++++++-------
+ .../gpu/drm/bridge/sn65dsi83/sn65dsi83_brg.h  |  1 +
+ .../gpu/drm/bridge/sn65dsi83/sn65dsi83_drv.c  | 13 ++++
+ 3 files changed, 60 insertions(+), 24 deletions(-)
+
+diff --git a/drivers/gpu/drm/bridge/sn65dsi83/sn65dsi83_brg.c b/drivers/gpu/drm/bridge/sn65dsi83/sn65dsi83_brg.c
+index d402c12d5332..1d4e34f8bc10 100644
+--- a/drivers/gpu/drm/bridge/sn65dsi83/sn65dsi83_brg.c
++++ b/drivers/gpu/drm/bridge/sn65dsi83/sn65dsi83_brg.c
+@@ -56,7 +56,9 @@
+     #define VS_NEG_POLARITY_SHIFT 5
+     #define LVDS_LINK_CFG_SHIFT   4
+     #define CHA_24BPP_MODE_SHIFT  3
++    #define CHB_24BPP_MODE_SHIFT  2
+     #define CHA_24BPP_FMT1_SHIFT  1
++    #define CHB_24BPP_FMT1_SHIFT  0
+ 
+ #define SN65DSI83_LVDS_SIGN           0x19
+ #define SN65DSI83_LVDS_TERM           0x1A
+@@ -232,6 +234,10 @@ static int sn65dsi83_brg_configure(struct sn65dsi83_brg *brg)
+     struct videomode *vm = VM(brg);
+ 
+     u32 dsi_clk = (((PIXCLK * BPP(brg)) / DSI_LANES(brg)) >> 1);
++    bool dual_channel_lvds = (brg->num_channels == 2);
++    u32 lvds_clk = dual_channel_lvds ? (PIXCLK >> 1) : PIXCLK;
++    u32 cha_hsync_width = dual_channel_lvds ? (HPW >> 1) : HPW;
++    u32 cha_horz_backporch = dual_channel_lvds ? (HBP >> 1) : HBP;
+ 
+     dev_info(&client->dev, "DSI clock [ %u ] Hz\n",dsi_clk);
+     dev_info(&client->dev, "Resolution [ %d x %d ]\n",HACTIVE,VACTIVE);
+@@ -241,11 +247,13 @@ static int sn65dsi83_brg_configure(struct sn65dsi83_brg *brg)
+     SN65DSI83_WRITE(SN65DSI83_PLL_EN,0x00);
+ 
+     /* LVDS clock setup */
+-    if  ((25000000 <= PIXCLK) && (PIXCLK < 37500000))
++    if ((25000000 <= lvds_clk) && (lvds_clk < 37500000))
+         regval = 0;
+     else
+         regval = sn65dsi83_calk_clk_range(0x01, 0x05, 37500000, 25000000,
+-                    PIXCLK);
++                    lvds_clk);
++
++    dev_info(&client->dev, "lvds_clk=%u lvds_clk_range=0x%x\n", lvds_clk, regval);
+ 
+     if (regval < 0) {
+         dev_err(&client->dev, "failed to configure LVDS clock");
+@@ -263,14 +271,19 @@ static int sn65dsi83_brg_configure(struct sn65dsi83_brg *brg)
+         return -EINVAL;
+     }
+     SN65DSI83_WRITE(SN65DSI83_CHA_DSI_CLK_RNG,regval);
++    SN65DSI83_WRITE(SN65DSI83_CHB_DSI_CLK_RNG,0x00);
++
++    dev_info(&client->dev, "dsi_clk_range=0x%x\n", regval);
+ 
+     /* DSI clock divider */
+-    regval = sn65dsi83_calk_div(0x0, 0x18, 1, 1, dsi_clk, PIXCLK);
++    regval = sn65dsi83_calk_div(0x0, 0x18, 1, 1, dsi_clk, lvds_clk);
+     if (regval < 0) {
+         dev_err(&client->dev, "failed to calculate DSI clock divider");
+         return -EINVAL;
+     }
+ 
++    dev_info(&client->dev, "dsi_clk_div=0x%x\n", regval);
++
+     regval = regval << DSI_CLK_DIV_SHIFT;
+     SN65DSI83_WRITE(SN65DSI83_PLL_DIV,regval);
+ 
+@@ -295,13 +308,17 @@ static int sn65dsi83_brg_configure(struct sn65dsi83_brg *brg)
+     if (brg->de_neg_polarity)
+         regval |= (1 << DE_NEG_POLARITY_SHIFT);
+ 
+-    if (BPP(brg) == 24)
++    if (BPP(brg) == 24) {
+         regval |= (1 << CHA_24BPP_MODE_SHIFT);
++        regval |= (1 << CHB_24BPP_MODE_SHIFT);
++    }
+ 
+-    if (FORMAT(brg) == 1)
++    if (FORMAT(brg) == 1) {
+         regval |= (1 << CHA_24BPP_FMT1_SHIFT);
++        regval |= (1 << CHB_24BPP_FMT1_SHIFT);
++    }
+ 
+-    regval |= (1 << LVDS_LINK_CFG_SHIFT);
++    regval |= ((dual_channel_lvds ? 0 : 1) << LVDS_LINK_CFG_SHIFT);
+     SN65DSI83_WRITE(SN65DSI83_LVDS_MODE,regval);
+ 
+     /* Voltage and pins */
+@@ -313,45 +330,50 @@ static int sn65dsi83_brg_configure(struct sn65dsi83_brg *brg)
+     SN65DSI83_WRITE(SN65DSI83_CHA_SYNC_DELAY_LO,0x21);
+     SN65DSI83_WRITE(SN65DSI83_CHA_SYNC_DELAY_HI,0x00);
+ 
++    SN65DSI83_WRITE(SN65DSI83_CHB_SYNC_DELAY_LO,0x00);
++    SN65DSI83_WRITE(SN65DSI83_CHB_SYNC_DELAY_HI,0x00);
++
+     /* Geometry */
+     SN65DSI83_WRITE(SN65DSI83_CHA_LINE_LEN_LO,LOW(HACTIVE));
+     SN65DSI83_WRITE(SN65DSI83_CHA_LINE_LEN_HI,HIGH(HACTIVE));
+ 
++    SN65DSI83_WRITE(SN65DSI83_CHB_LINE_LEN_LO,0x00);
++    SN65DSI83_WRITE(SN65DSI83_CHB_LINE_LEN_HI,0x00);
++
+     SN65DSI83_WRITE(SN65DSI83_CHA_VERT_LINES_LO,LOW(VACTIVE));
+     SN65DSI83_WRITE(SN65DSI83_CHA_VERT_LINES_HI,HIGH(VACTIVE));
+ 
+-    SN65DSI83_WRITE(SN65DSI83_CHA_HSYNC_WIDTH_LO,LOW(HPW));
++    SN65DSI83_WRITE(SN65DSI83_CHB_VERT_LINES_LO,0x00);
++    SN65DSI83_WRITE(SN65DSI83_CHB_VERT_LINES_HI,0x00);
++
++    SN65DSI83_WRITE(SN65DSI83_CHA_HSYNC_WIDTH_LO,LOW(cha_hsync_width));
+     SN65DSI83_WRITE(SN65DSI83_CHA_HSYNC_WIDTH_HI,HIGH(HPW));
+ 
++    SN65DSI83_WRITE(SN65DSI83_CHB_HSYNC_WIDTH_LO,0x00);
++    SN65DSI83_WRITE(SN65DSI83_CHB_HSYNC_WIDTH_HI,0x00);
++
+     SN65DSI83_WRITE(SN65DSI83_CHA_VSYNC_WIDTH_LO,LOW(VPW));
+     SN65DSI83_WRITE(SN65DSI83_CHA_VSYNC_WIDTH_HI,HIGH(VPW));
+ 
+-    SN65DSI83_WRITE(SN65DSI83_CHA_HORZ_BACKPORCH,LOW(HBP));
++    SN65DSI83_WRITE(SN65DSI83_CHB_VSYNC_WIDTH_LO,0x00);
++    SN65DSI83_WRITE(SN65DSI83_CHB_VSYNC_WIDTH_HI,0x00);
++
++    SN65DSI83_WRITE(SN65DSI83_CHA_HORZ_BACKPORCH,LOW(cha_horz_backporch));
+     SN65DSI83_WRITE(SN65DSI83_CHA_VERT_BACKPORCH,LOW(VBP));
+ 
++    SN65DSI83_WRITE(SN65DSI83_CHB_HORZ_BACKPORCH,0x00);
++    SN65DSI83_WRITE(SN65DSI83_CHB_VERT_BACKPORCH,0x00);
++
+     SN65DSI83_WRITE(SN65DSI83_CHA_HORZ_FRONTPORCH,LOW(HFP));
+     SN65DSI83_WRITE(SN65DSI83_CHA_VERT_FRONTPORCH,LOW(VFP));
+ 
++    SN65DSI83_WRITE(SN65DSI83_CHB_HORZ_FRONTPORCH,0x00);
++    SN65DSI83_WRITE(SN65DSI83_CHB_VERT_FRONTPORCH,0x00);
++
+     SN65DSI83_WRITE(SN65DSI83_TEST_PATTERN,0x00);
+     SN65DSI83_WRITE(SN65DSI83_REG_3D,0x00);
+     SN65DSI83_WRITE(SN65DSI83_REG_3E,0x00);
+ 
+-    /* mute channel B */
+-    SN65DSI83_WRITE(SN65DSI83_CHB_DSI_CLK_RNG, 0x00);
+-    SN65DSI83_WRITE(SN65DSI83_CHB_LINE_LEN_LO, 0x00);
+-    SN65DSI83_WRITE(SN65DSI83_CHB_LINE_LEN_HI, 0x00);
+-    SN65DSI83_WRITE(SN65DSI83_CHB_VERT_LINES_LO, 0x00);
+-    SN65DSI83_WRITE(SN65DSI83_CHB_VERT_LINES_HI, 0x00);
+-    SN65DSI83_WRITE(SN65DSI83_CHB_SYNC_DELAY_LO, 0x00);
+-    SN65DSI83_WRITE(SN65DSI83_CHB_SYNC_DELAY_HI, 0x00);
+-    SN65DSI83_WRITE(SN65DSI83_CHB_HSYNC_WIDTH_LO, 0x00);
+-    SN65DSI83_WRITE(SN65DSI83_CHB_HSYNC_WIDTH_HI, 0x00);
+-    SN65DSI83_WRITE(SN65DSI83_CHB_VSYNC_WIDTH_LO, 0x00);
+-    SN65DSI83_WRITE(SN65DSI83_CHB_VSYNC_WIDTH_HI, 0x00);
+-    SN65DSI83_WRITE(SN65DSI83_CHB_HORZ_BACKPORCH, 0x00);
+-    SN65DSI83_WRITE(SN65DSI83_CHB_VERT_BACKPORCH, 0x00);
+-    SN65DSI83_WRITE(SN65DSI83_CHB_HORZ_FRONTPORCH, 0x00);
+-    SN65DSI83_WRITE(SN65DSI83_CHB_VERT_FRONTPORCH, 0x00);
+     return 0;
+ }
+ 
+diff --git a/drivers/gpu/drm/bridge/sn65dsi83/sn65dsi83_brg.h b/drivers/gpu/drm/bridge/sn65dsi83/sn65dsi83_brg.h
+index 0aceb0a16952..23ce96a62eb8 100644
+--- a/drivers/gpu/drm/bridge/sn65dsi83/sn65dsi83_brg.h
++++ b/drivers/gpu/drm/bridge/sn65dsi83/sn65dsi83_brg.h
+@@ -29,6 +29,7 @@ struct sn65dsi83_brg {
+     u8 num_dsi_lanes;
+     u8 burst_mode;
+     u8 de_neg_polarity;
++    u8 num_channels;
+     struct sn65dsi83_brg_funcs *funcs;
+ };
+ struct sn65dsi83_brg *sn65dsi83_brg_get(void);
+diff --git a/drivers/gpu/drm/bridge/sn65dsi83/sn65dsi83_drv.c b/drivers/gpu/drm/bridge/sn65dsi83/sn65dsi83_drv.c
+index 534781255c68..254d635c3913 100644
+--- a/drivers/gpu/drm/bridge/sn65dsi83/sn65dsi83_drv.c
++++ b/drivers/gpu/drm/bridge/sn65dsi83/sn65dsi83_drv.c
+@@ -205,6 +205,7 @@ static int sn65dsi83_parse_dt(struct device_node *np,
+ {
+     struct device *dev = &sn65dsi83->brg->client->dev;
+     u32 num_lanes = 2, bpp = 24, format = 2, width = 149, height = 93;
++    u32 num_channels;
+     u8 burst_mode = 0;
+     u8 de_neg_polarity = 0;
+     struct device_node *endpoint;
+@@ -231,9 +232,21 @@ static int sn65dsi83_parse_dt(struct device_node *np,
+         dev_err(dev, "Invalid dsi-lanes: %d\n", num_lanes);
+         return -EINVAL;
+     }
++
++    if (of_property_read_u32(np, "ti,lvds-channels", &num_channels) < 0) {
++        dev_info(dev, "lvds-channels property not found, using default\n");
++        num_channels = 1;
++    } else {
++        if (num_channels < 1 || num_channels > 2 ) {
++            dev_err(dev, "lvds-channels must be 1 or 2, not %u", num_channels);
++            return -EINVAL;
++        }
++    }
++
+     sn65dsi83->brg->num_dsi_lanes = num_lanes;
+     sn65dsi83->brg->burst_mode = burst_mode;
+     sn65dsi83->brg->de_neg_polarity = de_neg_polarity;
++    sn65dsi83->brg->num_channels = num_channels;
+ 
+     sn65dsi83->brg->gpio_enable = devm_gpiod_get(dev, "enable", GPIOD_OUT_LOW);
+     if (IS_ERR(sn65dsi83->brg->gpio_enable)) {
+-- 
+2.30.2
+
