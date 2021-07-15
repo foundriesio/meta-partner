@@ -1,17 +1,17 @@
-From 01b854bd79d4a9d7bcf2c6f38297cc155ee0a6e5 Mon Sep 17 00:00:00 2001
+From bc0975841659db380d8419ad5d20d58b8c68810a Mon Sep 17 00:00:00 2001
 From: Felix Radensky <felix.r@variscite.com>
 Date: Mon, 11 May 2020 09:00:57 +0300
-Subject: [PATCH 01/31] imx8m: drivers/ddr: Add support for specifying DDR PHY
+Subject: [PATCH] imx8m: drivers/ddr: Add support for specifying DDR PHY
  firmware offset
 
 By default DDR PHY firmware is located at offset 0 from SPL image.
 Add option to explicitly specify DDR PHY firmware offset.
 ---
  arch/arm/include/asm/arch-imx8m/ddr.h | 4 +++-
- drivers/ddr/imx/imx8m/Kconfig         | 4 ++++
+ drivers/ddr/imx/imx8m/Kconfig         | 3 +++
  drivers/ddr/imx/imx8m/ddrphy_train.c  | 3 ++-
  drivers/ddr/imx/imx8m/helper.c        | 4 ++--
- 4 files changed, 11 insertions(+), 4 deletions(-)
+ 4 files changed, 10 insertions(+), 4 deletions(-)
 
 diff --git a/arch/arm/include/asm/arch-imx8m/ddr.h b/arch/arm/include/asm/arch-imx8m/ddr.h
 index 0f1e832c03..b015cfcb79 100644
@@ -36,14 +36,13 @@ index 0f1e832c03..b015cfcb79 100644
  int ddr_cfg_phy(struct dram_timing_info *timing_info);
  void load_lpddr4_phy_pie(void);
 diff --git a/drivers/ddr/imx/imx8m/Kconfig b/drivers/ddr/imx/imx8m/Kconfig
-index b436b3b2f1..d1fb96fa26 100644
+index dcae464356..a68cf34e75 100644
 --- a/drivers/ddr/imx/imx8m/Kconfig
 +++ b/drivers/ddr/imx/imx8m/Kconfig
-@@ -39,4 +39,8 @@ config IMX8M_DRAM_INLINE_ECC
- 	help
- 	  Select this config if you want to use inline ecc feature for
- 	  imx8mp-evk board.
-+
+@@ -47,4 +47,7 @@ config IMX8M_VDD_SOC_850MV
+ config IMX8M_LPDDR4_FREQ0_2400MTS
+ 	bool "imx8m PDDR4 freq0 change from 4000MTS to 2400MTS"
+ 
 +config IMX8M_DDRPHY_FW_OFFSET
 +	int "Offset of DDR PHY firmware from the end of the SPL image"
 +	default 0
