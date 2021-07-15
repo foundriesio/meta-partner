@@ -4,7 +4,6 @@ SRC_URI += " \
         file://kernel-meta/bsp/imx/imx8mm_var_dart.cfg \
         file://kernel-meta/bsp/imx/imx8mm_var_dart.scc   \
         file://kernel-meta/bsp/imx/imx8mm_var_dart-standard.scc \
-        file://0107-LF-811-1-drm-bridge-Add-driver-for-legacy-Freescale-.patch \
         file://0901-sn65dsi83-Add-dsi2lvds-bridge.patch \
         file://0902-sn65dsi83-Fix-complation-failures.patch \
         file://0903-sn65dsi83-Fix-Kconfig-help-messages.patch \
