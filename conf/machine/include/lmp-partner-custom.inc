@@ -6,3 +6,5 @@ PREFERRED_PROVIDER_virtual/dtb_imx8mm-var-dart = "lmp-device-tree"
 SOTA_CLIENT_FEATURES_append_imx8mm-var-dart = " ubootenv"
 UBOOT_MACHINE_imx8mm-var-dart = "imx8mm_var_dart_defconfig"
 BOOTSCR_LOAD_ADDR_imx8mm-var-dart = "0x44800000"
+ 
+IMAGE_BOOT_FILES_imx8mm-var-dart = "imx-boot u-boot.itb ${KERNEL_IMAGETYPE} boot.scr uEnv.txt devicetree/*"
