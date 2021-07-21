@@ -45,4 +45,4 @@ include features/tee/tee.scc
 
 include cfg/usb-mass-storage.scc
 
-kconf hardware imx8mm_var_dart.cfg
+kconf hardware imx8mm_var_som_symphony.cfg

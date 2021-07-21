@@ -1,4 +1,4 @@
-SRC_URI_append_imx8mm-var-dart = " \
+SRC_URI_append_imx8mm-var-som-symphony = " \
     file://0001-imx8m-drivers-ddr-Add-support-for-specifying-DDR-PHY.patch \
     file://0002-imx8m-drivers-ddr-Change-padding-of-DDR4-and-LPDDR4-.patch \
     file://0003-pmic-bd71837-Produce-less-verbose-output.patch \
