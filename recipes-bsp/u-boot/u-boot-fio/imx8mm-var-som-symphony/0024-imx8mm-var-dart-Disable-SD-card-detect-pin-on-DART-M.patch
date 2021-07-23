@@ -1,8 +1,8 @@
-From ba15b705d5f642ac32cde61fa47366e53931a4dc Mon Sep 17 00:00:00 2001
+From dd1bc44b9e75ef44ad1f2193553836c1bcafc802 Mon Sep 17 00:00:00 2001
 From: Felix Radensky <felix.r@variscite.com>
 Date: Tue, 5 Jan 2021 10:27:56 +0200
-Subject: [PATCH 24/31] imx8mm-var-dart: Disable SD card detect pin on
- DART-MX8M-MINI and VAR-SOM-MX8M-MINI
+Subject: [PATCH] imx8mm-var-dart: Disable SD card detect pin on DART-MX8M-MINI
+ and VAR-SOM-MX8M-MINI
 
 ---
  arch/arm/dts/imx8mm-var-common-u-boot.dtsi   |  4 ----
@@ -89,6 +89,3 @@ index f957dd9c12..baa4e6d707 100644
  	bus-width = <4>;
  	vmmc-supply = <&reg_usdhc2_vmmc>;
  	status = "okay";
--- 
-2.25.1
-

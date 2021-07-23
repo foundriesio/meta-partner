@@ -1,8 +1,8 @@
-From eb58435a24cc098252c1456f7904f718167446bf Mon Sep 17 00:00:00 2001
+From 6061bb6eb8d7e491770985351506d24cd708aa88 Mon Sep 17 00:00:00 2001
 From: Felix Radensky <felix.r@variscite.com>
 Date: Wed, 10 Mar 2021 19:04:17 +0200
-Subject: [PATCH 27/31] imx8mm-var-dart: Recognize VAR-SOM-MX8M-MINI revisions
- 1.2 and 1.3
+Subject: [PATCH] imx8mm-var-dart: Recognize VAR-SOM-MX8M-MINI revisions 1.2
+ and 1.3
 
 ---
  .../imx8mm_var_dart/imx8mm_var_dart.c         | 27 +++++++++++++++----
@@ -71,6 +71,3 @@ index 0f3b1a5694..402e8707c1 100644
  	UNKNOWN_REV
  };
  
--- 
-2.25.1
-

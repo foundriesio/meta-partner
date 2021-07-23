@@ -1,7 +1,7 @@
-From 6a6662f7495663539a40a749ddfd58607d59f43c Mon Sep 17 00:00:00 2001
+From 05a49135deb1d7897aa3141625596741f666e435 Mon Sep 17 00:00:00 2001
 From: Felix Radensky <felix.r@variscite.com>
 Date: Sun, 31 May 2020 12:51:22 +0300
-Subject: [PATCH 08/31] variscite: Add common MMC code
+Subject: [PATCH] variscite: Add common MMC code
 
 ---
  board/variscite/common/mmc.c | 47 ++++++++++++++++++++++++++++++++++++
@@ -61,6 +61,3 @@ index 0000000000..d9e4e6d76a
 +	sprintf(cmd, "mmc dev %d", dev_no);
 +	run_command(cmd, 0);
 +}
--- 
-2.25.1
-

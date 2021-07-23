@@ -1,7 +1,7 @@
-From 5ec3ab6e7671e92375d66c92386722c769fd4684 Mon Sep 17 00:00:00 2001
+From 020bc0077ff3e1e2dfa31e25472d6d5ebfcfa774 Mon Sep 17 00:00:00 2001
 From: Felix Radensky <felix.r@variscite.com>
 Date: Mon, 18 Feb 2019 14:14:51 +0200
-Subject: [PATCH 03/31] pmic: bd71837: Produce less verbose output
+Subject: [PATCH] pmic: bd71837: Produce less verbose output
 
 ---
  drivers/power/pmic/pmic_bd71837.c | 2 +-
@@ -20,6 +20,3 @@ index 74195ccae8..59f3596196 100644
  
  	return 0;
  }
--- 
-2.25.1
-

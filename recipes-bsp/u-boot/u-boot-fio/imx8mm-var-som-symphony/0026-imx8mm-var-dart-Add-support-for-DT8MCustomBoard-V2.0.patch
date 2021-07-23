@@ -1,7 +1,7 @@
-From 805ccca1c8a114ec518fab4b1d8bba1ae940c25f Mon Sep 17 00:00:00 2001
+From 8876f2fa6360790f4520bedcbad154798a462e45 Mon Sep 17 00:00:00 2001
 From: Felix Radensky <felix.r@variscite.com>
 Date: Tue, 16 Feb 2021 16:33:45 +0200
-Subject: [PATCH 26/31] imx8mm-var-dart: Add support for DT8MCustomBoard V2.0
+Subject: [PATCH] imx8mm-var-dart: Add support for DT8MCustomBoard V2.0
 
 ---
  .../imx8mm_var_dart/imx8mm_var_dart.c         | 38 ++++++++++++++++++-
@@ -106,6 +106,3 @@ index 5fcebcc0e6..3fa6db9ddb 100644
  			"fi; " \
  		"fi; \0" \
  	"loadfdt=run findfdt; " \
--- 
-2.25.1
-

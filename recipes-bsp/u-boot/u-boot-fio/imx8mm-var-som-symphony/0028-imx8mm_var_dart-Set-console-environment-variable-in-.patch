@@ -1,11 +1,12 @@
-From beda5987a4a7b75501278e1d775199d521ec0111 Mon Sep 17 00:00:00 2001
+From 25416a09798563023e1822e71150f0d9e9c36783 Mon Sep 17 00:00:00 2001
 From: Felix Radensky <felix.r@variscite.com>
 Date: Wed, 19 May 2021 18:25:54 +0300
-Subject: [PATCH 28/31] imx8mm_var_dart: Set console environment variable in
- the default environment
+Subject: [PATCH] imx8mm_var_dart: Set console environment variable in the
+ default environment
 
 Instead of defining the console environment variable in the source code
 do it in the default environment.
+
 ---
  board/variscite/imx8mm_var_dart/imx8mm_var_dart.c |  1 -
  include/configs/imx8mm_var_dart.h                 | 14 +++++++++++---
@@ -62,6 +63,3 @@ index 3fa6db9ddb..0045663f33 100644
  		"root=/dev/nfs ${cma_size} " \
  		"ip=dhcp nfsroot=${serverip}:${nfsroot},v3,tcp\0" \
  	"netboot=echo Booting from net ...; " \
--- 
-2.25.1
-

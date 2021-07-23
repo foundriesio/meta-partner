@@ -1,7 +1,7 @@
-From dc1cf5808cf9c83e5f0a8e7c3a243ac1ece57bf6 Mon Sep 17 00:00:00 2001
+From d391365eab989fb93d7037469a0122c1a708414d Mon Sep 17 00:00:00 2001
 From: Felix Radensky <felix.r@variscite.com>
 Date: Sun, 23 Aug 2020 09:53:55 +0300
-Subject: [PATCH 11/31] variscite: Add common EEPROM code
+Subject: [PATCH] variscite: Add common EEPROM code
 
 ---
  board/variscite/common/imx8_eeprom.c | 342 +++++++++++++++++++++++++++
@@ -439,6 +439,3 @@ index 0000000000..2907b57856
 +#endif
 +
 +#endif /* _MX8M_VAR_EEPROM_H_ */
--- 
-2.25.1
-

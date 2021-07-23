@@ -1,10 +1,12 @@
-From c800c16d50175e0dfea3a60c11273d47f5643b7f Mon Sep 17 00:00:00 2001
+From 0fd84387518923b6e8a1fea15399b93e7b89f929 Mon Sep 17 00:00:00 2001
 From: Nate Drude <nate.d@variscite.com>
 Date: Mon, 19 Oct 2020 16:34:49 -0500
-Subject: [PATCH 13/31] imx8mm_var_dart: Add Variscite DART-MX8M-MINI and
+Subject: [PATCH] imx8mm_var_dart: Add Variscite DART-MX8M-MINI and
+
  VAR-SOM-MX8M-MINI support
 
 Signed-off-by: Nate Drude <nate.d@variscite.com>
+
 ---
  arch/arm/dts/Makefile                         |    3 +
  arch/arm/dts/imx8mm-var-common-u-boot.dtsi    |  127 ++
@@ -47,11 +49,11 @@ Signed-off-by: Nate Drude <nate.d@variscite.com>
  create mode 100644 include/configs/imx8mm_var_dart.h
 
 diff --git a/arch/arm/dts/Makefile b/arch/arm/dts/Makefile
-index 638fbdfd3b..af4373cbf5 100644
+index 3174f2e2a5..1a9e461129 100644
 --- a/arch/arm/dts/Makefile
 +++ b/arch/arm/dts/Makefile
-@@ -790,6 +790,9 @@ dtb-$(CONFIG_ARCH_IMX8M) += \
- 	imx8mm-verdin.dtb \
+@@ -792,6 +792,9 @@ dtb-$(CONFIG_ARCH_IMX8M) += \
+ 	imx8mn-ddr3l-evk.dtb \
  	imx8mn-ddr4-evk.dtb \
  	imx8mn-evk.dtb \
 +	imx8mm-var-dart.dtb \
@@ -1593,10 +1595,10 @@ index 0000000000..60de6f4f30
 +	status = "okay";
 +};
 diff --git a/arch/arm/mach-imx/imx8m/Kconfig b/arch/arm/mach-imx/imx8m/Kconfig
-index ca840dde3d..596ec3f22a 100644
+index 51c93d6ac5..a3b28a557f 100644
 --- a/arch/arm/mach-imx/imx8m/Kconfig
 +++ b/arch/arm/mach-imx/imx8m/Kconfig
-@@ -120,6 +120,14 @@ config TARGET_IMX8MN_DDR4_AB2
+@@ -145,6 +145,14 @@ config TARGET_IMX8MN_DDR4_AB2
  	select SUPPORT_SPL
  	select IMX8M_DDR4
  
@@ -1611,7 +1613,7 @@ index ca840dde3d..596ec3f22a 100644
  config TARGET_VERDIN_IMX8MM
         bool "Support Toradex Verdin iMX8M Mini module"
         select IMX8MM
-@@ -141,6 +149,7 @@ source "board/freescale/imx8mm_evk/Kconfig"
+@@ -166,6 +174,7 @@ source "board/freescale/imx8mm_evk/Kconfig"
  source "board/freescale/imx8mm_val/Kconfig"
  source "board/freescale/imx8mn_evk/Kconfig"
  source "board/freescale/imx8mp_evk/Kconfig"
@@ -4313,6 +4315,3 @@ index 0000000000..ff28538c77
 +#define CONFIG_USB_MAX_CONTROLLER_COUNT	2
 +
 +#endif
--- 
-2.25.1
-

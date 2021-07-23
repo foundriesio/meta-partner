@@ -1,10 +1,12 @@
-From 8e69038c64d4592fd37bcc05252d749fcff610e4 Mon Sep 17 00:00:00 2001
+From dea7264dea85cf33a771dae2f1d2267cc6b034c5 Mon Sep 17 00:00:00 2001
 From: Nate Drude <nate.d@variscite.com>
 Date: Sat, 7 Nov 2020 17:15:27 -0600
-Subject: [PATCH 14/31] imx8mm-var-dart: Separate som and carrier device tree
+Subject: [PATCH] imx8mm-var-dart: Separate som and carrier device tree
+
  files
 
 Signed-off-by: Nate Drude <nate.d@variscite.com>
+
 ---
  arch/arm/dts/Makefile                         |   2 +-
  ...> imx8mm-var-dart-customboard-u-boot.dtsi} |   0
@@ -19,11 +21,11 @@ Signed-off-by: Nate Drude <nate.d@variscite.com>
  rename arch/arm/dts/{imx8mm-var-dart.dts => imx8mm-var-dart.dtsi} (60%)
 
 diff --git a/arch/arm/dts/Makefile b/arch/arm/dts/Makefile
-index af4373cbf5..d247a271a4 100644
+index 1a9e461129..8e85990a74 100644
 --- a/arch/arm/dts/Makefile
 +++ b/arch/arm/dts/Makefile
-@@ -790,7 +790,7 @@ dtb-$(CONFIG_ARCH_IMX8M) += \
- 	imx8mm-verdin.dtb \
+@@ -792,7 +792,7 @@ dtb-$(CONFIG_ARCH_IMX8M) += \
+ 	imx8mn-ddr3l-evk.dtb \
  	imx8mn-ddr4-evk.dtb \
  	imx8mn-evk.dtb \
 -	imx8mm-var-dart.dtb \
@@ -526,6 +528,3 @@ index ff28538c77..044d269cd9 100644
  			"fi; " \
  		"fi; \0" \
  	"loadfdt=run findfdt; " \
--- 
-2.25.1
-

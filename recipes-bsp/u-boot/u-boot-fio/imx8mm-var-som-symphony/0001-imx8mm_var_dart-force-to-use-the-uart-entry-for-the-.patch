@@ -1,10 +1,11 @@
-From 85ff2d93dc94e34dde3f4ea1219d5f3f8b1f5df7 Mon Sep 17 00:00:00 2001
+From 7f9d376362ec36ba35d61087c49ec1ad2b1fbfb3 Mon Sep 17 00:00:00 2001
 From: Vanessa Maegima <vanessa.maegima@foundries.io>
 Date: Thu, 8 Jul 2021 18:08:58 -0300
 Subject: [PATCH] imx8mm_var_dart: force to use the uart entry for the som
  board
 
 Signed-off-by: Vanessa Maegima <vanessa.maegima@foundries.io>
+
 ---
  board/variscite/imx8mm_var_dart/imx8mm_var_dart.c | 11 +++--------
  include/configs/imx8mm_var_dart.h                 |  2 +-
@@ -45,6 +46,3 @@ index ea6eebc33e..5be769e3b6 100644
  
  /* Monitor Command Prompt */
  #define CONFIG_SYS_PROMPT_HUSH_PS2	"> "
--- 
-2.25.1
-

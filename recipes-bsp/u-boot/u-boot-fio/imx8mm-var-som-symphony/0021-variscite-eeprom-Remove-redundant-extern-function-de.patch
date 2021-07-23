@@ -1,7 +1,7 @@
-From 1e0b67811306248c3331b76137d6252683426006 Mon Sep 17 00:00:00 2001
+From 091e8e5bd2fdc3f479bbac1a55d52e70b404db9e Mon Sep 17 00:00:00 2001
 From: Felix Radensky <felix.r@variscite.com>
 Date: Thu, 31 Dec 2020 09:14:23 +0200
-Subject: [PATCH 21/31] variscite: eeprom: Remove redundant extern function
+Subject: [PATCH] variscite: eeprom: Remove redundant extern function
  declarations
 
 ---
@@ -35,6 +35,3 @@ index 7fcb99a272..74ca7819f6 100644
  #endif
  
  #endif /* _MX8M_VAR_EEPROM_H_ */
--- 
-2.25.1
-

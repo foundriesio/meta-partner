@@ -1,19 +1,20 @@
-From c87b671ced933ec578b73d1d96888a3c6e6d03b0 Mon Sep 17 00:00:00 2001
+From 0388d79f8200705edc669065010a584b31d76678 Mon Sep 17 00:00:00 2001
 From: Felix Radensky <felix.r@variscite.com>
 Date: Tue, 3 Dec 2019 17:10:59 +0200
-Subject: [PATCH 04/31] usb: ehci-mx6: Fix USB type detection
+Subject: [PATCH] usb: ehci-mx6: Fix USB type detection
 
 When external connector is defined the USB type validy check fails.
 Fix the check to take external connector into account.
+
 ---
  drivers/usb/host/ehci-mx6.c | 4 ++--
  1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/usb/host/ehci-mx6.c b/drivers/usb/host/ehci-mx6.c
-index 035e0b6715..4f267e4279 100644
+index 305c4819cc..c5973294ac 100644
 --- a/drivers/usb/host/ehci-mx6.c
 +++ b/drivers/usb/host/ehci-mx6.c
-@@ -301,7 +301,7 @@ static int ehci_usb_ofdata_to_platdata(struct udevice *dev)
+@@ -310,7 +310,7 @@ static int ehci_usb_ofdata_to_platdata(struct udevice *dev)
  	struct usb_platdata *plat = dev_get_platdata(dev);
  	struct ehci_mx6_priv_data *priv = dev_get_priv(dev);
  	enum usb_dr_mode dr_mode;
@@ -22,7 +23,7 @@ index 035e0b6715..4f267e4279 100644
  
  	extcon = fdt_get_property(gd->fdt_blob, dev_of_offset(dev),
  			"extcon", NULL);
-@@ -326,7 +326,7 @@ static int ehci_usb_ofdata_to_platdata(struct udevice *dev)
+@@ -335,7 +335,7 @@ static int ehci_usb_ofdata_to_platdata(struct udevice *dev)
  	};
  
  check_type:
@@ -31,6 +32,3 @@ index 035e0b6715..4f267e4279 100644
  		debug("Request USB type is %u, board forced type is %u\n",
  			plat->init_type, priv->init_type);
  		return -ENODEV;
--- 
-2.25.1
-

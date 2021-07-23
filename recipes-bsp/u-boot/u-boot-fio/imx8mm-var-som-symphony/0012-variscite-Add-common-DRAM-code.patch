@@ -1,7 +1,7 @@
-From 77081422018653f95d64105b414d775fcd3cf10a Mon Sep 17 00:00:00 2001
+From 4cc0caafd2268f45cd362bf67604b50b115eb8b0 Mon Sep 17 00:00:00 2001
 From: Felix Radensky <felix.r@variscite.com>
 Date: Thu, 20 Aug 2020 19:54:21 +0300
-Subject: [PATCH 12/31] variscite: Add common DRAM code
+Subject: [PATCH] variscite: Add common DRAM code
 
 ---
  board/variscite/common/imx8_dram.c | 124 +++++++++++++++++++++++++++++
@@ -138,6 +138,3 @@ index 0000000000..92c365ce5d
 +	}
 +}
 +#endif
--- 
-2.25.1
-

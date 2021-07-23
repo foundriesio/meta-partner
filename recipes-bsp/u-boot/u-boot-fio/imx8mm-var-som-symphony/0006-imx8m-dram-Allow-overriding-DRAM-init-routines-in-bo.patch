@@ -1,8 +1,8 @@
-From 127137bafdb3b7d507a459e891277f451648d3b6 Mon Sep 17 00:00:00 2001
+From 5e6ad2d2cd8401ba1d030ca4c35c837c998b8673 Mon Sep 17 00:00:00 2001
 From: Felix Radensky <felix.r@variscite.com>
 Date: Wed, 12 Aug 2020 17:42:40 +0300
-Subject: [PATCH 06/31] imx8m: dram: Allow overriding DRAM init routines in
- board code
+Subject: [PATCH] imx8m: dram: Allow overriding DRAM init routines in board
+ code
 
 ---
  arch/arm/mach-imx/imx8m/Kconfig | 6 ++++++
@@ -10,7 +10,7 @@ Subject: [PATCH 06/31] imx8m: dram: Allow overriding DRAM init routines in
  2 files changed, 8 insertions(+)
 
 diff --git a/arch/arm/mach-imx/imx8m/Kconfig b/arch/arm/mach-imx/imx8m/Kconfig
-index f3bd16e166..ca840dde3d 100644
+index 046fe14ff0..51c93d6ac5 100644
 --- a/arch/arm/mach-imx/imx8m/Kconfig
 +++ b/arch/arm/mach-imx/imx8m/Kconfig
 @@ -37,6 +37,12 @@ config IMX_UNIQUE_ID
@@ -27,7 +27,7 @@ index f3bd16e166..ca840dde3d 100644
  	prompt  "NXP i.MX8M board select"
  	optional
 diff --git a/arch/arm/mach-imx/imx8m/soc.c b/arch/arm/mach-imx/imx8m/soc.c
-index 9643b3ffe9..24549f7474 100644
+index a66949ba00..864cd56e27 100644
 --- a/arch/arm/mach-imx/imx8m/soc.c
 +++ b/arch/arm/mach-imx/imx8m/soc.c
 @@ -197,6 +197,7 @@ void enable_caches(void)
@@ -46,6 +46,3 @@ index 9643b3ffe9..24549f7474 100644
  
  static u32 get_cpu_variant_type(u32 type)
  {
--- 
-2.25.1
-

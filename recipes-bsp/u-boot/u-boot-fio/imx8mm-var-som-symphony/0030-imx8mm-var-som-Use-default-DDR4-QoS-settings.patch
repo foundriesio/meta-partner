@@ -1,11 +1,12 @@
-From f9e7816a6b96a35f81c2715429c2e592f550e6b4 Mon Sep 17 00:00:00 2001
+From 1375ac415ea22c1b4810439c8df728c4985a89f5 Mon Sep 17 00:00:00 2001
 From: Nate Drude <nate.d@variscite.com>
 Date: Mon, 21 Jun 2021 08:46:40 -0500
-Subject: [PATCH 30/31] imx8mm-var-som: Use default DDR4 QoS settings
+Subject: [PATCH] imx8mm-var-som: Use default DDR4 QoS settings
 
 https://community.nxp.com/t5/i-MX-Processors/i-MX8M-MINI-DDR4-register-settings/m-p/1295294/highlight/true#M175775
 
 Signed-off-by: Nate Drude <nate.d@variscite.com>
+
 ---
  board/variscite/imx8mm_var_dart/ddr4_timing.c | 18 ------------------
  1 file changed, 18 deletions(-)
@@ -39,6 +40,3 @@ index edb13a1ba3..9d2c3448f4 100644
  	{ 0x3d402050, 0x210070 },
  	{ 0x3d402064, 0x40005e },
  	{ 0x3d4020dc, 0x40105 },
--- 
-2.25.1
-

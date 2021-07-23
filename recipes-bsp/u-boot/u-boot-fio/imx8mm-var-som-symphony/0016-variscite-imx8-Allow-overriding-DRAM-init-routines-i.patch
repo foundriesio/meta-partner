@@ -1,7 +1,8 @@
-From 51e792cc5c7d66b57f55b14e4649571b5ad137e3 Mon Sep 17 00:00:00 2001
+From b2357b82bb0622b301bfd2fd25eccdb9285ca344 Mon Sep 17 00:00:00 2001
 From: Mohit Singh <mohit.p@variscite.com>
 Date: Mon, 23 Nov 2020 11:29:18 -0800
-Subject: [PATCH 16/31] variscite: imx8: Allow overriding DRAM init routines in
+Subject: [PATCH] variscite: imx8: Allow overriding DRAM init routines in
+
  board code
 
 ---
@@ -10,12 +11,12 @@ Subject: [PATCH 16/31] variscite: imx8: Allow overriding DRAM init routines in
  2 files changed, 15 insertions(+), 4 deletions(-)
 
 diff --git a/arch/arm/mach-imx/imx8/Kconfig b/arch/arm/mach-imx/imx8/Kconfig
-index fd2e3fd317..f9ada3e889 100644
+index b6e84538d1..54aeda9db0 100644
 --- a/arch/arm/mach-imx/imx8/Kconfig
 +++ b/arch/arm/mach-imx/imx8/Kconfig
-@@ -79,6 +79,12 @@ config IMX_CONTAINER_CFG
- 	  This is to specific the cfg file for generating container
- 	  image which will be loaded by SPL.
+@@ -88,6 +88,12 @@ config PSCI_BOARD_REBOOT
+ config IMX8_TRUSTY_XEN
+ 	bool "Support Trusty Xen feature"
  
 +config IMX8_BOARD_INIT_DRAM
 +        bool
@@ -27,7 +28,7 @@ index fd2e3fd317..f9ada3e889 100644
  	prompt "i.MX8 board select"
  	optional
 diff --git a/arch/arm/mach-imx/imx8/cpu.c b/arch/arm/mach-imx/imx8/cpu.c
-index 5ca226fca4..d33f81cc60 100644
+index c8fa86c929..26af490cbc 100644
 --- a/arch/arm/mach-imx/imx8/cpu.c
 +++ b/arch/arm/mach-imx/imx8/cpu.c
 @@ -549,6 +549,7 @@ __weak void board_mem_get_layout(uint64_t *phys_sdram_1_start,
@@ -78,6 +79,3 @@ index 5ca226fca4..d33f81cc60 100644
  			i++;
  		}
  	}
--- 
-2.25.1
-

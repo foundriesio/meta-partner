@@ -1,10 +1,11 @@
-From 43e70d7b0b3e2e80feb1150fcbee7b7ee027a923 Mon Sep 17 00:00:00 2001
+From 526e8544c851950028db57c8b3d1400429a129e8 Mon Sep 17 00:00:00 2001
 From: Vanessa Maegima <vanessa.maegima@foundries.io>
 Date: Fri, 9 Jul 2021 10:55:40 -0300
 Subject: [PATCH] include: configs: imx8mm_var_dart: allow setting
  CONFIG_BOOTCOMMAND in defconfig
 
 Signed-off-by: Vanessa Maegima <vanessa.maegima@foundries.io>
+
 ---
  include/configs/imx8mm_var_dart.h | 2 ++
  1 file changed, 2 insertions(+)
@@ -29,6 +30,3 @@ index 5be769e3b6..ade6cb42f5 100644
  
  /* Link Definitions */
  #define CONFIG_LOADADDR			0x40480000
--- 
-2.25.1
-
