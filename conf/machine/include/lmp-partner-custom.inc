@@ -8,3 +8,5 @@ UBOOT_MACHINE_imx8mm-var-som-symphony = "imx8mm_var_dart_defconfig"
 BOOTSCR_LOAD_ADDR_imx8mm-var-som-symphony = "0x44800000"
 
 IMAGE_BOOT_FILES_imx8mm-var-som-symphony = "imx-boot u-boot.itb ${KERNEL_IMAGETYPE} boot.scr uEnv.txt devicetree/*"
+
+KERNEL_MODULE_AUTOLOAD_imx8mm-var-som-symphony = "i2c-dev"
