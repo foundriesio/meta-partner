@@ -13,4 +13,5 @@ SRC_URI += " \
         file://0906-sn65dsi83-Add-panel-enable-option.patch \
         file://0907-sn65dsi83-Add-de-neg-polarity-option.patch \
         file://0908-sn65dsi83-Add-dual-channel-support.patch \
+        file://0001-arm64-dts-imx8mm-Add-missing-mux-options-for-UART1-a.patch \
 "
