@@ -29,6 +29,7 @@ include features/hugetlb/hugetlb.scc
 include features/i2c/i2cdev.scc
 include features/leds/leds.scc
 include features/spi/spidev.scc
+include features/wifi/wifi-sdio.scc
 
 # Miscellaneous
 include cfg/dmaengine.scc
