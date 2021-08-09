@@ -1,0 +1,1 @@
+KERNEL=="backlight", RUN+="/etc/udev/rules.d/set-backlight.sh"
