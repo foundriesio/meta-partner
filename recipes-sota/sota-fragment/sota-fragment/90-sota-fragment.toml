@@ -1,0 +1,6 @@
+[uptane]
+polling_sec = 10
+
+[pacman]
+docker_prune = false
+compose_apps = ""

@@ -30,6 +30,8 @@ CORE_IMAGE_BASE_INSTALL += " \
     networkmanager-nmcli \
     git \
     vim \
+    sota-fragment \
+    omron-usb-ftdi-sio \
     packagegroup-core-full-cmdline-extended \
     ${@bb.utils.contains('LMP_DISABLE_GPLV3', '1', '', '${CORE_IMAGE_BASE_INSTALL_GPLV3}', d)} \
 "
