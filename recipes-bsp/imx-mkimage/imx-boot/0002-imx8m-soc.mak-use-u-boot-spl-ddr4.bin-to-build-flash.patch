@@ -1,7 +1,7 @@
-From 5968bff7935ba3c0b9acad31489a91ef37b3c86c Mon Sep 17 00:00:00 2001
+From 36c0966610ab7f1868da558d2e8d06c959225f61 Mon Sep 17 00:00:00 2001
 From: Daiane Angolini <daiane.angolini@foundries.io>
 Date: Thu, 15 Jul 2021 15:11:29 +0000
-Subject: [PATCH] imx8m: soc.mak: use u-boot-spl-ddr4.bin to build
+Subject: [PATCH 2/2] imx8m: soc.mak: use u-boot-spl-ddr4.bin to build
  flash_evk_spl
 
 Signed-off-by: Vanessa Maegima <vanessa.maegima@foundries.io>
@@ -34,5 +34,5 @@ index 93053f5..e97ec51 100644
  
  flash_evk_no_hdmi: $(MKIMG) u-boot-spl-ddr.bin u-boot.itb
 -- 
-2.25.1
+2.35.1
 

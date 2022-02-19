@@ -1,7 +1,7 @@
-From e10035258b6653daaaf1c03459cb4d96da6728f3 Mon Sep 17 00:00:00 2001
+From 782cadb518127689d3d374ab54d2621bc74e5fee Mon Sep 17 00:00:00 2001
 From: Daiane Angolini <daiane.angolini@foundries.io>
 Date: Thu, 15 Jul 2021 15:08:29 +0000
-Subject: [PATCH] imx-mkimage: imx8m: soc.mak: add variscite imx8mm support
+Subject: [PATCH 1/2] imx-mkimage: imx8m: soc.mak: add variscite imx8mm support
 
 Signed-off-by: Nate Drude <nate.d@variscite.com>
 ---
@@ -32,8 +32,8 @@ index 9814d4a..93053f5 100644
 +	@rm -f ddr4_1d_fw.bin ddr4_2d_fw.bin ddr4_imem_1d_pad.bin ddr4_dmem_1d_pad.bin ddr4_imem_2d_pad.bin lpddr4_pmu_train_1d_fw.bin lpddr4_pmu_train_2d_fw.bin lpddr4_pmu_train_1d_imem_pad.bin lpddr4_pmu_train_1d_dmem_pad.bin lpddr4_pmu_train_2d_imem_pad.bin lpddr4_pmu_train_2d_dmem_pad.bin
 +
  u-boot-spl-ddr3l.bin: u-boot-spl.bin $(ddr3_imem_1d) $(ddr3_dmem_1d)
-	@objcopy -I binary -O binary --pad-to 0x8000 --gap-fill=0x0 $(ddr3_imem_1d) ddr3_imem_1d.bin_pad.bin
-	@cat ddr3_imem_1d.bin_pad.bin $(ddr3_dmem_1d) > ddr3_pmu_train_fw.bin
+ 	@objcopy -I binary -O binary --pad-to 0x8000 --gap-fill=0x0 $(ddr3_imem_1d) ddr3_imem_1d.bin_pad.bin
+ 	@cat ddr3_imem_1d.bin_pad.bin $(ddr3_dmem_1d) > ddr3_pmu_train_fw.bin
 @@ -201,6 +216,12 @@ u-boot-ddr4-evk.itb: $(dtbs_ddr4_evk)
  	./mkimage_uboot -E -p 0x3000 -f u-boot-ddr4-evk.its u-boot-ddr4-evk.itb
  	@rm -f u-boot.its $(dtbs_ddr4_evk)
@@ -67,5 +67,5 @@ index 9814d4a..93053f5 100644
  
  flash_dp_spl_uboot: flash_dp_evk
 -- 
-2.25.1
+2.35.1
 
