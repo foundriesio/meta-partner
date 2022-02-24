@@ -1,50 +1,46 @@
-From b24df2b249a0bf26cca6540bde6d716f639a689b Mon Sep 17 00:00:00 2001
+From df4d984d60fcc9ecce14877aff162d4d1d2af075 Mon Sep 17 00:00:00 2001
 From: Michael Scott <mike@foundries.io>
 Date: Wed, 23 Feb 2022 17:09:02 -0800
 Subject: [PATCH] imx-mkimage: imx8m: soc.mak: add variscite support for
- combined lpddr ddr4 imx-boot
+ imx-boot
 
 Ported from initial patch: imx-mkimage: imx8m: soc.mak: add variscite imx8mm support
 by Nate Drude <nate.d@variscite.com>
 
-Reduced to only portions needed for SPL-only imx-boot and renamed with *-var names.
+- reduced to only portions needed for SPL-only imx-boot and renamed with *-var names
+- only include the DDR4 firmware due to size restrictions
+- use dd for 1k offset of 2nd stage 1d firmware
 
 Signed-off-by: Michael Scott <mike@foundries.io>
 ---
- iMX8M/soc.mak | 22 ++++++++++++++++++++++
- 1 file changed, 22 insertions(+)
+ iMX8M/soc.mak | 16 ++++++++++++++++
+ 1 file changed, 16 insertions(+)
 
 diff --git a/iMX8M/soc.mak b/iMX8M/soc.mak
-index 30ecefd..fa07586 100644
+index 30ecefd..e1c1daf 100644
 --- a/iMX8M/soc.mak
 +++ b/iMX8M/soc.mak
-@@ -124,6 +124,25 @@ u-boot-spl-ddr3l.bin: u-boot-spl.bin $(ddr3_imem_1d) $(ddr3_dmem_1d)
+@@ -124,6 +124,19 @@ u-boot-spl-ddr3l.bin: u-boot-spl.bin $(ddr3_imem_1d) $(ddr3_dmem_1d)
  	@cat u-boot-spl-pad.bin ddr3_pmu_train_fw.bin > u-boot-spl-ddr3l.bin
  	@rm -f u-boot-spl-pad.bin ddr3_pmu_train_fw.bin ddr3_imem_1d.bin_pad.bin
  
-++u-boot-spl-combine-var:
++u-boot-spl-combine-var:
 +	@cat u-boot-spl-nodtb.bin u-boot-spl.dtb > u-boot-spl.bin
 +
-+u-boot-spl-ddr-var.bin: u-boot-spl.bin (lpddr4_imem_1d) $(lpddr4_dmem_1d) $(lpddr4_imem_2d) $(lpddr4_dmem_2d) $(ddr4_imem_1d) $(ddr4_dmem_1d) $(ddr4_imem_2d) $(ddr4_dmem_2d)
-+	@objcopy -I binary -O binary --pad-to 0x8000 --gap-fill=0x0 $(lpddr4_imem_1d) lpddr4_pmu_train_1d_imem_pad.bin
-+	@objcopy -I binary -O binary --pad-to 0x1000 --gap-fill=0x0 $(lpddr4_dmem_1d) lpddr4_pmu_train_1d_dmem_pad.bin
-+	@objcopy -I binary -O binary --pad-to 0x8000 --gap-fill=0x0 $(lpddr4_imem_2d) lpddr4_pmu_train_2d_imem_pad.bin
-+	@objcopy -I binary -O binary --pad-to 0x1000 --gap-fill=0x0 $(lpddr4_dmem_2d) lpddr4_pmu_train_2d_dmem_pad.bin
-+	@cat lpddr4_pmu_train_1d_imem_pad.bin lpddr4_pmu_train_1d_dmem_pad.bin > lpddr4_pmu_train_1d_fw.bin
-+	@cat lpddr4_pmu_train_2d_imem_pad.bin lpddr4_pmu_train_2d_dmem_pad.bin > lpddr4_pmu_train_2d_fw.bin
++u-boot-spl-ddr-var.bin: u-boot-spl.bin $(ddr4_imem_1d) $(ddr4_dmem_1d) $(ddr4_imem_2d) $(ddr4_dmem_2d)
 +	@objcopy -I binary -O binary --pad-to 0x8000 --gap-fill=0x0 $(ddr4_imem_1d) ddr4_imem_1d_pad.bin
-+	@objcopy -I binary -O binary --pad-to 0x1000 --gap-fill=0x0 $(ddr4_dmem_1d) ddr4_dmem_1d_pad.bin
++	dd if=$(ddr4_dmem_1d) of=ddr4_dmem_1d_pad.bin bs=1K count=4
 +	@objcopy -I binary -O binary --pad-to 0x8000 --gap-fill=0x0 $(ddr4_imem_2d) ddr4_imem_2d_pad.bin
 +	@cat ddr4_imem_1d_pad.bin ddr4_dmem_1d_pad.bin > ddr4_1d_fw.bin
 +	@cat ddr4_imem_2d_pad.bin $(ddr4_dmem_2d) > ddr4_2d_fw.bin
 +	@dd if=u-boot-spl.bin of=u-boot-spl-pad.bin bs=4 conv=sync
-+	@cat u-boot-spl-pad.bin lpddr4_pmu_train_1d_fw.bin lpddr4_pmu_train_2d_fw.bin ddr4_1d_fw.bin ddr4_2d_fw.bin > u-boot-spl-ddr-var.bin
-+	@rm -f u-boot-spl-pad.bin lpddr4_pmu_train_1d_fw.bin lpddr4_pmu_train_2d_fw.bin lpddr4_pmu_train_1d_imem_pad.bin lpddr4_pmu_train_1d_dmem_pad.bin lpddr4_pmu_train_2d_imem_pad.bin lpddr4_pmu_train_2d_dmem_pad.bin ddr4_1d_fw.bin ddr4_2d_fw.bin ddr4_imem_1d_pad.bin ddr4_dmem_1d_pad.bin ddr4_imem_2d_pad.bin
++	@cat u-boot-spl-pad.bin ddr4_1d_fw.bin ddr4_2d_fw.bin > u-boot-spl-ddr-var.bin
++	@rm -f u-boot-spl-pad.bin ddr4_1d_fw.bin ddr4_2d_fw.bin ddr4_imem_1d_pad.bin ddr4_dmem_1d_pad.bin ddr4_imem_2d_pad.bin
 +
  u-boot-atf.bin: u-boot.bin bl31.bin
  	@cp bl31.bin u-boot-atf.bin
  	@dd if=u-boot.bin of=u-boot-atf.bin bs=1K seek=128
-@@ -270,6 +289,9 @@ flash_ddr4_evk_flexspi: $(MKIMG) u-boot-spl-ddr4.bin u-boot-ddr4-evk.itb
+@@ -270,6 +283,9 @@ flash_ddr4_evk_flexspi: $(MKIMG) u-boot-spl-ddr4.bin u-boot-ddr4-evk.itb
  	./mkimage_imx8 -version $(VERSION) -dev flexspi -fit -loader u-boot-spl-ddr4.bin $(SPL_FSPI_LOAD_ADDR) -second_loader u-boot-ddr4-evk.itb 0x40200000 0x60000 -out $(OUTIMG)
  	./$(QSPI_PACKER) $(QSPI_HEADER)
  
