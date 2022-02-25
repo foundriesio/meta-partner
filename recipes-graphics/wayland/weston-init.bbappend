@@ -1,0 +1,1 @@
+INI_UNCOMMENT_ASSIGNMENTS_remove = "use-g2d=1 "
