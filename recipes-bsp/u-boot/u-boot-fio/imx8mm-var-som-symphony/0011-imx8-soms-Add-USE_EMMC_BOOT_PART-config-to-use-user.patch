@@ -1,7 +1,7 @@
-From 0c4bc99c206cb0db2651e60b854728a204bc640d Mon Sep 17 00:00:00 2001
+From 4153f6df20828bd32c4ebc538f0f083b4728f5d3 Mon Sep 17 00:00:00 2001
 From: Harshesh Valera <harshesh.v@variscite.com>
 Date: Mon, 15 Mar 2021 19:33:15 -0700
-Subject: [PATCH] imx8 soms: Add USE_EMMC_BOOT_PART config to use user
+Subject: [PATCH 11/12] imx8 soms: Add USE_EMMC_BOOT_PART config to use user
 
  partition for fastboot
 
@@ -10,14 +10,13 @@ CONFIG_USE_EMMC_BOOT_PART=y in defconfig to use user partition
 This patch allows to switch to user partition instead of BOOT0/BOOT1 parition
 
 Signed-off-by: Harshesh Valera <harshesh.v@variscite.com>
-
 ---
  drivers/fastboot/fb_fsl/fb_fsl_partitions.c | 14 +++++++++++++-
  lib/Kconfig                                 |  6 ++++++
  2 files changed, 19 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/fastboot/fb_fsl/fb_fsl_partitions.c b/drivers/fastboot/fb_fsl/fb_fsl_partitions.c
-index 92e3c3a538..916932e9fe 100644
+index ffc3f61c6e..533262739c 100644
 --- a/drivers/fastboot/fb_fsl/fb_fsl_partitions.c
 +++ b/drivers/fastboot/fb_fsl/fb_fsl_partitions.c
 @@ -79,14 +79,22 @@ static ulong bootloader_mmc_offset(void)
@@ -73,3 +72,6 @@ index fc20734b63..b085e54b62 100644
  endmenu
  
  menu "Hashing Support"
+-- 
+2.35.1
+

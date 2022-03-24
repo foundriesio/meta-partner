@@ -1,48 +1,241 @@
-From dea7264dea85cf33a771dae2f1d2267cc6b034c5 Mon Sep 17 00:00:00 2001
+From f51dd092cdabc50981e5455d26f310c4b42e4909 Mon Sep 17 00:00:00 2001
 From: Nate Drude <nate.d@variscite.com>
-Date: Sat, 7 Nov 2020 17:15:27 -0600
-Subject: [PATCH] imx8mm-var-dart: Separate som and carrier device tree
-
+Date: Sat, 7 Nov 2020 17:16:27 -0600
+Subject: [PATCH 03/12] imx8mm-var-som: Separate som and carrier device tree
  files
 
 Signed-off-by: Nate Drude <nate.d@variscite.com>
-
 ---
- arch/arm/dts/Makefile                         |   2 +-
- ...> imx8mm-var-dart-customboard-u-boot.dtsi} |   0
- arch/arm/dts/imx8mm-var-dart-customboard.dts  | 171 ++++++++++++++
- ...x8mm-var-dart.dts => imx8mm-var-dart.dtsi} | 222 +++---------------
- board/variscite/imx8mm_var_dart/spl.c         |   2 +-
- configs/imx8mm_var_dart_defconfig             |   2 +-
- include/configs/imx8mm_var_dart.h             |   2 +-
- 7 files changed, 213 insertions(+), 188 deletions(-)
- rename arch/arm/dts/{imx8mm-var-dart-u-boot.dtsi => imx8mm-var-dart-customboard-u-boot.dtsi} (100%)
- create mode 100644 arch/arm/dts/imx8mm-var-dart-customboard.dts
- rename arch/arm/dts/{imx8mm-var-dart.dts => imx8mm-var-dart.dtsi} (60%)
+ arch/arm/dts/Makefile                         |   4 +-
+ arch/arm/dts/imx8mm-var-common-u-boot.dtsi    |  65 +++--
+ ...imx8mm-var-som-rev10-symphony-u-boot.dtsi} |   0
+ ....dts => imx8mm-var-som-rev10-symphony.dts} |  24 +-
+ ...si => imx8mm-var-som-symphony-u-boot.dtsi} |   0
+ arch/arm/dts/imx8mm-var-som-symphony.dts      | 193 ++++++++++++++
+ ...imx8mm-var-som.dts => imx8mm-var-som.dtsi} | 242 +++---------------
+ board/variscite/imx8mm_var_dart/spl.c         |   4 +-
+ include/configs/imx8mm_var_dart.h             |   4 +-
+ 9 files changed, 279 insertions(+), 257 deletions(-)
+ rename arch/arm/dts/{imx8mm-var-som-u-boot-rev10.dtsi => imx8mm-var-som-rev10-symphony-u-boot.dtsi} (100%)
+ rename arch/arm/dts/{imx8mm-var-som-rev10.dts => imx8mm-var-som-rev10-symphony.dts} (82%)
+ rename arch/arm/dts/{imx8mm-var-som-u-boot.dtsi => imx8mm-var-som-symphony-u-boot.dtsi} (100%)
+ create mode 100644 arch/arm/dts/imx8mm-var-som-symphony.dts
+ rename arch/arm/dts/{imx8mm-var-som.dts => imx8mm-var-som.dtsi} (56%)
 
 diff --git a/arch/arm/dts/Makefile b/arch/arm/dts/Makefile
-index 1a9e461129..8e85990a74 100644
+index 8e85990a74..8e0b2ddc4d 100644
 --- a/arch/arm/dts/Makefile
 +++ b/arch/arm/dts/Makefile
-@@ -792,7 +792,7 @@ dtb-$(CONFIG_ARCH_IMX8M) += \
- 	imx8mn-ddr3l-evk.dtb \
+@@ -793,8 +793,8 @@ dtb-$(CONFIG_ARCH_IMX8M) += \
  	imx8mn-ddr4-evk.dtb \
  	imx8mn-evk.dtb \
--	imx8mm-var-dart.dtb \
-+	imx8mm-var-dart-customboard.dtb \
- 	imx8mm-var-som.dtb \
- 	imx8mm-var-som-rev10.dtb \
+ 	imx8mm-var-dart-customboard.dtb \
+-	imx8mm-var-som.dtb \
+-	imx8mm-var-som-rev10.dtb \
++	imx8mm-var-som-symphony.dtb \
++	imx8mm-var-som-rev10-symphony.dtb \
  	imx8mq-ddr3l-val.dtb \
-diff --git a/arch/arm/dts/imx8mm-var-dart-u-boot.dtsi b/arch/arm/dts/imx8mm-var-dart-customboard-u-boot.dtsi
+ 	imx8mq-ddr4-val.dtb \
+ 	imx8mq-evk.dtb \
+diff --git a/arch/arm/dts/imx8mm-var-common-u-boot.dtsi b/arch/arm/dts/imx8mm-var-common-u-boot.dtsi
+index 4c4eb79d68..e3757d8da1 100644
+--- a/arch/arm/dts/imx8mm-var-common-u-boot.dtsi
++++ b/arch/arm/dts/imx8mm-var-common-u-boot.dtsi
+@@ -5,12 +5,18 @@
+  */
+ 
+ / {
+-
+ 	aliases {
+ 		usbgadget0 = &usbg1;
+ 		usbgadget1 = &usbg2;
+ 	};
+ 
++	firmware {
++		optee {
++			compatible = "linaro,optee-tz";
++			method = "smc";
++		};
++	};
++
+ 	usbg1: usbg1 {
+ 		compatible = "fsl,imx27-usb-gadget";
+ 		dr_mode = "peripheral";
+@@ -24,13 +30,6 @@
+ 		chipidea,usb = <&usbotg2>;
+ 		status = "okay";
+ 	};
+-
+-	firmware {
+-		optee {
+-			compatible = "linaro,optee-tz";
+-			method = "smc";
+-		};
+-	};
+ };
+ 
+ &{/soc@0} {
+@@ -38,29 +37,36 @@
+ 	u-boot,dm-spl;
+ };
+ 
+-&clk {
++&aips1 {
+ 	u-boot,dm-spl;
+ 	u-boot,dm-pre-reloc;
+-	/delete-property/ assigned-clocks;
+-	/delete-property/ assigned-clock-parents;
+-	/delete-property/ assigned-clock-rates;
+ };
+ 
+-&osc_24m {
++&aips2 {
+ 	u-boot,dm-spl;
+-	u-boot,dm-pre-reloc;
+ };
+ 
+-&aips1 {
++&aips3 {
++	u-boot,dm-spl;
++};
++
++&clk {
+ 	u-boot,dm-spl;
+ 	u-boot,dm-pre-reloc;
++	/delete-property/ assigned-clocks;
++	/delete-property/ assigned-clock-parents;
++	/delete-property/ assigned-clock-rates;
+ };
+ 
+-&aips2 {
++&gpio1 {
+ 	u-boot,dm-spl;
+ };
+ 
+-&aips3 {
++&gpio2 {
++	u-boot,dm-spl;
++};
++
++&gpio5 {
+ 	u-boot,dm-spl;
+ };
+ 
+@@ -68,35 +74,36 @@
+ 	u-boot,dm-spl;
+ };
+ 
+-&reg_usdhc2_vmmc {
++&i2c1 {
+ 	u-boot,dm-spl;
+ };
+ 
+-&pinctrl_reg_usdhc2_vmmc {
++&osc_24m {
+ 	u-boot,dm-spl;
++	u-boot,dm-pre-reloc;
+ };
+ 
+-&pinctrl_usdhc2_cd {
++&pinctrl_i2c1 {
+ 	u-boot,dm-spl;
+ };
+ 
+-&pinctrl_usdhc2 {
++&pinctrl_reg_usdhc2_vmmc {
+ 	u-boot,dm-spl;
+ };
+ 
+-&pinctrl_usdhc3 {
++&pinctrl_usdhc2_cd {
+ 	u-boot,dm-spl;
+ };
+ 
+-&gpio1 {
++&pinctrl_usdhc2 {
+ 	u-boot,dm-spl;
+ };
+ 
+-&gpio2 {
++&pinctrl_usdhc3 {
+ 	u-boot,dm-spl;
+ };
+ 
+-&gpio5 {
++&reg_usdhc2_vmmc {
+ 	u-boot,dm-spl;
+ };
+ 
+@@ -117,11 +124,3 @@
+ 	assigned-clock-rates = <400000000>;
+ 	assigned-clock-parents = <&clk IMX8MM_SYS_PLL1_400M>;
+ };
+-
+-&i2c1 {
+-	u-boot,dm-spl;
+-};
+-
+-&pinctrl_i2c1 {
+-	u-boot,dm-spl;
+-};
+diff --git a/arch/arm/dts/imx8mm-var-som-u-boot-rev10.dtsi b/arch/arm/dts/imx8mm-var-som-rev10-symphony-u-boot.dtsi
 similarity index 100%
-rename from arch/arm/dts/imx8mm-var-dart-u-boot.dtsi
-rename to arch/arm/dts/imx8mm-var-dart-customboard-u-boot.dtsi
-diff --git a/arch/arm/dts/imx8mm-var-dart-customboard.dts b/arch/arm/dts/imx8mm-var-dart-customboard.dts
+rename from arch/arm/dts/imx8mm-var-som-u-boot-rev10.dtsi
+rename to arch/arm/dts/imx8mm-var-som-rev10-symphony-u-boot.dtsi
+diff --git a/arch/arm/dts/imx8mm-var-som-rev10.dts b/arch/arm/dts/imx8mm-var-som-rev10-symphony.dts
+similarity index 82%
+rename from arch/arm/dts/imx8mm-var-som-rev10.dts
+rename to arch/arm/dts/imx8mm-var-som-rev10-symphony.dts
+index 58821055a7..75a214c212 100644
+--- a/arch/arm/dts/imx8mm-var-som-rev10.dts
++++ b/arch/arm/dts/imx8mm-var-som-rev10-symphony.dts
+@@ -15,25 +15,23 @@
+ 
+ /dts-v1/;
+ 
+-#include "imx8mm-var-som.dts"
++#include "imx8mm-var-som-symphony.dts"
+ 
+ / {
+ 	model = "Variscite VAR-SOM-MX8M-MINI Rev1.0";
+ };
+ 
+ &iomuxc {
+-	imx8mm-var-som {
+-		pinctrl_usdhc2_cd_rev10: usdhc2grpcd {
+-			fsl,pins = <
+-				MX8MM_IOMUXC_SD2_CD_B_GPIO2_IO12	0x1c0
+-			>;
+-		};
+-
+-		pinctrl_typec: typecgrp {
+-			fsl,pins = <
+-				MX8MM_IOMUXC_GPIO1_IO10_GPIO1_IO10	0x16
+-			>;
+-		};
++	pinctrl_typec: typecgrp {
++		fsl,pins = <
++			MX8MM_IOMUXC_GPIO1_IO10_GPIO1_IO10	0x16
++		>;
++	};
++
++	pinctrl_usdhc2_cd_rev10: usdhc2grpcd {
++		fsl,pins = <
++			MX8MM_IOMUXC_SD2_CD_B_GPIO2_IO12	0x1c0
++		>;
+ 	};
+ };
+ 
+diff --git a/arch/arm/dts/imx8mm-var-som-u-boot.dtsi b/arch/arm/dts/imx8mm-var-som-symphony-u-boot.dtsi
+similarity index 100%
+rename from arch/arm/dts/imx8mm-var-som-u-boot.dtsi
+rename to arch/arm/dts/imx8mm-var-som-symphony-u-boot.dtsi
+diff --git a/arch/arm/dts/imx8mm-var-som-symphony.dts b/arch/arm/dts/imx8mm-var-som-symphony.dts
 new file mode 100644
-index 0000000000..93a2109c33
+index 0000000000..2d3638366a
 --- /dev/null
-+++ b/arch/arm/dts/imx8mm-var-dart-customboard.dts
-@@ -0,0 +1,171 @@
++++ b/arch/arm/dts/imx8mm-var-som-symphony.dts
+@@ -0,0 +1,193 @@
 +/*
 + * Copyright 2018 NXP
 + * Copyright 2018-2020 Variscite Ltd.
@@ -60,14 +253,14 @@ index 0000000000..93a2109c33
 +
 +/dts-v1/;
 +
-+#include "imx8mm-var-dart.dtsi"
++#include "imx8mm-var-som.dtsi"
 +
 +/ {
-+	model = "Variscite DART-MX8M-MINI";
-+	compatible = "variscite,imx8mm-var-dart", "fsl,imx8mm";
++	model = "Variscite VAR-SOM-MX8M-MINI";
++	compatible = "variscite,imx8mm-var-som", "fsl,imx8mm";
 +
 +	chosen {
-+		stdout-path = &uart1;
++		stdout-path = &uart4;
 +	};
 +
 +	reg_usdhc2_vmmc: regulator-usdhc2 {
@@ -77,13 +270,50 @@ index 0000000000..93a2109c33
 +		regulator-name = "VSD_3V3";
 +		regulator-min-microvolt = <3300000>;
 +		regulator-max-microvolt = <3300000>;
-+		gpio = <&gpio2 19 GPIO_ACTIVE_HIGH>;
-+		off-on-delay-us = <20000>;
++		gpio = <&gpio4 22 GPIO_ACTIVE_HIGH>;
++		enable-active-high;
++		startup-delay-us = <100>;
++		u-boot,off-on-delay-us = <12000>;
++	};
++
++	reg_usb_otg2_vbus: regulator-usb-otg2-vbus {
++		compatible = "regulator-fixed";
++		pinctrl-names = "default";
++		pinctrl-0 = <&pinctrl_reg_usbotg2>;
++		regulator-name = "usb_otg2_vbus";
++		regulator-min-microvolt = <5000000>;
++		regulator-max-microvolt = <5000000>;
++		gpio = <&gpio5 1 GPIO_ACTIVE_HIGH>;
 +		enable-active-high;
 +	};
 +};
 +
 +&iomuxc {
++	pinctrl_reg_usdhc2_vmmc: regulator-usdhc2 {
++		fsl,pins = <
++			MX8MM_IOMUXC_SAI2_RXC_GPIO4_IO22		0x41
++		>;
++	};
++
++	pinctrl_usdhc2_cd: usdhc2grpcd {
++		fsl,pins = <
++			MX8MM_IOMUXC_GPIO1_IO10_GPIO1_IO10		0x1c0
++		>;
++	};
++
++	pinctrl_uart4: uart4grp {
++		fsl,pins = <
++			MX8MM_IOMUXC_UART4_RXD_UART4_DCE_RX		0x140
++			MX8MM_IOMUXC_UART4_TXD_UART4_DCE_TX		0x140
++		>;
++	};
++
++	pinctrl_reg_usbotg2: regulator_usbotg2 {
++		fsl,pins = <
++			MX8MM_IOMUXC_SAI3_TXD_GPIO5_IO1			0x16
++		>;
++	};
++
 +	pinctrl_i2c2: i2c2grp {
 +		fsl,pins = <
 +			MX8MM_IOMUXC_I2C2_SCL_I2C2_SCL			0x400001c3
@@ -109,20 +339,6 @@ index 0000000000..93a2109c33
 +		fsl,pins = <
 +			MX8MM_IOMUXC_I2C4_SCL_GPIO5_IO20		0x1c3
 +			MX8MM_IOMUXC_I2C4_SDA_GPIO5_IO21		0x1c3
-+		>;
-+	};
-+
-+
-+	pinctrl_reg_usdhc2_vmmc: regulator-usdhc2 {
-+		fsl,pins = <
-+			MX8MM_IOMUXC_SD2_RESET_B_GPIO2_IO19		0x41
-+		>;
-+	};
-+
-+	pinctrl_uart1: uart1grp {
-+		fsl,pins = <
-+			MX8MM_IOMUXC_UART1_RXD_UART1_DCE_RX		0x140
-+			MX8MM_IOMUXC_UART1_TXD_UART1_DCE_TX		0x140
 +		>;
 +	};
 +
@@ -161,13 +377,8 @@ index 0000000000..93a2109c33
 +			MX8MM_IOMUXC_GPIO1_IO04_USDHC2_VSELECT	0x1d0
 +		>;
 +	};
-+
-+	pinctrl_usdhc2_cd: usdhc2grpcd {
-+		fsl,pins = <
-+			MX8MM_IOMUXC_SD2_CD_B_GPIO2_IO12	0x1c0
-+		>;
-+	};
 +};
++
 +
 +&i2c2 {
 +	clock-frequency = <100000>;
@@ -189,9 +400,10 @@ index 0000000000..93a2109c33
 +	status = "okay";
 +};
 +
-+&uart1 { /* console */
++/* Console */
++&uart4 {
 +	pinctrl-names = "default";
-+	pinctrl-0 = <&pinctrl_uart1>;
++	pinctrl-0 = <&pinctrl_uart4>;
 +	status = "okay";
 +};
 +
@@ -200,6 +412,9 @@ index 0000000000..93a2109c33
 +};
 +
 +&usbotg2 {
++	dr_mode = "host";
++	/* Regulator requires jumper J3.12 to J3.18 */
++	vbus-supply = <&reg_usb_otg2_vbus>;
 +	status = "okay";
 +};
 +
@@ -209,27 +424,27 @@ index 0000000000..93a2109c33
 +	pinctrl-0 = <&pinctrl_usdhc2>, <&pinctrl_usdhc2_cd>;
 +	pinctrl-1 = <&pinctrl_usdhc2_100mhz>, <&pinctrl_usdhc2_cd>;
 +	pinctrl-2 = <&pinctrl_usdhc2_200mhz>, <&pinctrl_usdhc2_cd>;
-+	cd-gpios = <&gpio2 12 GPIO_ACTIVE_LOW>;
++	cd-gpios = <&gpio1 10 GPIO_ACTIVE_LOW>;
 +	bus-width = <4>;
 +	vmmc-supply = <&reg_usdhc2_vmmc>;
 +	status = "okay";
 +};
-diff --git a/arch/arm/dts/imx8mm-var-dart.dts b/arch/arm/dts/imx8mm-var-dart.dtsi
-similarity index 60%
-rename from arch/arm/dts/imx8mm-var-dart.dts
-rename to arch/arm/dts/imx8mm-var-dart.dtsi
-index 0f3020a9f5..daebc38245 100644
---- a/arch/arm/dts/imx8mm-var-dart.dts
-+++ b/arch/arm/dts/imx8mm-var-dart.dtsi
-@@ -18,25 +18,6 @@
+diff --git a/arch/arm/dts/imx8mm-var-som.dts b/arch/arm/dts/imx8mm-var-som.dtsi
+similarity index 56%
+rename from arch/arm/dts/imx8mm-var-som.dts
+rename to arch/arm/dts/imx8mm-var-som.dtsi
+index bbe0aa0ed6..68dfe76f93 100644
+--- a/arch/arm/dts/imx8mm-var-som.dts
++++ b/arch/arm/dts/imx8mm-var-som.dtsi
+@@ -18,26 +18,6 @@
  #include "imx8mm.dtsi"
  
  / {
--	model = "Variscite DART-MX8M-MINI";
--	compatible = "variscite,imx8mm-var-dart", "fsl,imx8mm";
+-	model = "Variscite VAR-SOM-MX8M-MINI";
+-	compatible = "variscite,imx8mm-var-som", "fsl,imx8mm";
 -
 -	chosen {
--		stdout-path = &uart1;
+-		stdout-path = &uart4;
 -	};
 -
 -	reg_usdhc2_vmmc: regulator-usdhc2 {
@@ -239,15 +454,34 @@ index 0f3020a9f5..daebc38245 100644
 -		regulator-name = "VSD_3V3";
 -		regulator-min-microvolt = <3300000>;
 -		regulator-max-microvolt = <3300000>;
--		gpio = <&gpio2 19 GPIO_ACTIVE_HIGH>;
--		off-on-delay-us = <20000>;
+-		gpio = <&gpio4 22 GPIO_ACTIVE_HIGH>;
 -		enable-active-high;
+-		startup-delay-us = <100>;
+-		u-boot,off-on-delay-us = <12000>;
 -	};
 -
  	reg_eth_phy: regulator-eth-phy {
  		compatible = "regulator-fixed";
  		pinctrl-names = "default";
-@@ -70,88 +51,6 @@
+@@ -48,17 +28,6 @@
+ 		gpio = <&gpio2 9 GPIO_ACTIVE_HIGH>;
+ 		enable-active-high;
+ 	};
+-
+-	reg_usb_otg2_vbus: regulator-usb-otg2-vbus {
+-		compatible = "regulator-fixed";
+-		pinctrl-names = "default";
+-		pinctrl-0 = <&pinctrl_reg_usbotg2>;
+-		regulator-name = "usb_otg2_vbus";
+-		regulator-min-microvolt = <5000000>;
+-		regulator-max-microvolt = <5000000>;
+-		gpio = <&gpio5 1 GPIO_ACTIVE_HIGH>;
+-		enable-active-high;
+-	};
+ };
+ 
+ &fec1 {
+@@ -83,92 +52,6 @@
  	};
  };
  
@@ -291,9 +525,10 @@ index 0f3020a9f5..daebc38245 100644
 -	status = "okay";
 -};
 -
--&uart1 { /* console */
+-/* Console */
+-&uart4 {
 -	pinctrl-names = "default";
--	pinctrl-0 = <&pinctrl_uart1>;
+-	pinctrl-0 = <&pinctrl_uart4>;
 -	status = "okay";
 -};
 -
@@ -302,6 +537,9 @@ index 0f3020a9f5..daebc38245 100644
 -};
 -
 -&usbotg2 {
+-	dr_mode = "host";
+-	/* Regulator requires jumper J3.12 to J3.18 */
+-	vbus-supply = <&reg_usb_otg2_vbus>;
 -	status = "okay";
 -};
 -
@@ -310,7 +548,7 @@ index 0f3020a9f5..daebc38245 100644
 -	pinctrl-0 = <&pinctrl_usdhc2>, <&pinctrl_usdhc2_cd>;
 -	pinctrl-1 = <&pinctrl_usdhc2_100mhz>, <&pinctrl_usdhc2_cd>;
 -	pinctrl-2 = <&pinctrl_usdhc2_200mhz>, <&pinctrl_usdhc2_cd>;
--	cd-gpios = <&gpio2 12 GPIO_ACTIVE_LOW>;
+-	cd-gpios = <&gpio1 10 GPIO_ACTIVE_LOW>;
 -	bus-width = <4>;
 -	vmmc-supply = <&reg_usdhc2_vmmc>;
 -	status = "okay";
@@ -336,7 +574,7 @@ index 0f3020a9f5..daebc38245 100644
  &iomuxc {
  	pinctrl-names = "default";
  
-@@ -188,13 +87,6 @@
+@@ -205,13 +88,6 @@
  		>;
  	};
  
@@ -350,7 +588,7 @@ index 0f3020a9f5..daebc38245 100644
  	pinctrl_i2c3: i2c3grp {
  		fsl,pins = <
  			MX8MM_IOMUXC_I2C3_SCL_I2C3_SCL			0x400001c3
-@@ -202,13 +94,6 @@
+@@ -219,13 +95,6 @@
  		>;
  	};
  
@@ -364,7 +602,7 @@ index 0f3020a9f5..daebc38245 100644
  	pinctrl_i2c1_gpio: i2c1grp-gpio {
  		fsl,pins = <
  			MX8MM_IOMUXC_I2C1_SCL_GPIO5_IO14		0x1c3
-@@ -216,13 +101,6 @@
+@@ -233,13 +102,6 @@
  		>;
  	};
  
@@ -378,7 +616,7 @@ index 0f3020a9f5..daebc38245 100644
  	pinctrl_i2c3_gpio: i2c3grp-gpio {
  		fsl,pins = <
  			MX8MM_IOMUXC_I2C3_SCL_GPIO5_IO18		0x1c3
-@@ -230,68 +108,6 @@
+@@ -247,68 +109,6 @@
  		>;
  	};
  
@@ -391,20 +629,20 @@ index 0f3020a9f5..daebc38245 100644
 -
 -	pinctrl_reg_usdhc2_vmmc: regulator-usdhc2 {
 -		fsl,pins = <
--			MX8MM_IOMUXC_SD2_RESET_B_GPIO2_IO19		0x41
+-			MX8MM_IOMUXC_SAI2_RXC_GPIO4_IO22		0x41
 -		>;
 -	};
 -
--	pinctrl_uart1: uart1grp {
+-	pinctrl_uart4: uart4grp {
 -		fsl,pins = <
--			MX8MM_IOMUXC_UART1_RXD_UART1_DCE_RX		0x140
--			MX8MM_IOMUXC_UART1_TXD_UART1_DCE_TX		0x140
+-			MX8MM_IOMUXC_UART4_RXD_UART4_DCE_RX		0x140
+-			MX8MM_IOMUXC_UART4_TXD_UART4_DCE_TX		0x140
 -		>;
 -	};
 -
 -	pinctrl_usdhc2_cd: usdhc2grpcd {
 -		fsl,pins = <
--			MX8MM_IOMUXC_SD2_CD_B_GPIO2_IO12	0x1c0
+-			MX8MM_IOMUXC_GPIO1_IO10_GPIO1_IO10		0x1c0
 -		>;
 -	};
 -
@@ -447,11 +685,17 @@ index 0f3020a9f5..daebc38245 100644
  	pinctrl_usdhc3: usdhc3grp {
  		fsl,pins = <
  			MX8MM_IOMUXC_NAND_WE_B_USDHC3_CLK		0x190
-@@ -346,3 +162,41 @@
+@@ -362,10 +162,42 @@
+ 			MX8MM_IOMUXC_GPIO1_IO02_WDOG1_WDOG_B		0xc6
  		>;
  	};
- };
-+
++};
+ 
+-	pinctrl_reg_usbotg2: regulator_usbotg2 {
+-		fsl,pins = <
+-			MX8MM_IOMUXC_SAI3_TXD_GPIO5_IO1			0x16
+-		>;
+-	};
 +&i2c1 {
 +	clock-frequency = <100000>;
 +	pinctrl-names = "default", "gpio";
@@ -488,43 +732,39 @@ index 0f3020a9f5..daebc38245 100644
 +	pinctrl-0 = <&pinctrl_wdog>;
 +	fsl,ext-reset-output;
 +	status = "okay";
-+};
+ };
 diff --git a/board/variscite/imx8mm_var_dart/spl.c b/board/variscite/imx8mm_var_dart/spl.c
-index 6aa77e5fc3..1de53c0544 100644
+index 1de53c0544..0538b79038 100644
 --- a/board/variscite/imx8mm_var_dart/spl.c
 +++ b/board/variscite/imx8mm_var_dart/spl.c
-@@ -249,7 +249,7 @@ int board_fit_config_name_match(const char *name)
- {
- 	int id = get_board_id();
- 
--	if ((id == DART_MX8M_MINI) && !strcmp(name, "imx8mm-var-dart")) {
-+	if ((id == DART_MX8M_MINI) && !strcmp(name, "imx8mm-var-dart-customboard")) {
- 		return 0;
- 	} else if (id == VAR_SOM_MX8M_MINI) {
+@@ -255,9 +255,9 @@ int board_fit_config_name_match(const char *name)
  		struct var_eeprom *ep = VAR_EEPROM_DATA;
-diff --git a/configs/imx8mm_var_dart_defconfig b/configs/imx8mm_var_dart_defconfig
-index 8dec1bd40c..7adfa26926 100644
---- a/configs/imx8mm_var_dart_defconfig
-+++ b/configs/imx8mm_var_dart_defconfig
-@@ -58,7 +58,7 @@ CONFIG_CMD_EXT4_WRITE=y
- CONFIG_CMD_FAT=y
- CONFIG_CMD_FS_GENERIC=y
- CONFIG_OF_CONTROL=y
--CONFIG_DEFAULT_DEVICE_TREE="imx8mm-var-dart"
-+CONFIG_DEFAULT_DEVICE_TREE="imx8mm-var-dart-customboard"
- CONFIG_ENV_IS_IN_MMC=y
- CONFIG_SYS_RELOC_GD_ENV_ADDR=y
- CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG=y
+ 		int rev = var_get_som_rev(ep);
+ 
+-		if ((rev == SOM_REV_11) && !strcmp(name, "imx8mm-var-som"))
++		if ((rev == SOM_REV_11) && !strcmp(name, "imx8mm-var-som-symphony"))
+ 			return 0;
+-		else if ((rev == SOM_REV_10) && !strcmp(name, "imx8mm-var-som-rev10"))
++		else if ((rev == SOM_REV_10) && !strcmp(name, "imx8mm-var-som-rev10-symphony"))
+ 			return 0;
+ 		else
+ 			return -1;
 diff --git a/include/configs/imx8mm_var_dart.h b/include/configs/imx8mm_var_dart.h
-index ff28538c77..044d269cd9 100644
+index 044d269cd9..4ba7eb8980 100644
 --- a/include/configs/imx8mm_var_dart.h
 +++ b/include/configs/imx8mm_var_dart.h
-@@ -108,7 +108,7 @@
- 					"setenv fdt_file imx8mm-var-som.dtb; " \
+@@ -103,9 +103,9 @@
+ 		"if test $fdt_file = undefined; then " \
+ 			"if test $board_name = VAR-SOM-MX8M-MINI; then " \
+ 				"if test $som_rev = som_rev10; then " \
+-					"setenv fdt_file imx8mm-var-som-rev10.dtb; " \
++					"setenv fdt_file imx8mm-var-som-rev10-symphony.dtb; " \
+ 				"else " \
+-					"setenv fdt_file imx8mm-var-som.dtb; " \
++					"setenv fdt_file imx8mm-var-som-symphony.dtb; " \
  				"fi;" \
  			"else " \
--				"setenv fdt_file imx8mm-var-dart.dtb;" \
-+				"setenv fdt_file imx8mm-var-dart-customboard.dtb;" \
- 			"fi; " \
- 		"fi; \0" \
- 	"loadfdt=run findfdt; " \
+ 				"setenv fdt_file imx8mm-var-dart-customboard.dtb;" \
+-- 
+2.35.1
+

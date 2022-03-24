@@ -1,7 +1,7 @@
-From 5c43d0f678933cc1dbb4cd26d3d0eb81b07dc569 Mon Sep 17 00:00:00 2001
+From cea51bcc511331ede6723afaaa2c741ad8fe8438 Mon Sep 17 00:00:00 2001
 From: Felix Radensky <felix.r@variscite.com>
 Date: Thu, 31 Dec 2020 11:46:41 +0200
-Subject: [PATCH] imx8mm-var-dart: Add support for VAR-SOM-MX8M-MINI on
+Subject: [PATCH 06/12] imx8mm-var-dart: Add support for VAR-SOM-MX8M-MINI on
  Symphony-Board V1.4a
 
 ---
@@ -75,3 +75,6 @@ index d9d523192d..5fcebcc0e6 100644
 +#define CARRIER_EEPROM_ADDR		0x54
 +
  #endif
+-- 
+2.35.1
+

@@ -1,8 +1,8 @@
-From f39e361256cfa923be902bfc16f3bca6ec83cebc Mon Sep 17 00:00:00 2001
+From 0f7a6d52a5a2856f8f4cf45b0cd58070fc2440f5 Mon Sep 17 00:00:00 2001
 From: Felix Radensky <felix.r@variscite.com>
 Date: Wed, 30 Dec 2020 19:58:07 +0200
-Subject: [PATCH] imx8mm-var-dart: Remove support for VAR-SOM-MX8M-MINI SOM
- revision 1.0
+Subject: [PATCH 04/12] imx8mm-var-dart: Remove support for VAR-SOM-MX8M-MINI
+ SOM revision 1.0
 
 ---
  arch/arm/dts/Makefile                         |  1 -
@@ -205,3 +205,6 @@ index 4ba7eb8980..d9d523192d 100644
  			"else " \
  				"setenv fdt_file imx8mm-var-dart-customboard.dtb;" \
  			"fi; " \
+-- 
+2.35.1
+

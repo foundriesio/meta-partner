@@ -1,12 +1,11 @@
-From 0fd84387518923b6e8a1fea15399b93e7b89f929 Mon Sep 17 00:00:00 2001
+From 94db6290a3b0c105869d809101448252dda833e6 Mon Sep 17 00:00:00 2001
 From: Nate Drude <nate.d@variscite.com>
 Date: Mon, 19 Oct 2020 16:34:49 -0500
-Subject: [PATCH] imx8mm_var_dart: Add Variscite DART-MX8M-MINI and
+Subject: [PATCH 01/12] imx8mm_var_dart: Add Variscite DART-MX8M-MINI and
 
  VAR-SOM-MX8M-MINI support
 
 Signed-off-by: Nate Drude <nate.d@variscite.com>
-
 ---
  arch/arm/dts/Makefile                         |    3 +
  arch/arm/dts/imx8mm-var-common-u-boot.dtsi    |  127 ++
@@ -4315,3 +4314,6 @@ index 0000000000..ff28538c77
 +#define CONFIG_USB_MAX_CONTROLLER_COUNT	2
 +
 +#endif
+-- 
+2.35.1
+
