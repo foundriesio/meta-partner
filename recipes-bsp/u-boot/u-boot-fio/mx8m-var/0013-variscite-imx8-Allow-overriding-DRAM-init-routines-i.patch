@@ -1,10 +1,9 @@
-From b2357b82bb0622b301bfd2fd25eccdb9285ca344 Mon Sep 17 00:00:00 2001
+From e5e404af510574a46c918ecb3e4c4466eb1f8f90 Mon Sep 17 00:00:00 2001
 From: Mohit Singh <mohit.p@variscite.com>
 Date: Mon, 23 Nov 2020 11:29:18 -0800
-Subject: [PATCH] variscite: imx8: Allow overriding DRAM init routines in
+Subject: [PATCH 13/18] variscite: imx8: Allow overriding DRAM init routines in
 
  board code
-
 ---
  arch/arm/mach-imx/imx8/Kconfig |  6 ++++++
  arch/arm/mach-imx/imx8/cpu.c   | 13 +++++++++----
@@ -79,3 +78,6 @@ index c8fa86c929..26af490cbc 100644
  			i++;
  		}
  	}
+-- 
+2.35.1
+

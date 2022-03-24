@@ -1,7 +1,7 @@
-From 12ccc464d20f323a44495e6f41024c590deec9f6 Mon Sep 17 00:00:00 2001
+From b2207e445bbf70786f5e2e723ba6f1c2f6aab413 Mon Sep 17 00:00:00 2001
 From: Felix Radensky <felix.r@variscite.com>
 Date: Sun, 26 Jul 2020 16:52:48 +0300
-Subject: [PATCH] variscite: Add common ethernet code
+Subject: [PATCH 10/18] variscite: Add common ethernet code
 
 ---
  board/variscite/common/eth.c | 94 ++++++++++++++++++++++++++++++++++++
@@ -108,3 +108,6 @@ index 0000000000..5956ca5b80
 +
 +	return 0;
 +}
+-- 
+2.35.1
+

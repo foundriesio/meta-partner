@@ -1,7 +1,8 @@
-From c259c653856ed829295553f6a88b85aad9ae49af Mon Sep 17 00:00:00 2001
+From 9445da10d052bd6a571d3dd9ee7fc822573cd8a0 Mon Sep 17 00:00:00 2001
 From: Mohit Singh <mohit.p@variscite.com>
 Date: Mon, 23 Nov 2020 12:24:08 -0800
-Subject: [PATCH] variscite: imx8_eeprom: exposed var_scu_eeprom_read_header
+Subject: [PATCH 15/18] variscite: imx8_eeprom: exposed
+ var_scu_eeprom_read_header
 
 ---
  board/variscite/common/imx8_eeprom.c | 2 +-
@@ -33,3 +34,6 @@ index 2907b57856..7fcb99a272 100644
  extern int var_eeprom_get_dram_size(struct var_eeprom *e, phys_size_t *size);
  extern int var_eeprom_get_mac(struct var_eeprom *e, u8 *mac);
  extern int var_eeprom_get_storage(struct var_eeprom *e, int *storage);
+-- 
+2.35.1
+

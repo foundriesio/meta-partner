@@ -1,7 +1,7 @@
-From 5c4b54abbaadfe07f0a2a07b524bd01fb6b683a0 Mon Sep 17 00:00:00 2001
+From c02b4e6fe03832b1e73a44fc71f8c28e9c02253e Mon Sep 17 00:00:00 2001
 From: Mohit Singh <mohit.p@variscite.com>
 Date: Mon, 23 Nov 2020 12:21:29 -0800
-Subject: [PATCH] variscite: imx8: Add common dram code
+Subject: [PATCH 14/18] variscite: imx8: Add common dram code
 
 ---
  board/variscite/common/imx8_dram.c | 280 ++++++++++++++++++++++++++++-
@@ -313,3 +313,6 @@ index 92c365ce5d..3e6d32b4f8 100644
 +	return 0;
 +}
 +#endif
+-- 
+2.35.1
+

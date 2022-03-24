@@ -1,7 +1,7 @@
-From bb683f632500d857bac8ec4e57e1f1914ac8019c Mon Sep 17 00:00:00 2001
+From b50599405ef0926ce0944f7df040b9852ab2fb6b Mon Sep 17 00:00:00 2001
 From: Felix Radensky <felix.r@variscite.com>
 Date: Sun, 31 May 2020 12:52:02 +0300
-Subject: [PATCH] variscite: Add common video code
+Subject: [PATCH 09/18] variscite: Add common video code
 
 ---
  board/variscite/common/video.c | 61 ++++++++++++++++++++++++++++++++++
@@ -75,3 +75,6 @@ index 0000000000..079d583540
 +
 +}
 +#endif
+-- 
+2.35.1
+

@@ -1,11 +1,10 @@
-From 0388d79f8200705edc669065010a584b31d76678 Mon Sep 17 00:00:00 2001
+From 7a0b22a639a1f9a58e4e93360b8b03f82758414b Mon Sep 17 00:00:00 2001
 From: Felix Radensky <felix.r@variscite.com>
 Date: Tue, 3 Dec 2019 17:10:59 +0200
-Subject: [PATCH] usb: ehci-mx6: Fix USB type detection
+Subject: [PATCH 04/18] usb: ehci-mx6: Fix USB type detection
 
 When external connector is defined the USB type validy check fails.
 Fix the check to take external connector into account.
-
 ---
  drivers/usb/host/ehci-mx6.c | 4 ++--
  1 file changed, 2 insertions(+), 2 deletions(-)
@@ -32,3 +31,6 @@ index 305c4819cc..c5973294ac 100644
  		debug("Request USB type is %u, board forced type is %u\n",
  			plat->init_type, priv->init_type);
  		return -ENODEV;
+-- 
+2.35.1
+

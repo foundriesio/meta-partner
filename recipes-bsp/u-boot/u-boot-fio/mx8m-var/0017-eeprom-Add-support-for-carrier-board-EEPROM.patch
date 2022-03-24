@@ -1,7 +1,7 @@
-From d018b778565b9d4e4d1941fdf6f440813f63c1d0 Mon Sep 17 00:00:00 2001
+From 4cc0af1248a1ecd175a0972049324d18143961a9 Mon Sep 17 00:00:00 2001
 From: Felix Radensky <felix.r@variscite.com>
 Date: Thu, 31 Dec 2020 11:40:58 +0200
-Subject: [PATCH] eeprom: Add support for carrier board EEPROM
+Subject: [PATCH 17/18] eeprom: Add support for carrier board EEPROM
 
 ---
  board/variscite/common/imx8_eeprom.c | 98 ++++++++++++++++++++++++++++
@@ -151,3 +151,6 @@ index 74ca7819f6..39fe971de2 100644
 +void var_carrier_eeprom_get_revision(struct var_carrier_eeprom *ep, char *rev, size_t size);
 +
  #endif /* _MX8M_VAR_EEPROM_H_ */
+-- 
+2.35.1
+

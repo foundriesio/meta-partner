@@ -1,16 +1,15 @@
-From 4fca7e4dd28617234b2fab91cba089d3939a37aa Mon Sep 17 00:00:00 2001
+From 322fbccbf8a902dd2a91f3ceeff4a4337a8da67c Mon Sep 17 00:00:00 2001
 From: Felix Radensky <felix.r@variscite.com>
 Date: Sun, 13 Oct 2019 13:40:28 +0300
-Subject: [PATCH] imx8m: dram: Use maximum possible DRAM bank sizes
+Subject: [PATCH 07/18] imx8m: dram: Use maximum possible DRAM bank sizes
 
 Allows supporting different DRAM sizes using the same u-boot image.
-
 ---
  arch/arm/mach-imx/imx8m/soc.c | 4 ++--
  1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/arch/arm/mach-imx/imx8m/soc.c b/arch/arm/mach-imx/imx8m/soc.c
-index 864cd56e27..c26885b873 100644
+index 05420b1466..f11921a5bb 100644
 --- a/arch/arm/mach-imx/imx8m/soc.c
 +++ b/arch/arm/mach-imx/imx8m/soc.c
 @@ -133,7 +133,7 @@ static struct mm_region imx8m_mem_map[] = {
@@ -31,3 +30,6 @@ index 864cd56e27..c26885b873 100644
  		.attrs = PTE_BLOCK_MEMTYPE(MT_NORMAL) |
  #ifdef CONFIG_IMX_TRUSTY_OS
  			 PTE_BLOCK_INNER_SHARE
+-- 
+2.35.1
+
