@@ -37,4 +37,5 @@ SRC_URI_append_imx8mm-var-som-symphony = " \
     file://0053-imx8mm_var_dart-force-to-use-the-uart-entry-for-the-.patch \
     file://0054-include-configs-imx8mm_var_dart-allow-setting-CONFIG.patch \
     file://0055-imx8mm_var_dart-define-CONFIG_SYS_BOOTM_LEN.patch \
+    file://0056-imx8mm_var_dart-handle-CONFIG_SECONDARY_BOOT_RUNTIME.patch \
 "
