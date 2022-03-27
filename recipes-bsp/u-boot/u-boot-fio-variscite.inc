@@ -44,3 +44,22 @@ SRC_URI_append_imx8mm-var-som-symphony = " \
     file://0055-imx8mm_var_dart-define-CONFIG_SYS_BOOTM_LEN.patch \
     file://0056-imx8mm_var_dart-handle-CONFIG_SECONDARY_BOOT_RUNTIME.patch \
 "
+
+SRC_URI_append_imx8mn-var-som = " \
+    file://0001-imx8mn_var_som-Add-support-for-Variscite-VAR-SOM-MX8.patch \
+    file://0002-imx8mn_var_som-Add-support-for-Android-10.0.0_2.3.0.patch \
+    file://0003-imx8mn-var-som-Separate-som-and-carrier-device-tree-.patch \
+    file://0004-imx8mn-var-som-Remove-support-for-VAR-SOM-MX8M-NANO-.patch \
+    file://0005-imx8mn-var-som-Enable-PMIC-LDO5.patch \
+    file://0006-imx8mn-var-som-Add-support-for-VAR-SOM-MX8M-NANO-on-.patch \
+    file://0007-imx8mn-var-som-Disable-SD-card-detect-pin.patch \
+    file://0008-imx8mn_var_som-Update-device-default-device-tree-nam.patch \
+    file://0009-imx8mn-var-som-Recognize-VAR-SOM-MX8M-NANO-revisions.patch \
+    file://0010-imx8mn-var-som-Move-CONFIG_CSF_SIZE-to-imx8mn_var_so.patch \
+    file://0011-imx8mn-var-som-Add-support-for-Analog-Devices-ADIN13.patch \
+    file://0051-imx8mn-var-som-drop-do_reset-and-spl_mmc_get_uboot_r.patch \
+    file://0052-imx8mn-var-som-sync-defconfig-and-include-header-wit.patch \
+    file://0053-imx8mn-var-som-drop-dm-spl-from-all-nodes.patch \
+    file://0054-imx8mn-var-som-raise-NR_DRAM_BANKS-to-2.patch \
+    file://0055-imx8mn-var-som-adjust-emmc-and-sd-dev.patch \
+"

@@ -1,0 +1,33 @@
+From 36d46794328c84d80dad9a0bc6f15a902d23cd64 Mon Sep 17 00:00:00 2001
+From: Felix Radensky <felix.r@variscite.com>
+Date: Tue, 5 Jan 2021 10:30:58 +0200
+Subject: [PATCH 07/11] imx8mn-var-som: Disable SD card detect pin
+
+---
+ arch/arm/dts/imx8mn-var-som-symphony.dts | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/arch/arm/dts/imx8mn-var-som-symphony.dts b/arch/arm/dts/imx8mn-var-som-symphony.dts
+index d19c6678b7..0b7979040d 100644
+--- a/arch/arm/dts/imx8mn-var-som-symphony.dts
++++ b/arch/arm/dts/imx8mn-var-som-symphony.dts
+@@ -114,7 +114,6 @@
+ 	pinctrl_usdhc2_gpio: usdhc2grpgpio {
+ 		fsl,pins = <
+ 			MX8MN_IOMUXC_SAI2_RXC_GPIO4_IO22		0x41
+-			MX8MN_IOMUXC_GPIO1_IO10_GPIO1_IO10		0x41
+ 		>;
+ 	};
+ };
+@@ -158,7 +157,7 @@
+ 	pinctrl-1 = <&pinctrl_usdhc2_100mhz>, <&pinctrl_usdhc2_gpio>;
+ 	pinctrl-2 = <&pinctrl_usdhc2_200mhz>, <&pinctrl_usdhc2_gpio>;
+ 	bus-width = <4>;
+-	cd-gpios = <&gpio1 10 GPIO_ACTIVE_LOW>;
++	non-removable;
+ 	vmmc-supply = <&reg_usdhc2_vmmc>;
+ 	status = "okay";
+ };
+-- 
+2.35.1
+

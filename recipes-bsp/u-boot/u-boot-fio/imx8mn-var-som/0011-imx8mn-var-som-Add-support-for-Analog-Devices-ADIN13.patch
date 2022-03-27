@@ -1,0 +1,30 @@
+From 5a20af8290a90e7b3af712cb787aab5d8d1f5ba3 Mon Sep 17 00:00:00 2001
+From: Nate Drude <nate.d@variscite.com>
+Date: Thu, 24 Feb 2022 11:15:29 -0600
+Subject: [PATCH 11/11] imx8mn-var-som: Add support for Analog Devices ADIN1300
+ PHY
+
+Allow 20ms delay for PHY to recover from hard reset
+
+See fec_gpio_reset in drivers/net/fec_mxc.c
+
+Signed-off-by: Nate Drude <nate.d@variscite.com>
+---
+ arch/arm/dts/imx8mn-var-som.dtsi | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/arch/arm/dts/imx8mn-var-som.dtsi b/arch/arm/dts/imx8mn-var-som.dtsi
+index 7c28dc98a5..ab482fe1cc 100644
+--- a/arch/arm/dts/imx8mn-var-som.dtsi
++++ b/arch/arm/dts/imx8mn-var-som.dtsi
+@@ -43,6 +43,7 @@
+ 	phy-supply = <&reg_eth_phy>;
+ 	phy-reset-gpios = <&gpio1 9 GPIO_ACTIVE_LOW>;
+ 	phy-reset-duration = <10>;
++	phy-reset-post-delay = <20>;
+ 	status = "okay";
+ 
+ 	mdio {
+-- 
+2.35.1
+

@@ -1,0 +1,83 @@
+From 0f875071444b0846e19d18ef54d7640a60d86389 Mon Sep 17 00:00:00 2001
+From: Felix Radensky <felix.r@variscite.com>
+Date: Sun, 14 Mar 2021 12:21:37 +0200
+Subject: [PATCH 09/11] imx8mn-var-som: Recognize VAR-SOM-MX8M-NANO revisions
+ 1.2 and 1.3
+
+---
+ .../variscite/imx8mn_var_som/imx8mn_var_som.c | 30 +++++++++++++++----
+ .../variscite/imx8mn_var_som/imx8mn_var_som.h |  2 ++
+ 2 files changed, 26 insertions(+), 6 deletions(-)
+
+diff --git a/board/variscite/imx8mn_var_som/imx8mn_var_som.c b/board/variscite/imx8mn_var_som/imx8mn_var_som.c
+index 9542887019..c72f9af6bb 100644
+--- a/board/variscite/imx8mn_var_som/imx8mn_var_som.c
++++ b/board/variscite/imx8mn_var_som/imx8mn_var_som.c
+@@ -92,10 +92,18 @@ int board_init(void)
+ 
+ int var_get_som_rev(struct var_eeprom *ep)
+ {
+-	if (ep->somrev == 0)
++	switch (ep->somrev) {
++	case 0:
+ 		return SOM_REV_10;
+-	else
++	case 1:
+ 		return SOM_REV_11;
++	case 2:
++		return SOM_REV_12;
++	case 3:
++		return SOM_REV_13;
++	default:
++		return UNKNOWN_REV;
++	}
+ }
+ 
+ #define SDRAM_SIZE_STR_LEN 5
+@@ -115,17 +123,27 @@ int board_late_init(void)
+ 
+ 	som_rev = var_get_som_rev(ep);
+ 
++	printf("board_late_init: som_rev=%d\n", som_rev);
++
+ 	snprintf(sdram_size_str, SDRAM_SIZE_STR_LEN, "%d",
+ 		(int) (gd->ram_size / 1024 / 1024));
+ 	env_set("sdram_size", sdram_size_str);
+ 
+ 	env_set("board_name", "VAR-SOM-MX8M-NANO");
+-
+-	if (som_rev == SOM_REV_10)
++	switch (som_rev) {
++	case SOM_REV_10:
+ 		env_set("som_rev", "som_rev10");
+-	else
++		break;
++	case SOM_REV_11:
+ 		env_set("som_rev", "som_rev11");
+-
++		break;
++	case SOM_REV_12:
++		env_set("som_rev", "som_rev12");
++		break;
++	case SOM_REV_13:
++		env_set("som_rev", "som_rev13");
++		break;
++	}
+ 	var_carrier_eeprom_read(CARRIER_EEPROM_BUS, CARRIER_EEPROM_ADDR, &carrier_eeprom);
+ 	var_carrier_eeprom_get_revision(&carrier_eeprom, carrier_rev, sizeof(carrier_rev));
+ 	env_set("carrier_rev", carrier_rev);
+diff --git a/board/variscite/imx8mn_var_som/imx8mn_var_som.h b/board/variscite/imx8mn_var_som/imx8mn_var_som.h
+index 49dfc32bfb..0aeed4fc8a 100644
+--- a/board/variscite/imx8mn_var_som/imx8mn_var_som.h
++++ b/board/variscite/imx8mn_var_som/imx8mn_var_som.h
+@@ -3,5 +3,7 @@ int var_get_som_rev(struct var_eeprom *ep);
+ enum {
+     SOM_REV_10,
+     SOM_REV_11,
++    SOM_REV_12,
++    SOM_REV_13,
+     UNKNOWN_REV
+ };
+-- 
+2.35.1
+
