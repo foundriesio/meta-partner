@@ -18,3 +18,10 @@ SRC_URI_append_imx8mm-var-som-symphony = " \
         file://kernel-meta/bsp/imx/fragment-sn65dsi83.cfg \
         file://0001-arm64-dts-imx8mm-Add-missing-mux-options-for-UART1-a.patch \
 "
+
+SRC_URI_append_imx8mn-var-som = " \
+        file://kernel-meta/bsp/imx/imx8mn-var-som.cfg \
+        file://kernel-meta/bsp/imx/imx8mn-var-som.scc   \
+        file://kernel-meta/bsp/imx/imx8mn-var-som-standard.scc \
+        file://kernel-meta/bsp/imx/fragment-sn65dsi83.cfg \
+"
