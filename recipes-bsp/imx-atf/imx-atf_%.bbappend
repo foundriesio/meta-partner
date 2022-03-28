@@ -1,5 +1,10 @@
 FILESEXTRAPATHS_prepend := "${THISDIR}/${PN}:"
 
+# TODO: revert once merged to meta-lmp
+SRC_URI_append = " \
+    file://0001-plat-imx8mp-imx8mn-SiP-call-for-secondary-boot.patch \
+"
+
 SRC_URI_append_mx8m-var = " \
     file://0001-imx8m-Adjust-struct-dram_timing_info-to-match-u-boot.patch \
 "
