@@ -8,6 +8,7 @@ WKS_FILE_DEPENDS:append:mtk = " u-boot-default-script"
 PREFERRED_PROVIDER_u-boot-default-script:i1200-demo = "u-boot-ostree-scr-fit"
 SOTA_CLIENT_FEATURES:append:mtk = " ubootenv"
 OSTREE_KERNEL_ARGS:mtk ?= "console=ttyS0,921600 ${OSTREE_KERNEL_ARGS_COMMON}"
+WKS_FILE:sota:mtk = "sdimage-mediatek-sota.wks.in"
 
 ## Clang overrides for mediatek
 TOOLCHAIN:pn-lk = "gcc"

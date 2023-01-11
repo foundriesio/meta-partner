@@ -1,0 +1,7 @@
+# SHORT-description: Create an image for MediaTek SoC based boards
+# long-description: Creates a partitioned image for MediaTek SoC based boards
+
+part fip --source rawcopy --sourceparams="file=${DEPLOY_DIR_IMAGE}/fip.bin" --part-name bootloaders --align 512 --fixed-size 4M
+part /boot --source bootimg-partition --ondisk mmcblk --fstype=vfat --label boot --active --align 4096 --size 16
+part / --source otaimage --ondisk mmcblk --fstype=ext4 --align 4096
+bootloader --ptable gpt
