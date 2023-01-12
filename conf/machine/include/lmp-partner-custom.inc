@@ -10,6 +10,7 @@ SOTA_CLIENT_FEATURES:append:mtk = " ubootenv"
 OSTREE_KERNEL_ARGS:mtk ?= "console=ttyS0,921600 ${OSTREE_KERNEL_ARGS_COMMON}"
 IMAGE_BOOT_FILES:i1200-demo = "boot.itb"
 WKS_FILE:sota:mtk = "sdimage-mediatek-sota.wks.in"
+PREFERRED_PROVIDER_virtual/kernel:mtk = "linux-lmp-mtk"
 
 ## Clang overrides for mediatek
 TOOLCHAIN:pn-lk = "gcc"
