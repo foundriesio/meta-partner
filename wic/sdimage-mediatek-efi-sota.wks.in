@@ -1,0 +1,7 @@
+# SHORT-description: Create an image for MediaTek SoC based boards with UEFI
+# long-description: Creates a partitioned image for MediaTek SoC based board with UEFI supports
+
+part fip --source rawcopy --sourceparams="file=${DEPLOY_DIR_IMAGE}/fip.bin" --part-name bootloaders --align 512 --fixed-size 4M
+part /boot/efi --source bootimg-sota-efi --sourceparams="loader=grub-efi" --fstype=vfat --active --label efi --align 4096 --use-uuid --size 128M
+part / --source otaimage --fstype=ext4 --align 4096 --use-uuid
+bootloader --ptable gpt --configfile="grub-ota.cfg"

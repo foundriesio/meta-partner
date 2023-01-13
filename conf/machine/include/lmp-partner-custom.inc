@@ -11,6 +11,16 @@ OSTREE_KERNEL_ARGS:mtk ?= "console=ttyS0,921600 ${OSTREE_KERNEL_ARGS_COMMON}"
 IMAGE_BOOT_FILES:i1200-demo = "boot.itb"
 WKS_FILE:sota:mtk = "sdimage-mediatek-sota.wks.in"
 PREFERRED_PROVIDER_virtual/kernel:mtk = "linux-lmp-mtk"
+## EBBR compatiblity
+UBOOT_SIGN_ENABLE:sota:i1200-demo-ebbr = ""
+KERNEL_IMAGETYPE:sota:i1200-demo-ebbr ?= "Image"
+KERNEL_CLASSES:sota:i1200-demo-ebbr ?= ""
+EFI_PROVIDER:i1200-demo-ebbr ?= "grub-efi"
+OSTREE_BOOTLOADER:i1200-demo-ebbr ?= "grub"
+IMAGE_EFI_BOOT_FILES:sota:i1200-demo-ebbr ?= "${@make_efi_dtb_boot_files(d)}"
+WKS_FILE:sota:i1200-demo-ebbr ?= "sdimage-mediatek-efi-sota.wks.in"
+### Required as it currently depends on meta-intel (sbsigntool)
+CORE_IMAGE_BASE_INSTALL:remove:i1200-demo-ebbr = "efitools"
 
 ## Clang overrides for mediatek
 TOOLCHAIN:pn-lk = "gcc"
