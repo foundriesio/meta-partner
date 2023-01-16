@@ -1,8 +1,7 @@
 # LMP partner specific customizations (either replace or extend options as defined by meta-lmp)
 
 # Customizations for the mediatek BSP
-PREFERRED_PROVIDER_virtual/kernel:mtk ?= "linux-mtk"
-DISTRO_FEATURES_DEFAULT:remove:mtk = "modsign"
+PREFERRED_PROVIDER_virtual/kernel:mtk = "linux-lmp-mtk"
 KERNEL_CLASSES:mtk = "kernel-lmp-fitimage"
 WKS_FILE_DEPENDS:append:mtk = " u-boot-default-script"
 PREFERRED_PROVIDER_u-boot-default-script:mtk = "u-boot-ostree-scr-fit"
@@ -10,7 +9,6 @@ SOTA_CLIENT_FEATURES:append:mtk = " ubootenv"
 OSTREE_KERNEL_ARGS:mtk ?= "console=ttyS0,921600 ${OSTREE_KERNEL_ARGS_COMMON}"
 IMAGE_BOOT_FILES:mtk = "boot.itb"
 WKS_FILE:sota:mtk = "sdimage-mediatek-sota.wks.in"
-PREFERRED_PROVIDER_virtual/kernel:mtk = "linux-lmp-mtk"
 ## EBBR compatiblity
 UBOOT_SIGN_ENABLE:sota:i1200-demo-ebbr = ""
 KERNEL_IMAGETYPE:sota:i1200-demo-ebbr ?= "Image"
