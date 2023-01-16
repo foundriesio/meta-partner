@@ -11,6 +11,11 @@ SRC_URI = "${AIOT_BSP_URI}/linux.git;protocol=ssh;branch=${KBRANCH};name=machine
     ${KERNEL_META_REPO};protocol=${KERNEL_META_REPO_PROTOCOL};type=kmeta;name=meta;branch=${KERNEL_META_BRANCH};destsuffix=${KMETA} \
 "
 
+SRC_URI:append:i350-evk = " \
+    file://i350-evk-standard.scc \
+    file://i350-evk.scc \
+    file://i350-evk.cfg \
+"
 SRC_URI:append:i1200-demo = " \
     file://i1200-demo-standard.scc \
     file://i1200-demo.scc \
