@@ -16,6 +16,11 @@ SRC_URI:append:i350-evk = " \
     file://i350-evk.scc \
     file://i350-evk.cfg \
 "
+SRC_URI:append:i350-pumpkin = " \
+    file://i350-pumpkin-standard.scc \
+    file://i350-pumpkin.scc \
+    file://i350-pumpkin.cfg \
+"
 SRC_URI:append:i1200-demo = " \
     file://i1200-demo-standard.scc \
     file://i1200-demo.scc \
