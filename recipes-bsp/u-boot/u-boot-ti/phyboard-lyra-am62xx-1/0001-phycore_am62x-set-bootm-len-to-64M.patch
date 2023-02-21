@@ -1,0 +1,25 @@
+From b520923918b0995a651153363db8b1c34b9a5b08 Mon Sep 17 00:00:00 2001
+From: Michael Scott <mike@foundries.io>
+Date: Fri, 17 Feb 2023 16:52:12 -0800
+Subject: [PATCH] phycore_am62x: set bootm len to 64M
+
+Signed-off-by: Michael Scott <mike@foundries.io>
+---
+ include/configs/phycore_am62x.h | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/include/configs/phycore_am62x.h b/include/configs/phycore_am62x.h
+index 958e6d1c352..b9797f513b9 100644
+--- a/include/configs/phycore_am62x.h
++++ b/include/configs/phycore_am62x.h
+@@ -13,6 +13,7 @@
+ 
+ /* DDR Configuration */
+ #define CONFIG_SYS_SDRAM_BASE1		0x880000000
++#define CONFIG_SYS_BOOTM_LEN		SZ_64M
+ 
+ #ifdef CONFIG_SYS_K3_SPL_ATF
+ #define CONFIG_SPL_FS_LOAD_PAYLOAD_NAME	"tispl.bin"
+-- 
+2.39.1
+
