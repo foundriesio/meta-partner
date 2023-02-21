@@ -1,0 +1,47 @@
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * Copyright (C) 2023 Foundries.io
+ * Author: Michael Scott <mike@foundries.io>
+ *
+ * Product homepage:
+ * https://www.phytec.com/product/phyboard-am62x
+ */
+
+/*
+ * This DTB should only be used for early prototype boards
+ */
+
+#include <dt-bindings/pinctrl/k3.h>
+
+#include "k3-am625-phyboard-lyra-rdk.dts"
+
+/ {
+	model = "PHYTEC phyBOARD-Lyra AM625 Proto";
+
+	vddshv_sdio: gpio-regulator-vddshv-sdio {
+		/* Output of BD2204GUL-E2 */
+		compatible = "regulator-gpio";
+		regulator-name = "vddshv_sdio";
+		pinctrl-names = "default";
+		pinctrl-0 = <&vddshv_sdio_pins_default>;
+		regulator-min-microvolt = <1800000>;
+		regulator-max-microvolt = <3300000>;
+		regulator-boot-on;
+		vin-supply = <&vdd_3v3>;
+		gpios = <&main_gpio0 31 GPIO_ACTIVE_HIGH>;
+		states = <1800000 0x0>,
+			 <3300000 0x1>;
+	};
+};
+
+&main_pmx0 {
+	vddshv_sdio_pins_default: vddshv-sdio-pins-default {
+		pinctrl-single,pins = <
+			AM62X_IOPAD(0x07c, PIN_OUTPUT, 7) /* (P25) GPMC0_CLK.GPIO0_31 */
+		>;
+	};
+};
+
+&sdhci1 {
+	vqmmc-supply = <&vddshv_sdio>;
+};
