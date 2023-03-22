@@ -7,7 +7,6 @@ inherit fio-u-boot-localversion
 DEPENDS += "gnutls-native"
 
 SRC_URI:append = " \
-    file://0001-configs-mt8195-add-USB-as-possible-boot-device.patch \
     file://0001-GENIO-mt8195-board-define-dfu_alt_info-for-capsule-u.patch \
     file://0002-GENIO-arm-mediatek-mt8195-support-CONFIG_SYSRESET.patch \
     file://0003-GENIO-arm-dts-mt8195-demo-add-psci-node.patch \
