@@ -1,0 +1,15 @@
+diff --git a/arch/arm/dts/mt8195-demo.dts b/arch/arm/dts/mt8195-demo.dts
+index 8a3287060d..11cfad6609 100644
+--- a/arch/arm/dts/mt8195-demo.dts
++++ b/arch/arm/dts/mt8195-demo.dts
+@@ -13,6 +13,10 @@
+ 	model = "MediaTek MT8195 demo board";
+ 	compatible = "mediatek,mt8195-demo", "mediatek,mt8195";
+ 
++	signature {
++		capsule-key = /incbin/("../../../CRT.esl");
++	};
++
+ 	memory@40000000 {
+ 		/* 8GB */
+ 		device_type = "memory";
