@@ -3,7 +3,6 @@ FILESEXTRAPATHS_prepend := "${THISDIR}/${PN}:"
 # TODO: revert once merged to meta-lmp
 SRC_URI_append = " \
     file://0001-plat-imx8mp-imx8mn-SiP-call-for-secondary-boot.patch \
-    file://0001-plat-imx8mn-implement-system_reset2.patch \
 "
 
 SRC_URI_append_mx8m-var = " \
