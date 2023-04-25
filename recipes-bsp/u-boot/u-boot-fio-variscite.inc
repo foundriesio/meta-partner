@@ -62,5 +62,4 @@ SRC_URI_append_imx8mn-var-som = " \
     file://0053-imx8mn-var-som-drop-dm-spl-from-all-nodes.patch \
     file://0054-imx8mn-var-som-raise-NR_DRAM_BANKS-to-2.patch \
     file://0055-imx8mn-var-som-adjust-emmc-and-sd-dev.patch \
-    file://0056-imx8m-handle-ENV_IS_IN_FAT-in-env_get_location.patch \
 "
