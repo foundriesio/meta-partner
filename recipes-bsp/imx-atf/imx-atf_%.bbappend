@@ -6,10 +6,12 @@ SRC_URI:append:mx8m-var = " \
 
 SRC_URI:append:imx8mm-var-som-symphony = " \
     file://0001-imx8mm-Remove-uart2-and-uart4-domain-restrictions.patch \
-    file://0001-imx8mm-set-IMX_BOOT_UART_BASE-to-use-UART4.patch \
 "
 
 SRC_URI:append:imx8mn-var-som = " \
     file://0001-imx8mn-Remove-uart2-and-uart4-domain-restrictions.patch \
-    file://0002-imx8mn-set-IMX_BOOT_UART_BASE-to-use-UART4.patch \
+"
+
+EXTRA_OEMAKE:append = " \
+    IMX_BOOT_UART_BASE="0x30a60000" \
 "
