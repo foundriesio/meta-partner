@@ -19,11 +19,6 @@ SRC_URI_append_mx8m-var = " \
     file://0018-usb-gadget-Fix-ethernet-gadget-compilation-failure.patch \
 "
 
-# TODO: revert once merged to u-boot-fio
-SRC_URI_append_mx8m-var = " \
-    file://0051-imx-runtime-image-offset-detection-for-imx8mn.patch \
-"
-
 SRC_URI_append_imx8mm-var-som-symphony = " \
     file://0001-imx8mm_var_dart-Add-Variscite-DART-MX8M-MINI-and.patch \
     file://0002-imx8mm-var-dart-Separate-som-and-carrier-device-tree.patch \
