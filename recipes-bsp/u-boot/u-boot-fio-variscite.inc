@@ -1,4 +1,4 @@
-SRC_URI_append_mx8m-var = " \
+SRC_URI:append:mx8m-var = " \
     file://0001-imx8m-drivers-ddr-Add-support-for-specifying-DDR-PHY.patch \
     file://0002-imx8m-drivers-ddr-Change-padding-of-DDR4-and-LPDDR4-.patch \
     file://0003-pmic-bd71837-Produce-less-verbose-output.patch \
@@ -19,7 +19,7 @@ SRC_URI_append_mx8m-var = " \
     file://0018-usb-gadget-Fix-ethernet-gadget-compilation-failure.patch \
 "
 
-SRC_URI_append_imx8mm-var-som-symphony = " \
+SRC_URI:append:imx8mm-var-som-symphony = " \
     file://0001-imx8mm_var_dart-Add-Variscite-DART-MX8M-MINI-and.patch \
     file://0002-imx8mm-var-dart-Separate-som-and-carrier-device-tree.patch \
     file://0003-imx8mm-var-som-Separate-som-and-carrier-device-tree-.patch \
@@ -40,7 +40,7 @@ SRC_URI_append_imx8mm-var-som-symphony = " \
     file://0056-imx8mm_var_dart-handle-CONFIG_SECONDARY_BOOT_RUNTIME.patch \
 "
 
-SRC_URI_append_imx8mn-var-som = " \
+SRC_URI:append:imx8mn-var-som = " \
     file://0001-imx8mn_var_som-Add-support-for-Variscite-VAR-SOM-MX8.patch \
     file://0002-imx8mn_var_som-Add-support-for-Android-10.0.0_2.3.0.patch \
     file://0003-imx8mn-var-som-Separate-som-and-carrier-device-tree-.patch \

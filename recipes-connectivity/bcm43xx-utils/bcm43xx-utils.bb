@@ -12,16 +12,16 @@ SRC_URI = " \
 	file://variscite-wifi.conf \
 "
 
-FILES_${PN} = " \ 
+FILES:${PN} = " \ 
 	${sysconfdir}/wifi/*  \
 	${@bb.utils.contains('DISTRO_FEATURES', 'systemd', '${systemd_unitdir}/system/* ${sysconfdir}/systemd/system/multi-user.target.wants/*', \
 													   '${sysconfdir}/init.d ${sysconfdir}/rcS.d', d)} \
 "
 
-RDEPENDS_${PN}_imx8mq-var-dart = "i2c-tools"
-RDEPENDS_${PN}_imx8mm-var-som-symphony = "i2c-tools"
-RDEPENDS_${PN}_imx8mn-var-som = "i2c-tools"
-RDEPENDS_${PN}_append = " bash base-files"
+RDEPENDS:${PN}:imx8mq-var-dart = "i2c-tools"
+RDEPENDS:${PN}:imx8mm-var-som-symphony = "i2c-tools"
+RDEPENDS:${PN}:imx8mn-var-som = "i2c-tools"
+RDEPENDS:${PN}:append = " bash base-files"
 
 S = "${WORKDIR}"
 

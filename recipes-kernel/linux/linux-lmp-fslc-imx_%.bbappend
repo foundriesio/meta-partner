@@ -1,6 +1,6 @@
-FILESEXTRAPATHS_prepend := "${THISDIR}/${PN}:"
+FILESEXTRAPATHS:prepend := "${THISDIR}/${PN}:"
 
-SRC_URI_append_mx8m-var = " \
+SRC_URI:append:mx8m-var = " \
         file://0901-sn65dsi83-Add-dsi2lvds-bridge.patch \
         file://0902-sn65dsi83-Fix-complation-failures.patch \
         file://0903-sn65dsi83-Fix-Kconfig-help-messages.patch \
@@ -11,7 +11,7 @@ SRC_URI_append_mx8m-var = " \
         file://0908-sn65dsi83-Add-dual-channel-support.patch \
 "
 
-SRC_URI_append_imx8mm-var-som-symphony = " \
+SRC_URI:append:imx8mm-var-som-symphony = " \
         file://kernel-meta/bsp/imx/imx8mm_var_som_symphony.cfg \
         file://kernel-meta/bsp/imx/imx8mm_var_som_symphony.scc   \
         file://kernel-meta/bsp/imx/imx8mm_var_som_symphony-standard.scc \
@@ -19,7 +19,7 @@ SRC_URI_append_imx8mm-var-som-symphony = " \
         file://0001-arm64-dts-imx8mm-Add-missing-mux-options-for-UART1-a.patch \
 "
 
-SRC_URI_append_imx8mn-var-som = " \
+SRC_URI:append:imx8mn-var-som = " \
         file://kernel-meta/bsp/imx/imx8mn-var-som.cfg \
         file://kernel-meta/bsp/imx/imx8mn-var-som.scc   \
         file://kernel-meta/bsp/imx/imx8mn-var-som-standard.scc \

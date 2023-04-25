@@ -1,15 +1,15 @@
-FILESEXTRAPATHS_prepend := "${THISDIR}/${PN}:"
+FILESEXTRAPATHS:prepend := "${THISDIR}/${PN}:"
 
-SRC_URI_append_imx8mm-var-som-symphony = " \
+SRC_URI:append:imx8mm-var-som-symphony = " \
     file://imx8mm-var-som-symphony.dts \
     file://imx8mm-var-som.dtsi \
 "
 
-SRC_URI_append_imx8mn-var-som = " \
+SRC_URI:append:imx8mn-var-som = " \
     file://imx8mn-var-som.dtsi \
     file://variscite_imx8mn-var-som-symphony.dts \
     file://variscite_imx8mn-var-som-symphony-legacy.dts \
 "
 
-COMPATIBLE_MACHINE_imx8mm-var-som-symphony = ".*"
-COMPATIBLE_MACHINE_imx8mn-var-som = ".*"
+COMPATIBLE_MACHINE:imx8mm-var-som-symphony = ".*"
+COMPATIBLE_MACHINE:imx8mn-var-som = ".*"
