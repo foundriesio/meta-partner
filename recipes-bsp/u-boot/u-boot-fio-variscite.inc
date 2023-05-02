@@ -12,9 +12,6 @@ SRC_URI:append:mx8m-var = " \
     file://0011-variscite-Add-common-EEPROM-code.patch \
     file://0012-variscite-Add-common-DRAM-code.patch \
     file://0014-variscite-imx8-Add-common-dram-code.patch \
-    file://0015-variscite-imx8_eeprom-exposed-var_scu_eeprom_read_he.patch \
-    file://0016-variscite-eeprom-Remove-redundant-extern-function-de.patch \
-    file://0017-eeprom-Add-support-for-carrier-board-EEPROM.patch \
     file://0018-usb-gadget-Fix-ethernet-gadget-compilation-failure.patch \
 "
 
