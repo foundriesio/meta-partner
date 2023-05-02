@@ -1,23 +1,26 @@
-From e2f57f13e3fed39b460a51626db724b4e1257209 Mon Sep 17 00:00:00 2001
-From: Felix Radensky <felix.r@variscite.com>
-Date: Sun, 23 Aug 2020 09:53:55 +0300
-Subject: [PATCH 11/18] variscite: Add common EEPROM code
+From 0f019de952d8a3368fd788f4d71ea76d667bf459 Mon Sep 17 00:00:00 2001
+From: Nate Drude <nate.d@variscite.com>
+Date: Thu, 28 Jul 2022 14:00:48 -0500
+Subject: [PATCH] variscite: Add imx8 common EEPROM code
 
+checked out from bba806c803f1ff50c86295b933640f5215d33313
+
+Signed-off-by: Nate Drude <nate.d@variscite.com>
 ---
- board/variscite/common/imx8_eeprom.c | 342 +++++++++++++++++++++++++++
- board/variscite/common/imx8_eeprom.h |  75 ++++++
- 2 files changed, 417 insertions(+)
+ board/variscite/common/imx8_eeprom.c | 465 +++++++++++++++++++++++++++
+ board/variscite/common/imx8_eeprom.h |  92 ++++++
+ 2 files changed, 557 insertions(+)
  create mode 100644 board/variscite/common/imx8_eeprom.c
  create mode 100644 board/variscite/common/imx8_eeprom.h
 
 diff --git a/board/variscite/common/imx8_eeprom.c b/board/variscite/common/imx8_eeprom.c
 new file mode 100644
-index 0000000000..5ce2cfa890
+index 00000000000..3ba1a908815
 --- /dev/null
 +++ b/board/variscite/common/imx8_eeprom.c
-@@ -0,0 +1,342 @@
+@@ -0,0 +1,465 @@
 +/*
-+ * Copyright (C) 2018-2020 Variscite Ltd.
++ * Copyright (C) 2018-2022 Variscite Ltd.
 + *
 + * SPDX-License-Identifier: GPL-2.0+
 + */
@@ -28,6 +31,7 @@ index 0000000000..5ce2cfa890
 +#include <i2c.h>
 +#include <asm/io.h>
 +#include <cpu_func.h>
++#include <u-boot/crc.h>
 +
 +#ifdef CONFIG_ARCH_IMX8M
 +#include <asm/arch-imx8m/ddr.h>
@@ -65,7 +69,7 @@ index 0000000000..5ce2cfa890
 +	return ret;
 +}
 +
-+static int var_scu_eeprom_read_header(struct var_eeprom *e)
++int var_scu_eeprom_read_header(struct var_eeprom *e)
 +{
 +	int ret;
 +
@@ -79,26 +83,39 @@ index 0000000000..5ce2cfa890
 +}
 +#endif /* ARCH_IMX8 */
 +
-+#ifdef CONFIG_DM_I2C
-+int var_eeprom_read_header(struct var_eeprom *e)
++#if CONFIG_IS_ENABLED(DM_I2C)
++static int var_eeprom_get_dev(struct udevice **devp)
 +{
 +	int ret;
 +	struct udevice *bus;
-+	struct udevice *dev;
 +
 +	ret = uclass_get_device_by_seq(UCLASS_I2C, VAR_EEPROM_I2C_BUS, &bus);
 +	if (ret) {
-+		debug("%s: No bus %d\n", __func__, VAR_EEPROM_I2C_BUS);
++		debug("%s: No EEPROM I2C bus %d\n", __func__, VAR_EEPROM_I2C_BUS);
 +		return ret;
 +	}
 +
-+	ret = dm_i2c_probe(bus, VAR_EEPROM_I2C_ADDR, 0, &dev);
++	ret = dm_i2c_probe(bus, VAR_EEPROM_I2C_ADDR, 0, devp);
++	if (ret) {
++		debug("%s: I2C EEPROM probe failed\n", __func__);
++		return ret;
++	}
++
++	return 0;
++}
++
++int var_eeprom_read_header(struct var_eeprom *e)
++{
++	int ret;
++	struct udevice *dev;
++
++	ret = var_eeprom_get_dev(&dev);
 +	if (ret) {
 +#ifdef CONFIG_ARCH_IMX8
 +		debug("%s: calling SCU to read EEPROM\n", __func__);
 +		return var_scu_eeprom_read_header(e);
 +#else
-+		debug("%s: I2C EEPROM probe failed\n", __func__);
++		debug("%s: Failed to detect I2C EEPROM\n", __func__);
 +		return ret;
 +#endif
 +	}
@@ -266,14 +283,27 @@ index 0000000000..5ce2cfa890
 +	int i, j = 0;
 +	u8 off = adj_table_offset;
 +	struct dram_cfg_param adj_table_row;
++#if CONFIG_IS_ENABLED(DM_I2C)
++	int ret;
++	struct udevice *dev;
 +
++	/* Get EEPROM device */
++	ret = var_eeprom_get_dev(&dev);
++	if (ret) {
++		debug("%s: Failed to detect I2C EEPROM\n", __func__);
++		return;
++	}
++#endif
 +	/* Iterate over adjustment table */
 +	for (i = 0; i < adj_table_size; i++) {
-+
++#if CONFIG_IS_ENABLED(DM_I2C)
 +		/* Read next entry from adjustment table */
++		dm_i2c_read(dev, off,
++			(uint8_t *)&adj_table_row, sizeof(adj_table_row));
++#else
 +		i2c_read(VAR_EEPROM_I2C_ADDR, off, 1,
 +			(uint8_t *)&adj_table_row, sizeof(adj_table_row));
-+
++#endif
 +		/* Iterate over DDR table and adjust it */
 +		for (; j < table_size; j++) {
 +			if (table[j].reg == adj_table_row.reg) {
@@ -358,14 +388,110 @@ index 0000000000..5ce2cfa890
 +	}
 +}
 +#endif
++
++#if CONFIG_IS_ENABLED(DM_I2C)
++int var_carrier_eeprom_read(int bus_no, int addr, struct var_carrier_eeprom *ep)
++{
++	int ret;
++	struct udevice *bus;
++	struct udevice *dev;
++
++	ret = uclass_get_device_by_seq(UCLASS_I2C, bus_no, &bus);
++	if (ret) {
++		debug("%s: No bus %d\n", __func__, bus_no);
++		return ret;
++	}
++
++	ret = dm_i2c_probe(bus, addr, 0, &dev);
++	if (ret) {
++		debug("%s: Carrier EEPROM I2C probe failed\n", __func__);
++		return ret;
++	}
++
++	/* Read EEPROM to memory */
++	ret = dm_i2c_read(dev, 0, (void *)ep, sizeof(*ep));
++	if (ret) {
++		debug("%s: Carrier EEPROM read failed, ret=%d\n", __func__, ret);
++		return ret;
++	}
++
++	return 0;
++}
++#else
++int var_carrier_eeprom_read(int bus_no, int addr, struct var_carrier_eeprom *ep)
++{
++	int ret;
++
++	/* Probe EEPROM */
++	i2c_set_bus_num(bus_no);
++	ret = i2c_probe(addr);
++	if (ret) {
++		debug("%s: Carrier EEPROM probe failed\n", __func__);
++		return ret;
++	}
++
++	/* Read EEPROM contents */
++	ret = i2c_read(addr, 0, 1, (uint8_t *)ep, sizeof(*ep));
++	if (ret) {
++		debug("%s: Carrier EEPROM read failed ret=%d\n", __func__, ret);
++		return ret;
++	}
++
++	return 0;
++}
++#endif
++
++int var_carrier_eeprom_is_valid(struct var_carrier_eeprom *ep)
++{
++	u32 crc, crc_offset = offsetof(struct var_carrier_eeprom, crc);
++
++	if (htons(ep->magic) != VAR_CARRIER_EEPROM_MAGIC) {
++		debug("Invalid carrier EEPROM magic 0x%hx, expected 0x%hx\n",
++			htons(ep->magic), VAR_CARRIER_EEPROM_MAGIC);
++		return 0;
++	}
++
++	if (ep->struct_ver < 1) {
++		printf("Invalid carrier EEPROM version 0x%hx\n", ep->struct_ver);
++		return 0;
++	}
++
++	if (ep->struct_ver == 1)
++		return 1;
++
++	/* Only EEPROM structure above version 1 has CRC field */
++	crc = crc32(0, (void *)ep, crc_offset);
++
++	if (crc != ep->crc) {
++		printf("Carrier EEPROM CRC mismatch (%08x != %08x)\n",
++			crc, be32_to_cpu(ep->crc));
++		return 0;
++	}
++
++	return 1;
++}
++
++/* Returns carrier board revision string via 'rev' argument.
++ * For legacy carrier board revisions the "legacy" string is returned.
++ * For new carrier board revisions the actual carrier revision is returned.
++ * Symphony-Board 1.4 and below are legacy, 1.4a and above are new.
++ * DT8MCustomBoard 1.4 and below are legacy, 2.0 and above are new.
++ */
++void var_carrier_eeprom_get_revision(struct var_carrier_eeprom *ep, char *rev, size_t size)
++{
++	if (var_carrier_eeprom_is_valid(ep))
++		strncpy(rev, (const char *)ep->carrier_rev, size);
++	else
++		strncpy(rev, "legacy", size);
++}
 diff --git a/board/variscite/common/imx8_eeprom.h b/board/variscite/common/imx8_eeprom.h
 new file mode 100644
-index 0000000000..2907b57856
+index 00000000000..2f3d6774498
 --- /dev/null
 +++ b/board/variscite/common/imx8_eeprom.h
-@@ -0,0 +1,75 @@
+@@ -0,0 +1,92 @@
 +/*
-+ * Copyright (C) 2018-2020 Variscite Ltd.
++ * Copyright (C) 2018-2022 Variscite Ltd.
 + *
 + * SPDX-License-Identifier: GPL-2.0+
 + */
@@ -383,11 +509,12 @@ index 0000000000..2907b57856
 +#define VAR_EEPROM_I2C_ADDR	0x52
 +
 +/* Optional SOM features */
-+#define VAR_EEPROM_F_WIFI 	(1 << 0)
-+#define VAR_EEPROM_F_ETH 	(1 << 1)
-+#define VAR_EEPROM_F_AUDIO 	(1 << 2)
-+#define VAR_EEPROM_F_LVDS	(1 << 3)
-+#define VAR_EEPROM_F_NAND	(1 << 4)
++#define VAR_EEPROM_F_WIFI		(1 << 0)
++#define VAR_EEPROM_F_ETH		(1 << 1)
++#define VAR_EEPROM_F_AUDIO		(1 << 2)
++#define VAR_EEPROM_F_MX8M_LVDS		(1 << 3) /* i.MX8MM, i.MX8MN, i.MX8MQ only */
++#define VAR_EEPROM_F_MX8Q_SOC_ID	(1 << 3) /* 0 = i.MX8QM, 1 = i.MX8QP */
++#define VAR_EEPROM_F_NAND		(1 << 4)
 +
 +/* SOM storage types */
 +enum som_storage {
@@ -417,6 +544,17 @@ index 0000000000..2907b57856
 +
 +#define VAR_EEPROM_DATA ((struct var_eeprom *)VAR_EEPROM_DRAM_START)
 +
++#define VAR_CARRIER_EEPROM_MAGIC	0x5643 /* == HEX("VC") */
++
++#define CARRIER_REV_LEN 16
++struct __attribute__((packed)) var_carrier_eeprom
++{
++	u16 magic;                          /* 00-0x00 - magic number		*/
++	u8 struct_ver;                      /* 01-0x01 - EEPROM structure version	*/
++	u8 carrier_rev[CARRIER_REV_LEN];    /* 02-0x02 - carrier board revision	*/
++	u32 crc;                            /* 10-0x0a - checksum			*/
++};
++
 +static inline int var_eeprom_is_valid(struct var_eeprom *ep)
 +{
 +	if (htons(ep->magic) != VAR_EEPROM_MAGIC) {
@@ -428,17 +566,22 @@ index 0000000000..2907b57856
 +	return 1;
 +}
 +
-+extern int var_eeprom_read_header(struct var_eeprom *e);
-+extern int var_eeprom_get_dram_size(struct var_eeprom *e, phys_size_t *size);
-+extern int var_eeprom_get_mac(struct var_eeprom *e, u8 *mac);
-+extern int var_eeprom_get_storage(struct var_eeprom *e, int *storage);
-+extern void var_eeprom_print_prod_info(struct var_eeprom *e);
++int var_eeprom_read_header(struct var_eeprom *e);
++int var_scu_eeprom_read_header(struct var_eeprom *e);
++int var_eeprom_get_dram_size(struct var_eeprom *e, phys_size_t *size);
++int var_eeprom_get_mac(struct var_eeprom *e, u8 *mac);
++int var_eeprom_get_storage(struct var_eeprom *e, int *storage);
++void var_eeprom_print_prod_info(struct var_eeprom *e);
 +
 +#if defined(CONFIG_ARCH_IMX8M) && defined(CONFIG_SPL_BUILD)
-+extern void var_eeprom_adjust_dram(struct var_eeprom *e, struct dram_timing_info *d);
++void var_eeprom_adjust_dram(struct var_eeprom *e, struct dram_timing_info *d);
 +#endif
++
++int var_carrier_eeprom_read(int bus, int addr, struct var_carrier_eeprom *ep);
++int var_carrier_eeprom_is_valid(struct var_carrier_eeprom *ep);
++void var_carrier_eeprom_get_revision(struct var_carrier_eeprom *ep, char *rev, size_t size);
 +
 +#endif /* _MX8M_VAR_EEPROM_H_ */
 -- 
-2.35.1
+2.34.1
 

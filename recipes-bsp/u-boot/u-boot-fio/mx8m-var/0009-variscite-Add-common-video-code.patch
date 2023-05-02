@@ -1,19 +1,27 @@
-From b50599405ef0926ce0944f7df040b9852ab2fb6b Mon Sep 17 00:00:00 2001
+From bf7822775f22ee2f30e98dc474885e60b9bf208c Mon Sep 17 00:00:00 2001
 From: Felix Radensky <felix.r@variscite.com>
-Date: Sun, 31 May 2020 12:52:02 +0300
-Subject: [PATCH 09/18] variscite: Add common video code
+Date: Wed, 4 Aug 2021 10:49:33 +0300
+Subject: [PATCH] variscite: Add common video code
 
+(cherry picked from commit 56a8d1dfc30d68866949ff8632d6fb9c6519c967)
 ---
- board/variscite/common/video.c | 61 ++++++++++++++++++++++++++++++++++
- 1 file changed, 61 insertions(+)
+ board/variscite/common/video.c | 68 ++++++++++++++++++++++++++++++++++
+ 1 file changed, 68 insertions(+)
  create mode 100644 board/variscite/common/video.c
 
 diff --git a/board/variscite/common/video.c b/board/variscite/common/video.c
 new file mode 100644
-index 0000000000..079d583540
+index 00000000000..7ec6aeb5c58
 --- /dev/null
 +++ b/board/variscite/common/video.c
-@@ -0,0 +1,61 @@
+@@ -0,0 +1,68 @@
++/*
++ * Copyright (C) 2016 Freescale Semiconductor, Inc.
++ * Copyright 2018 NXP
++ *
++ * SPDX-License-Identifier:	GPL-2.0+
++ */
++
 +#include <common.h>
 +#include <splash.h>
 +#include <mmc.h>
@@ -76,5 +84,5 @@ index 0000000000..079d583540
 +}
 +#endif
 -- 
-2.35.1
+2.34.1
 

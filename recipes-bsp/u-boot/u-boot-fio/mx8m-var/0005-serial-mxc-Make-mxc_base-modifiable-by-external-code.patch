@@ -1,19 +1,21 @@
-From 14d2454f801cc5c29fcfe8d48aec5e452dfe24e9 Mon Sep 17 00:00:00 2001
+From 7972c4c29b0cd20a2bac6cc9c40ebca4eb1f6abb Mon Sep 17 00:00:00 2001
 From: Felix Radensky <felix.r@variscite.com>
 Date: Wed, 15 Jul 2020 17:59:40 +0300
-Subject: [PATCH 05/18] serial: mxc: Make mxc_base modifiable by external code
+Subject: [PATCH] serial: mxc: Make mxc_base modifiable by external code
 
 Required when several boards use the same board header file
 but use different UARTs as console.
+
+(cherry picked from commit b0e838c602e07914317840fc5c80504443d5d3fc)
 ---
  drivers/serial/serial_mxc.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/drivers/serial/serial_mxc.c b/drivers/serial/serial_mxc.c
-index 3efab1fa71..53a741352f 100644
+index 058f526b2cc..3c0096ed9f3 100644
 --- a/drivers/serial/serial_mxc.c
 +++ b/drivers/serial/serial_mxc.c
-@@ -184,7 +184,7 @@ static void _mxc_serial_setbrg(struct mxc_uart *base, unsigned long clk,
+@@ -185,7 +185,7 @@ static void _mxc_serial_setbrg(struct mxc_uart *base, unsigned long clk,
  #error "define CONFIG_MXC_UART_BASE to use the MXC UART driver"
  #endif
  
@@ -23,5 +25,5 @@ index 3efab1fa71..53a741352f 100644
  static void mxc_serial_setbrg(void)
  {
 -- 
-2.35.1
+2.34.1
 

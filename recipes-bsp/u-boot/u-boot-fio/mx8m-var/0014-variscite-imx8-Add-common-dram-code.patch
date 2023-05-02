@@ -1,20 +1,22 @@
-From c02b4e6fe03832b1e73a44fc71f8c28e9c02253e Mon Sep 17 00:00:00 2001
+From 98d9915033cbc76f203a8f66bc93fae3a083d891 Mon Sep 17 00:00:00 2001
 From: Mohit Singh <mohit.p@variscite.com>
 Date: Mon, 23 Nov 2020 12:21:29 -0800
-Subject: [PATCH 14/18] variscite: imx8: Add common dram code
+Subject: [PATCH] variscite: imx8: Add common dram code
 
+(cherry picked from commit 6ae1f741aced37a4ee0462c1fb16120ad9a4385b)
 ---
- board/variscite/common/imx8_dram.c | 280 ++++++++++++++++++++++++++++-
- 1 file changed, 275 insertions(+), 5 deletions(-)
+ board/variscite/common/imx8_dram.c | 279 ++++++++++++++++++++++++++++-
+ 1 file changed, 274 insertions(+), 5 deletions(-)
 
 diff --git a/board/variscite/common/imx8_dram.c b/board/variscite/common/imx8_dram.c
-index 92c365ce5d..3e6d32b4f8 100644
+index e14658dbb35..fc891c768e7 100644
 --- a/board/variscite/common/imx8_dram.c
 +++ b/board/variscite/common/imx8_dram.c
-@@ -6,15 +6,12 @@
- 
+@@ -7,15 +7,12 @@
  #include <common.h>
  #include <asm/arch/sys_proto.h>
+ #include <asm/global_data.h>
+-
 +#include <asm/armv8/mmu.h>
  #include "imx8_eeprom.h"
  
@@ -24,12 +26,11 @@ index 92c365ce5d..3e6d32b4f8 100644
 -
 -#define PHYS_SDRAM_LOW_MAX_ADDR		0x100000000ULL
 -#define PHYS_SDRAM_LOW_MAX_SIZE		(PHYS_SDRAM_LOW_MAX_ADDR - CONFIG_SYS_SDRAM_BASE)
--
 +#if defined (CONFIG_IMX8M_BOARD_INIT_DRAM) || defined (CONFIG_IMX8_BOARD_INIT_DRAM)
+ 
  static int get_dram_size(phys_size_t *size)
  {
- 	struct var_eeprom *ep = VAR_EEPROM_DATA;
-@@ -26,6 +23,13 @@ static int get_dram_size(phys_size_t *size)
+@@ -28,6 +25,12 @@ static int get_dram_size(phys_size_t *size)
  
  	return 0;
  }
@@ -39,11 +40,10 @@ index 92c365ce5d..3e6d32b4f8 100644
 +
 +#define PHYS_SDRAM_LOW_MAX_ADDR		0x100000000ULL
 +#define PHYS_SDRAM_LOW_MAX_SIZE		(PHYS_SDRAM_LOW_MAX_ADDR - CONFIG_SYS_SDRAM_BASE)
-+
  
  int dram_init_banksize(void)
  {
-@@ -122,3 +126,269 @@ phys_size_t get_effective_memsize(void)
+@@ -124,3 +127,269 @@ phys_size_t get_effective_memsize(void)
  	}
  }
  #endif
@@ -314,5 +314,5 @@ index 92c365ce5d..3e6d32b4f8 100644
 +}
 +#endif
 -- 
-2.35.1
+2.34.1
 

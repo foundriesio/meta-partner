@@ -1,14 +1,15 @@
-From eae779f60b02988d51b57116b4151ca7368263e0 Mon Sep 17 00:00:00 2001
+From e2753e75216a9007c3ebacc7d125ea84ed7c42d4 Mon Sep 17 00:00:00 2001
 From: Felix Radensky <felix.r@variscite.com>
 Date: Mon, 18 Feb 2019 14:14:51 +0200
-Subject: [PATCH 03/18] pmic: bd71837: Produce less verbose output
+Subject: [PATCH] pmic: bd71837: Produce less verbose output
 
+(cherry picked from commit 0a58976856021be9e56202dfe8708b51a6bb93ce)
 ---
  drivers/power/pmic/pmic_bd71837.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/drivers/power/pmic/pmic_bd71837.c b/drivers/power/pmic/pmic_bd71837.c
-index 74195ccae8..59f3596196 100644
+index 4b3cb4a70a8..fe2f39915aa 100644
 --- a/drivers/power/pmic/pmic_bd71837.c
 +++ b/drivers/power/pmic/pmic_bd71837.c
 @@ -27,7 +27,7 @@ int power_bd71837_init (unsigned char bus) {
@@ -21,5 +22,5 @@ index 74195ccae8..59f3596196 100644
  	return 0;
  }
 -- 
-2.35.1
+2.34.1
 

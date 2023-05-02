@@ -1,21 +1,22 @@
-From b1089c7d032a6c84eaf855e78d1519af862468b2 Mon Sep 17 00:00:00 2001
+From 9893e6caa408506eaaa6a3cc33947d538f14cfc7 Mon Sep 17 00:00:00 2001
 From: Felix Radensky <felix.r@variscite.com>
 Date: Wed, 12 Aug 2020 17:42:40 +0300
-Subject: [PATCH 06/18] imx8m: dram: Allow overriding DRAM init routines in
- board code
+Subject: [PATCH] imx8m: dram: Allow overriding DRAM init routines in board
+ code
 
+(cherry picked from commit 450ca490a4692ac2a6649c19009de34108130f71)
 ---
  arch/arm/mach-imx/imx8m/Kconfig | 6 ++++++
  arch/arm/mach-imx/imx8m/soc.c   | 2 ++
  2 files changed, 8 insertions(+)
 
 diff --git a/arch/arm/mach-imx/imx8m/Kconfig b/arch/arm/mach-imx/imx8m/Kconfig
-index 046fe14ff0..51c93d6ac5 100644
+index a225a9784f4..c294ce7c161 100644
 --- a/arch/arm/mach-imx/imx8m/Kconfig
 +++ b/arch/arm/mach-imx/imx8m/Kconfig
-@@ -37,6 +37,12 @@ config IMX_UNIQUE_ID
- 	depends on IMX8MQ && IMX_HAB && !SECURE_STICKY_BITS_LOCKUP
- 	default 0x0
+@@ -54,6 +54,12 @@ config IMX8M_MCU_RDC_STOP_CONFIG_ADDR
+ 	hex "Start address of mcu rdc config when mcu stops"
+ 	default 0x187000
  
 +config IMX8M_BOARD_INIT_DRAM
 +	bool
@@ -24,28 +25,28 @@ index 046fe14ff0..51c93d6ac5 100644
 +	 This option enables DRAM configuration in board code
 +
  choice
- 	prompt  "NXP i.MX8M board select"
+ 	prompt "NXP i.MX8M board select"
  	optional
 diff --git a/arch/arm/mach-imx/imx8m/soc.c b/arch/arm/mach-imx/imx8m/soc.c
-index e8c4e23251..05420b1466 100644
+index 0d2f7a5897f..6d07de0e9bc 100644
 --- a/arch/arm/mach-imx/imx8m/soc.c
 +++ b/arch/arm/mach-imx/imx8m/soc.c
-@@ -197,6 +197,7 @@ void enable_caches(void)
+@@ -226,6 +226,7 @@ void enable_caches(void)
  	dcache_enable();
  }
  
 +#ifndef CONFIG_IMX8M_BOARD_INIT_DRAM
- __weak int board_phys_sdram_size(phys_size_t *bank1_size, phys_size_t *bank2_size)
+ __weak int board_phys_sdram_size(phys_size_t *size)
  {
- 	if (!bank1_size || !bank2_size)
-@@ -288,6 +289,7 @@ phys_size_t get_effective_memsize(void)
+ 	if (!size)
+@@ -308,6 +309,7 @@ int dram_init_banksize(void)
  
- 	return sdram1_size;
+ 	return 0;
  }
 +#endif
  
- static u32 get_cpu_variant_type(u32 type)
+ phys_size_t get_effective_memsize(void)
  {
 -- 
-2.35.1
+2.34.1
 

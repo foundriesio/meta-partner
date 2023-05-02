@@ -1,8 +1,8 @@
-From 9b100339529136638134bf5abfc12fb776019979 Mon Sep 17 00:00:00 2001
+From 67479e605c4f3181e34ccaca214c79555172a806 Mon Sep 17 00:00:00 2001
 From: Felix Radensky <felix.r@variscite.com>
 Date: Mon, 11 May 2020 09:05:19 +0300
-Subject: [PATCH 02/18] imx8m: drivers/ddr: Change padding of DDR4 and LPDDR4
- DMEM firmware
+Subject: [PATCH] imx8m: drivers/ddr: Change padding of DDR4 and LPDDR4 DMEM
+ firmware
 
 DMEM firmware files are padded to 16KB, wasting precious space
 in processor internal RAM (TMU). The actual size of these files
@@ -10,15 +10,17 @@ is less than 2KB, so padding them to 4KB is sufficient.
 
 This patch changes the expected size of DMEM firmware.
 It relies on boot image creation tools to generate 4KB padding.
+
+(cherry picked from commit 3b5aa3fc1ce23ffe8f790be60efaa495e99f033a)
 ---
- drivers/ddr/imx/imx8m/helper.c | 4 ++--
+ drivers/ddr/imx/phy/helper.c | 4 ++--
  1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/ddr/imx/imx8m/helper.c b/drivers/ddr/imx/imx8m/helper.c
-index a6f1814131..e2228927b9 100644
---- a/drivers/ddr/imx/imx8m/helper.c
-+++ b/drivers/ddr/imx/imx8m/helper.c
-@@ -16,8 +16,8 @@
+diff --git a/drivers/ddr/imx/phy/helper.c b/drivers/ddr/imx/phy/helper.c
+index 4e4f70144e2..9a507e7dc9f 100644
+--- a/drivers/ddr/imx/phy/helper.c
++++ b/drivers/ddr/imx/phy/helper.c
+@@ -17,8 +17,8 @@
  DECLARE_GLOBAL_DATA_PTR;
  
  #define IMEM_LEN 32768 /* byte */
@@ -30,5 +32,5 @@ index a6f1814131..e2228927b9 100644
  #define IMEM_OFFSET_ADDR 0x00050000
  #define DMEM_OFFSET_ADDR 0x00054000
 -- 
-2.35.1
+2.34.1
 
