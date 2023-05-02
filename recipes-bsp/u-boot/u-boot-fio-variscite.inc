@@ -11,7 +11,6 @@ SRC_URI:append:mx8m-var = " \
     file://0010-variscite-Add-common-ethernet-code.patch \
     file://0011-variscite-Add-common-EEPROM-code.patch \
     file://0012-variscite-Add-common-DRAM-code.patch \
-    file://0013-variscite-imx8-Allow-overriding-DRAM-init-routines-i.patch \
     file://0014-variscite-imx8-Add-common-dram-code.patch \
     file://0015-variscite-imx8_eeprom-exposed-var_scu_eeprom_read_he.patch \
     file://0016-variscite-eeprom-Remove-redundant-extern-function-de.patch \
