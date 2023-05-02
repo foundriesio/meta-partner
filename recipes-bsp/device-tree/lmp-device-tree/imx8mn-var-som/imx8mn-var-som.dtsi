@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: (GPL-2.0+ OR MIT)
 /*
  * Copyright 2019 NXP
- * Copyright 2019-2020 Variscite Ltd.
+ * Copyright 2019-2023 Variscite Ltd.
  */
 
 /dts-v1/;
@@ -10,12 +10,24 @@
 #include "imx8mn.dtsi"
 
 / {
+	compatible = "variscite,imx8mn-var-som", "fsl,imx8mn";
+
 	can0_osc: can0_osc {
 		compatible = "fixed-clock";
 		#clock-cells = <0>;
 		/* On SOM revions 1.2 and below the frequency should be 20000000 */
 		clock-frequency = <40000000>;
 		clock-output-names = "can_osc";
+	};
+
+	panel_lvds: panel-lvds {
+		compatible = "panel-lvds";
+
+		port {
+			panel_in_bridge: endpoint {
+				remote-endpoint = <&bridge_out_panel>;
+			};
+		};
 	};
 
 	reg_audio: audio_vdd {
@@ -33,13 +45,9 @@
 		regulator-name = "eth_phy_pwr";
 		regulator-min-microvolt = <3300000>;
 		regulator-max-microvolt = <3300000>;
+		regulator-enable-ramp-delay = <20000>;
 		gpio = <&gpio2 9 GPIO_ACTIVE_HIGH>;
 		enable-active-high;
-	};
-
-	reserved-memory {
-		/* cma region is provided by kernel command line as cma=<size>M */
-		/delete-node/ linux,cma;
 	};
 
 	sound-spdif {
@@ -52,30 +60,48 @@
 	};
 
 	sound-wm8904 {
-		compatible = "fsl,imx-audio-wm8904";
-		model = "wm8904-audio";
-		audio-cpu = <&sai5>;
-		audio-codec = <&wm8904>;
-		audio-routing =
+		compatible = "simple-audio-card";
+		simple-audio-card,bitclock-master = <&dailink_master>;
+		simple-audio-card,format = "i2s";
+		simple-audio-card,frame-master = <&dailink_master>;
+		simple-audio-card,name = "wm8904-audio";
+		simple-audio-card,routing =
 			"Headphone Jack", "HPOUTL",
 			"Headphone Jack", "HPOUTR",
 			"IN2L", "Line In Jack",
 			"IN2R", "Line In Jack",
-			"IN1L", "Mic Jack",
-			"Playback", "CPU-Playback",
-			"CPU-Capture", "Capture";
-		status = "okay";
+			"IN1L", "Microphone Jack",
+			"IN1R", "Microphone Jack";
+		simple-audio-card,widgets =
+			"Microphone", "Microphone Jack",
+			"Headphone", "Headphone Jack",
+			"Line", "Line In Jack";
+		simple-audio-card,mclk-fs = <256>;
+
+		dailink_master: simple-audio-card,codec {
+			sound-dai = <&wm8904>;
+		};
+
+		simple-audio-card,cpu {
+			sound-dai = <&sai5>;
+		};
 	};
 };
 
 &A53_0 {
-	cpu-supply = <&buck2_reg>;
+	cpu-supply = <&buck2>;
 };
 
+&A53_1 {
+	cpu-supply = <&buck2>;
+};
 
-&clk {
-	assigned-clocks = <&clk IMX8MN_AUDIO_PLL1>;
-	assigned-clock-rates = <786432000>;
+&A53_2 {
+	cpu-supply = <&buck2>;
+};
+
+&A53_3 {
+	cpu-supply = <&buck2>;
 };
 
 &cameradev {
@@ -152,8 +178,6 @@
 	phy-mode = "rgmii";
 	phy-handle = <&ethphy0>;
 	phy-supply = <&reg_eth_phy>;
-	phy-reset-gpios = <&gpio1 9 GPIO_ACTIVE_LOW>;
-	phy-reset-duration = <10>;
 	phy-reset-on-resume;
 	status = "okay";
 
@@ -165,8 +189,16 @@
 			compatible = "ethernet-phy-ieee802.3-c22";
 			reg = <4>;
 			at803x,led-act-blind-workaround;
-			at803x,eee-disabled;
-			at803x,vddio-1p8v;
+			qca,disable-smarteee;
+			vddio-supply = <&vddio>;
+			reset-gpios = <&gpio1 9 GPIO_ACTIVE_LOW>;
+			reset-assert-us = <10000>;
+			reset-deassert-us = <20000>;
+
+			vddio: vddio-regulator {
+				regulator-min-microvolt = <1800000>;
+				regulator-max-microvolt = <1800000>;
+			};
 		};
 	};
 };
@@ -445,40 +477,30 @@
 	status = "okay";
 
 	dsi_lvds_bridge: sn65dsi84@2c {
-		compatible = "ti,sn65dsi83";
+		compatible = "ti,sn65dsi84";
 		reg = <0x2c>;
-		ti,dsi-lanes = <4>;
-		ti,lvds-format = <1>;
-		ti,lvds-bpp = <24>;
-		ti,lvds-channels = <1>;
-		ti,width-mm = <154>;
-		ti,height-mm = <87>;
 		enable-gpios = <&gpio2 11 GPIO_ACTIVE_HIGH>;
 		pinctrl-names = "default";
 		pinctrl-0 = <&pinctrl_lvds>;
 		status = "okay";
 
-		display-timings {
-			lvds {
-				clock-frequency = <33000000>;
-				hactive = <800>;
-				vactive = <480>;
-				hback-porch = <40>;
-				hfront-porch = <40>;
-				vback-porch = <29>;
-				vfront-porch = <13>;
-				hsync-len = <48>;
-				vsync-len = <3>;
-				hsync-active = <0>;
-				vsync-active = <0>;
-				de-active = <1>;
-				pixelclk-active = <0>;
-			};
-		};
+		ports {
+			#address-cells = <1>;
+			#size-cells = <0>;
 
-		port {
-			dsi_lvds_bridge_in: endpoint {
-				remote-endpoint = <&mipi_dsi_out>;
+			port@0 {
+				reg = <0>;
+				bridge_in_dsi: endpoint {
+					remote-endpoint = <&mipi_dsi_out>;
+					data-lanes = <1 2 3 4>;
+				};
+			};
+
+			port@2 {
+				reg = <2>;
+				bridge_out_panel: endpoint {
+					remote-endpoint = <&panel_in_bridge>;
+				};
 			};
 		};
 	};
@@ -494,7 +516,7 @@
 		rohm,reset-snvs-powered;
 
 		regulators {
-			buck1_reg: BUCK1 {
+			buck1: BUCK1 {
 				regulator-name = "BUCK1";
 				regulator-min-microvolt = <700000>;
 				regulator-max-microvolt = <1300000>;
@@ -503,7 +525,7 @@
 				regulator-ramp-delay = <1250>;
 			};
 
-			buck2_reg: BUCK2 {
+			buck2: BUCK2 {
 				regulator-name = "BUCK2";
 				regulator-min-microvolt = <700000>;
 				regulator-max-microvolt = <1300000>;
@@ -514,7 +536,7 @@
 				rohm,dvs-idle-voltage = <900000>;
 			};
 
-			buck3_reg: BUCK3 {
+			buck3: BUCK3 {
 				// BUCK5 in datasheet
 				regulator-name = "BUCK3";
 				regulator-min-microvolt = <700000>;
@@ -523,7 +545,7 @@
 				regulator-always-on;
 			};
 
-			buck4_reg: BUCK4 {
+			buck4: BUCK4 {
 				// BUCK6 in datasheet
 				regulator-name = "BUCK4";
 				regulator-min-microvolt = <2600000>;
@@ -532,7 +554,7 @@
 				regulator-always-on;
 			};
 
-			buck5_reg: BUCK5 {
+			buck5: BUCK5 {
 				// BUCK7 in datasheet
 				regulator-name = "BUCK5";
 				regulator-min-microvolt = <1605000>;
@@ -541,7 +563,7 @@
 				regulator-always-on;
 			};
 
-			buck6_reg: BUCK6 {
+			buck6: BUCK6 {
 				// BUCK8 in datasheet
 				regulator-name = "BUCK6";
 				regulator-min-microvolt = <800000>;
@@ -550,7 +572,7 @@
 				regulator-always-on;
 			};
 
-			ldo1_reg: LDO1 {
+			ldo1: LDO1 {
 				regulator-name = "LDO1";
 				regulator-min-microvolt = <1600000>;
 				regulator-max-microvolt = <1900000>;
@@ -558,7 +580,7 @@
 				regulator-always-on;
 			};
 
-			ldo2_reg: LDO2 {
+			ldo2: LDO2 {
 				regulator-name = "LDO2";
 				regulator-min-microvolt = <800000>;
 				regulator-max-microvolt = <900000>;
@@ -566,7 +588,7 @@
 				regulator-always-on;
 			};
 
-			ldo3_reg: LDO3 {
+			ldo3: LDO3 {
 				regulator-name = "LDO3";
 				regulator-min-microvolt = <1800000>;
 				regulator-max-microvolt = <3300000>;
@@ -574,21 +596,21 @@
 				regulator-always-on;
 			};
 
-			ldo4_reg: LDO4 {
+			ldo4: LDO4 {
 				regulator-name = "LDO4";
 				regulator-min-microvolt = <900000>;
 				regulator-max-microvolt = <1800000>;
 				regulator-always-on;
 			};
 
-			ldo5_reg: LDO5 {
+			ldo5: LDO5 {
 				regulator-name = "LDO5";
 				regulator-min-microvolt = <1800000>;
 				regulator-max-microvolt = <1800000>;
 				regulator-always-on;
 			};
 
-			ldo6_reg: LDO6 {
+			ldo6: LDO6 {
 				regulator-name = "LDO6";
 				regulator-min-microvolt = <900000>;
 				regulator-max-microvolt = <1800000>;
@@ -611,14 +633,15 @@
 	wm8904: audio-codec@1a {
 		status = "okay";
 		compatible = "wlf,wm8904";
+		#sound-dai-cells = <0>;
 		reg = <0x1a>;
 		clocks = <&clk IMX8MN_CLK_SAI5_ROOT>;
 		clock-names = "mclk";
 		DBVDD-supply = <&reg_audio>;
-		DCVDD-supply = <&ldo5_reg>;
-		AVDD-supply = <&ldo5_reg>;
-		CPVDD-supply = <&ldo5_reg>;
-		MICVDD-supply = <&ldo5_reg>;
+		DCVDD-supply = <&ldo5>;
+		AVDD-supply = <&ldo5>;
+		CPVDD-supply = <&ldo5>;
+		MICVDD-supply = <&ldo5>;
 		num-drc-cfgs = <5>;
 		drc-cfg-names = "default", "peaklimiter", "tradition", "soft", "music";
 		drc-cfg-regs =
@@ -658,13 +681,14 @@
 
 	port@1 {
 		mipi_dsi_out: endpoint {
-			remote-endpoint = <&dsi_lvds_bridge_in>;
+			remote-endpoint = <&bridge_in_dsi>;
 			attach-bridge;
 		};
 	};
 };
 
 &sai5 {
+	#sound-dai-cells = <0>;
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_sai5>;
 	assigned-clocks = <&clk IMX8MN_CLK_SAI5>;
@@ -710,6 +734,7 @@
 	pinctrl-2 = <&pinctrl_usdhc1_200mhz>, <&pinctrl_wifi>;
 	bus-width = <4>;
 	non-removable;
+	wakeup-source;
 	keep-power-in-suspend;
 	status = "okay";
 
@@ -721,6 +746,8 @@
 
 /* EMMC */
 &usdhc3 {
+	assigned-clocks = <&clk IMX8MN_CLK_USDHC3_ROOT>;
+	assigned-clock-rates = <400000000>;
 	pinctrl-names = "default", "state_100mhz", "state_200mhz";
 	pinctrl-0 = <&pinctrl_usdhc3>;
 	pinctrl-1 = <&pinctrl_usdhc3_100mhz>;

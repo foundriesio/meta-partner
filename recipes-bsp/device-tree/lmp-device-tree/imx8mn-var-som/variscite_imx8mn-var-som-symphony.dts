@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: (GPL-2.0+ OR MIT)
 /*
  * Copyright 2019 NXP
- * Copyright 2019-2020 Variscite Ltd.
+ * Copyright 2019-2023 Variscite Ltd.
  */
 
 /dts-v1/;
@@ -10,8 +10,7 @@
 #include "imx8mn-var-som.dtsi"
 
 / {
-	model = "Variscite VAR-SOM-MX8M-NANO on Symphony-Board 1.4a and above";
-	compatible = "variscite,var-som-mx8mn", "fsl,imx8mn";
+	model = "Variscite VAR-SOM-MX8M-NANO on Symphony-Board";
 
 	chosen {
 		stdout-path = &uart4;
@@ -72,6 +71,11 @@
 		};
 	};
 
+	memory@40000000 {
+		device_type = "memory";
+		reg = <0x0 0x40000000 0 0x80000000>;
+	};
+
 	reg_usdhc2_vmmc: regulator-usdhc2 {
 		compatible = "regulator-fixed";
 		pinctrl-names = "default";
@@ -82,14 +86,6 @@
 		gpio = <&gpio4 22 GPIO_ACTIVE_HIGH>;
 		off-on-delay = <20000>;
 		enable-active-high;
-	};
-
-	extcon_usb1: extcon_usb1 {
-		compatible = "linux,extcon-usb-gpio";
-		pinctrl-names = "default";
-		pinctrl-0 = <&pinctrl_extcon>;
-		id-gpio = <&gpio1 11 GPIO_ACTIVE_HIGH>;
-		status = "okay";
 	};
 };
 
@@ -232,6 +228,24 @@
 	sda-gpios = <&gpio5 17 GPIO_ACTIVE_HIGH>;
 	status = "okay";
 
+	/* USB Type-C Controller */
+	extcon_ptn5150: typec@3d {
+		compatible = "nxp,ptn5150";
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_extcon>;
+		reg = <0x3d>;
+		interrupt-parent = <&gpio1>;
+		interrupts = <11 IRQ_TYPE_NONE>;
+		irq-is-id-quirk;
+		status ="okay";
+
+		port {
+			typec1_dr_sw: endpoint {
+				remote-endpoint = <&usb1_drd_sw>;
+			};
+		};
+	};
+
 	ov5640_mipi1: ov5640_mipi1@3c {
 		status = "okay";
 		compatible = "ovti,ov5640";
@@ -358,6 +372,29 @@
 	};
 };
 
+&panel_lvds {
+	compatible = "panel-lvds";
+	data-mapping = "jeida-24";
+	width-mm = <154>;
+	height-mm = <87>;
+
+	panel-timing {
+		clock-frequency = <39000000>;
+		hactive = <800>;
+		vactive = <480>;
+		hback-porch = <40>;
+		hfront-porch = <40>;
+		vback-porch = <29>;
+		vfront-porch = <13>;
+		hsync-len = <48>;
+		vsync-len = <3>;
+		hsync-active = <0>;
+		vsync-active = <0>;
+		de-active = <1>;
+		pixelclk-active = <0>;
+	};
+};
+
 &pwm1 {
 	status = "okay";
 	pinctrl-names = "default";
@@ -397,17 +434,26 @@
 
 &usbotg1 {
 	dr_mode = "otg";
-	picophy,pre-emp-curr-control = <3>;
-	picophy,dc-vol-level-adjust = <7>;
 	hnp-disable;
 	srp-disable;
 	adp-disable;
-	extcon = <0>, <&extcon_usb1>;
+	usb-role-switch;
+	disable-over-current;
+	samsung,picophy-pre-emp-curr-control = <3>;
+	samsung,picophy-dc-vol-level-adjust = <7>;
 	status = "okay";
+
+	port {
+		usb1_drd_sw: endpoint {
+			remote-endpoint = <&typec1_dr_sw>;
+		};
+	};
 };
 
 /* SD */
 &usdhc2 {
+	assigned-clocks = <&clk IMX8MN_CLK_USDHC2>;
+	assigned-clock-rates = <200000000>;
 	pinctrl-names = "default", "state_100mhz", "state_200mhz";
 	pinctrl-0 = <&pinctrl_usdhc2>, <&pinctrl_usdhc2_gpio>;
 	pinctrl-1 = <&pinctrl_usdhc2_100mhz>, <&pinctrl_usdhc2_gpio>;
