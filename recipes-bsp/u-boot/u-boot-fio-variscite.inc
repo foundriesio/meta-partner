@@ -1,6 +1,5 @@
 SRC_URI:append:mx8m-var = " \
     file://0001-imx8m-drivers-ddr-Add-support-for-specifying-DDR-PHY.patch \
-    file://0002-imx8m-drivers-ddr-Change-padding-of-DDR4-and-LPDDR4-.patch \
     file://0003-pmic-bd71837-Produce-less-verbose-output.patch \
     file://0004-usb-ehci-mx6-Fix-USB-type-detection.patch \
     file://0005-serial-mxc-Make-mxc_base-modifiable-by-external-code.patch \
