@@ -46,4 +46,7 @@ include features/tee/tee.scc
 
 include cfg/usb-mass-storage.scc
 
+# Exclude x86/ACPI features
+include cfg/non-x86.cfg
+
 kconf hardware imx8mm_var_som_symphony.cfg
