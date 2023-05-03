@@ -9,18 +9,17 @@ SRC_URI:append:mx8m-var = " \
         file://0906-sn65dsi83-Add-panel-enable-option.patch \
         file://0907-sn65dsi83-Add-de-neg-polarity-option.patch \
         file://0908-sn65dsi83-Add-dual-channel-support.patch \
+        file://fragment-sn65dsi83.cfg \
 "
 
 SRC_URI:append:imx8mm-var-som-symphony = " \
-        file://kernel-meta/bsp/imx/imx8mm_var_som_symphony.cfg \
-        file://kernel-meta/bsp/imx/imx8mm_var_som_symphony.scc   \
-        file://kernel-meta/bsp/imx/imx8mm_var_som_symphony-standard.scc \
-        file://kernel-meta/bsp/imx/fragment-sn65dsi83.cfg \
+        file://imx8mm_var_som_symphony.cfg \
+        file://imx8mm_var_som_symphony.scc   \
+        file://imx8mm_var_som_symphony-standard.scc \
 "
 
 SRC_URI:append:imx8mn-var-som = " \
-        file://kernel-meta/bsp/imx/imx8mn-var-som.cfg \
-        file://kernel-meta/bsp/imx/imx8mn-var-som.scc   \
-        file://kernel-meta/bsp/imx/imx8mn-var-som-standard.scc \
-        file://kernel-meta/bsp/imx/fragment-sn65dsi83.cfg \
+        file://imx8mn-var-som.cfg \
+        file://imx8mn-var-som.scc   \
+        file://imx8mn-var-som-standard.scc \
 "
