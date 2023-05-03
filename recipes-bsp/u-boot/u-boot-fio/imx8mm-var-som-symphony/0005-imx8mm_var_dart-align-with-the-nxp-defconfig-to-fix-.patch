@@ -1,0 +1,31 @@
+From d2a47bc8984c8c230e4a2086ab48d48b29d9021b Mon Sep 17 00:00:00 2001
+From: FrancescoFerraro <francesco.f@variscite.com>
+Date: Fri, 30 Sep 2022 08:05:19 +0200
+Subject: [PATCH 05/12] imx8mm_var_dart: align with the nxp defconfig to fix
+ UUU
+
+Signed-off-by: FrancescoFerraro <francesco.f@variscite.com>
+(cherry picked from commit 2303f4fea1eadfaae389de0cd32a265a48e3a1ef)
+Signed-off-by: Vanessa Maegima <vanessa.maegima@foundries.io>
+---
+ configs/imx8mm_var_dart_defconfig | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/configs/imx8mm_var_dart_defconfig b/configs/imx8mm_var_dart_defconfig
+index d1ef113690f..6464f432e71 100644
+--- a/configs/imx8mm_var_dart_defconfig
++++ b/configs/imx8mm_var_dart_defconfig
+@@ -137,8 +137,8 @@ CONFIG_USB_EHCI_HCD=y
+ CONFIG_USB_HOST_ETHER=y
+ CONFIG_USB_GADGET=y
+ CONFIG_USB_GADGET_MANUFACTURER="Variscite"
+-CONFIG_USB_GADGET_VENDOR_NUM=0x0525
+-CONFIG_USB_GADGET_PRODUCT_NUM=0xa4a5
++CONFIG_USB_GADGET_VENDOR_NUM=0x1fc9
++CONFIG_USB_GADGET_PRODUCT_NUM=0x0152
+ CONFIG_CI_UDC=y
+ CONFIG_SDP_LOADADDR=0x40400000
+ CONFIG_SPL_RSA=y
+-- 
+2.34.1
+

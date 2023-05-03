@@ -18,24 +18,18 @@ SRC_URI:append:mx8m-var = " \
 "
 
 SRC_URI:append:imx8mm-var-som-symphony = " \
-    file://0001-imx8mm_var_dart-Add-Variscite-DART-MX8M-MINI-and.patch \
-    file://0002-imx8mm-var-dart-Separate-som-and-carrier-device-tree.patch \
-    file://0003-imx8mm-var-som-Separate-som-and-carrier-device-tree-.patch \
-    file://0004-imx8mm-var-dart-Remove-support-for-VAR-SOM-MX8M-MINI.patch \
-    file://0005-imx8mm-var-dart-Enable-PMIC-LDO5.patch \
-    file://0006-imx8mm-var-dart-Add-support-for-VAR-SOM-MX8M-MINI-on.patch \
-    file://0007-imx8mm-var-dart-Disable-SD-card-detect-pin-on-DART-M.patch \
-    file://0008-imx8mm-var-dart-Add-support-for-DT8MCustomBoard-V2.0.patch \
-    file://0009-imx8mm-var-dart-Recognize-VAR-SOM-MX8M-MINI-revision.patch \
-    file://0010-imx8mm_var_dart-Set-console-environment-variable-in-.patch \
-    file://0011-imx8-soms-Add-USE_EMMC_BOOT_PART-config-to-use-user.patch \
-    file://0012-imx8mm-var-som-Use-default-DDR4-QoS-settings.patch \
-    file://0051-board-variscite-imx8mm_var_dar-drop-do_reset-func.patch \
-    file://0052-configs-imx8mm_var_dart-avoid-config-fallback-error.patch \
-    file://0053-imx8mm_var_dart-force-to-use-the-uart-entry-for-the-.patch \
-    file://0054-include-configs-imx8mm_var_dart-allow-setting-CONFIG.patch \
-    file://0055-imx8mm_var_dart-define-CONFIG_SYS_BOOTM_LEN.patch \
-    file://0056-imx8mm_var_dart-handle-CONFIG_SECONDARY_BOOT_RUNTIME.patch \
+    file://0001-imx8mm_var_dart-Add-support-for-Variscite-DART-MX8M-.patch \
+    file://0002-imx8mm_var_dart-align-with-the-reference-NXP-EVK.patch \
+    file://0003-imx8mm_var_dart-add-cma_name.patch \
+    file://0004-imx8mm_var_dart-set-CONFIG_SYS_LOAD_ADDR-as-in-lf_v2.patch \
+    file://0005-imx8mm_var_dart-align-with-the-nxp-defconfig-to-fix-.patch \
+    file://0006-imx8mm_var_dart-disable-CONFIG_EFI_MM_COMM_TEE.patch \
+    file://0007-imx8mm_var_dart-disable-EFI-flags.patch \
+    file://0008-imx8mm_var_dart-allow-cma-address-to-be-dynamically-.patch \
+    file://0009-imx8mm_var_dart-reduce-cma-size-for-1GB-SOM.patch \
+    file://0010-imx8mm_var_dart-adjust-ddrc_opp_table-for-DDR4-on-VA.patch \
+    file://0011-imx8mm_var_dart-Drop-redundant-legacy-DT-file.patch \
+    file://0012-imx8mm_var_dart-disable-OPTEE-lib-by-default.patch \
 "
 
 SRC_URI:append:imx8mn-var-som = " \

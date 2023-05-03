@@ -1,0 +1,36 @@
+From 3927347a63a67a5f686c0f398a4b55ee715c54dd Mon Sep 17 00:00:00 2001
+From: FrancescoFerraro <francesco.f@variscite.com>
+Date: Wed, 16 Nov 2022 16:17:20 +0100
+Subject: [PATCH 11/12] imx8mm_var_dart: Drop redundant legacy DT file
+
+The legacy DT files are no longer needed, since the following commit
+allowed the use of the same device tree for all Symphony-Board versions:
+a784ad8 imx8mm-var-dart: enable usb otg using ptn5150.
+
+Signed-off-by: FrancescoFerraro <francesco.f@variscite.com>
+(cherry picked from commit ea6b50e622fef0e6b3cdae2731db950acc289c37)
+Signed-off-by: Vanessa Maegima <vanessa.maegima@foundries.io>
+---
+ include/configs/imx8mm_var_dart.h | 6 +-----
+ 1 file changed, 1 insertion(+), 5 deletions(-)
+
+diff --git a/include/configs/imx8mm_var_dart.h b/include/configs/imx8mm_var_dart.h
+index 1705bdc8135..9368674a361 100644
+--- a/include/configs/imx8mm_var_dart.h
++++ b/include/configs/imx8mm_var_dart.h
+@@ -119,11 +119,7 @@
+ 	"findfdt=" \
+ 		"if test $fdt_file = undefined; then " \
+ 			"if test $board_name = VAR-SOM-MX8M-MINI; then " \
+-				"if test $carrier_rev = legacy; then " \
+-					"setenv fdt_file imx8mm-var-som-symphony-legacy.dtb; " \
+-				"else " \
+-					"setenv fdt_file imx8mm-var-som-symphony.dtb; " \
+-				"fi; " \
++				"setenv fdt_file imx8mm-var-som-symphony.dtb; " \
+ 			"else " \
+ 				"if test $carrier_rev = legacy; then " \
+ 					"setenv fdt_file imx8mm-var-dart-dt8mcustomboard-legacy.dtb; " \
+-- 
+2.34.1
+

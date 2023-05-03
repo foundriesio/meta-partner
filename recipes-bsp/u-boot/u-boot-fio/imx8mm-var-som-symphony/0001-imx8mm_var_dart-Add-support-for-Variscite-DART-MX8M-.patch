@@ -1,42 +1,41 @@
-From 94db6290a3b0c105869d809101448252dda833e6 Mon Sep 17 00:00:00 2001
-From: Nate Drude <nate.d@variscite.com>
-Date: Mon, 19 Oct 2020 16:34:49 -0500
-Subject: [PATCH 01/12] imx8mm_var_dart: Add Variscite DART-MX8M-MINI and
+From e18010da9a41e6136ff880c7cbabc6764b9bbee4 Mon Sep 17 00:00:00 2001
+From: FrancescoFerraro <francesco.f@variscite.com>
+Date: Mon, 17 Oct 2022 18:45:38 +0200
+Subject: [PATCH 01/12] imx8mm_var_dart: Add support for Variscite
+ DART-MX8M-MINI and VAR-SOM-MX8M-MINI
 
- VAR-SOM-MX8M-MINI support
+checked out from 93fc9943fd3488c6d59e7b8df457f3d35463e2f4
 
-Signed-off-by: Nate Drude <nate.d@variscite.com>
+Signed-off-by: FrancescoFerraro <francesco.f@variscite.com>
+(cherry picked from commit d391bd257dd0c86aefda818f9a05b078ca6f0cec)
+Signed-off-by: Vanessa Maegima <vanessa.maegima@foundries.io>
 ---
- arch/arm/dts/Makefile                         |    3 +
- arch/arm/dts/imx8mm-var-common-u-boot.dtsi    |  127 ++
- arch/arm/dts/imx8mm-var-dart-u-boot.dtsi      |    5 +
- arch/arm/dts/imx8mm-var-dart.dts              |  348 +++++
- arch/arm/dts/imx8mm-var-som-rev10.dts         |   61 +
- arch/arm/dts/imx8mm-var-som-u-boot-rev10.dtsi |    5 +
- arch/arm/dts/imx8mm-var-som-u-boot.dtsi       |    5 +
- arch/arm/dts/imx8mm-var-som.dts               |  371 ++++++
- arch/arm/dts/imx8mn-var-som-rev10.dts         |   58 +
- arch/arm/dts/imx8mn-var-som.dts               |  498 ++++++++
- arch/arm/mach-imx/imx8m/Kconfig               |    9 +
- board/variscite/imx8mm_var_dart/Kconfig       |   14 +
- board/variscite/imx8mm_var_dart/Makefile      |   20 +
- board/variscite/imx8mm_var_dart/ddr4_timing.c |  558 ++++++++
- .../imx8mm_var_dart/imx8mm_var_dart.c         |  225 ++++
- .../imx8mm_var_dart/imx8mm_var_dart.h         |   14 +
- .../variscite/imx8mm_var_dart/lpddr4_timing.c | 1123 +++++++++++++++++
- board/variscite/imx8mm_var_dart/spl.c         |  326 +++++
- configs/imx8mm_var_dart_defconfig             |  111 ++
- include/configs/imx8mm_var_dart.h             |  249 ++++
- 20 files changed, 4130 insertions(+)
+ arch/arm/dts/Makefile                         |    2 +
+ arch/arm/dts/imx8mm-var-common-u-boot.dtsi    |  122 ++
+ .../imx8mm-var-dart-customboard-u-boot.dtsi   |    5 +
+ arch/arm/dts/imx8mm-var-dart-customboard.dts  |  192 +++
+ arch/arm/dts/imx8mm-var-dart.dtsi             |  209 +++
+ .../dts/imx8mm-var-som-symphony-u-boot.dtsi   |    5 +
+ arch/arm/dts/imx8mm-var-som-symphony.dts      |  198 +++
+ arch/arm/dts/imx8mm-var-som.dtsi              |  210 +++
+ arch/arm/mach-imx/imx8m/Kconfig               |   13 +
+ board/variscite/imx8mm_var_dart/Kconfig       |   15 +
+ board/variscite/imx8mm_var_dart/Makefile      |   21 +
+ board/variscite/imx8mm_var_dart/ddr4_timing.c |  540 ++++++++
+ .../imx8mm_var_dart/imx8mm_var_dart.c         |  272 ++++
+ .../imx8mm_var_dart/imx8mm_var_dart.h         |   16 +
+ .../variscite/imx8mm_var_dart/lpddr4_timing.c | 1125 +++++++++++++++++
+ board/variscite/imx8mm_var_dart/spl.c         |  318 +++++
+ configs/imx8mm_var_dart_defconfig             |  135 ++
+ include/configs/imx8mm_var_dart.h             |  279 ++++
+ 18 files changed, 3677 insertions(+)
  create mode 100644 arch/arm/dts/imx8mm-var-common-u-boot.dtsi
- create mode 100644 arch/arm/dts/imx8mm-var-dart-u-boot.dtsi
- create mode 100644 arch/arm/dts/imx8mm-var-dart.dts
- create mode 100644 arch/arm/dts/imx8mm-var-som-rev10.dts
- create mode 100644 arch/arm/dts/imx8mm-var-som-u-boot-rev10.dtsi
- create mode 100644 arch/arm/dts/imx8mm-var-som-u-boot.dtsi
- create mode 100644 arch/arm/dts/imx8mm-var-som.dts
- create mode 100644 arch/arm/dts/imx8mn-var-som-rev10.dts
- create mode 100644 arch/arm/dts/imx8mn-var-som.dts
+ create mode 100644 arch/arm/dts/imx8mm-var-dart-customboard-u-boot.dtsi
+ create mode 100644 arch/arm/dts/imx8mm-var-dart-customboard.dts
+ create mode 100644 arch/arm/dts/imx8mm-var-dart.dtsi
+ create mode 100644 arch/arm/dts/imx8mm-var-som-symphony-u-boot.dtsi
+ create mode 100644 arch/arm/dts/imx8mm-var-som-symphony.dts
+ create mode 100644 arch/arm/dts/imx8mm-var-som.dtsi
  create mode 100644 board/variscite/imx8mm_var_dart/Kconfig
  create mode 100644 board/variscite/imx8mm_var_dart/Makefile
  create mode 100644 board/variscite/imx8mm_var_dart/ddr4_timing.c
@@ -48,25 +47,24 @@ Signed-off-by: Nate Drude <nate.d@variscite.com>
  create mode 100644 include/configs/imx8mm_var_dart.h
 
 diff --git a/arch/arm/dts/Makefile b/arch/arm/dts/Makefile
-index 3174f2e2a5..1a9e461129 100644
+index 45a79f02017..8d762f7cf65 100644
 --- a/arch/arm/dts/Makefile
 +++ b/arch/arm/dts/Makefile
-@@ -792,6 +792,9 @@ dtb-$(CONFIG_ARCH_IMX8M) += \
+@@ -980,6 +980,8 @@ dtb-$(CONFIG_ARCH_IMX8M) += \
+ 	imx8mm-venice-gw7901.dtb \
+ 	imx8mm-venice-gw7902.dtb \
+ 	imx8mm-verdin.dtb \
++	imx8mm-var-dart-customboard.dtb \
++	imx8mm-var-som-symphony.dtb \
+ 	phycore-imx8mm.dtb \
  	imx8mn-ddr3l-evk.dtb \
  	imx8mn-ddr4-evk.dtb \
- 	imx8mn-evk.dtb \
-+	imx8mm-var-dart.dtb \
-+	imx8mm-var-som.dtb \
-+	imx8mm-var-som-rev10.dtb \
- 	imx8mq-ddr3l-val.dtb \
- 	imx8mq-ddr4-val.dtb \
- 	imx8mq-evk.dtb \
 diff --git a/arch/arm/dts/imx8mm-var-common-u-boot.dtsi b/arch/arm/dts/imx8mm-var-common-u-boot.dtsi
 new file mode 100644
-index 0000000000..4c4eb79d68
+index 00000000000..63d88cede78
 --- /dev/null
 +++ b/arch/arm/dts/imx8mm-var-common-u-boot.dtsi
-@@ -0,0 +1,127 @@
+@@ -0,0 +1,122 @@
 +// SPDX-License-Identifier: GPL-2.0+
 +/*
 + * Copyright 2019 NXP
@@ -74,10 +72,16 @@ index 0000000000..4c4eb79d68
 + */
 +
 +/ {
-+
 +	aliases {
 +		usbgadget0 = &usbg1;
 +		usbgadget1 = &usbg2;
++	};
++
++	firmware {
++		optee {
++			compatible = "linaro,optee-tz";
++			method = "smc";
++		};
 +	};
 +
 +	usbg1: usbg1 {
@@ -93,31 +97,11 @@ index 0000000000..4c4eb79d68
 +		chipidea,usb = <&usbotg2>;
 +		status = "okay";
 +	};
-+
-+	firmware {
-+		optee {
-+			compatible = "linaro,optee-tz";
-+			method = "smc";
-+		};
-+	};
 +};
 +
 +&{/soc@0} {
 +	u-boot,dm-pre-reloc;
 +	u-boot,dm-spl;
-+};
-+
-+&clk {
-+	u-boot,dm-spl;
-+	u-boot,dm-pre-reloc;
-+	/delete-property/ assigned-clocks;
-+	/delete-property/ assigned-clock-parents;
-+	/delete-property/ assigned-clock-rates;
-+};
-+
-+&osc_24m {
-+	u-boot,dm-spl;
-+	u-boot,dm-pre-reloc;
 +};
 +
 +&aips1 {
@@ -133,28 +117,12 @@ index 0000000000..4c4eb79d68
 +	u-boot,dm-spl;
 +};
 +
-+&iomuxc {
++&clk {
 +	u-boot,dm-spl;
-+};
-+
-+&reg_usdhc2_vmmc {
-+	u-boot,dm-spl;
-+};
-+
-+&pinctrl_reg_usdhc2_vmmc {
-+	u-boot,dm-spl;
-+};
-+
-+&pinctrl_usdhc2_cd {
-+	u-boot,dm-spl;
-+};
-+
-+&pinctrl_usdhc2 {
-+	u-boot,dm-spl;
-+};
-+
-+&pinctrl_usdhc3 {
-+	u-boot,dm-spl;
++	u-boot,dm-pre-reloc;
++	/delete-property/ assigned-clocks;
++	/delete-property/ assigned-clock-parents;
++	/delete-property/ assigned-clock-rates;
 +};
 +
 +&gpio1 {
@@ -166,6 +134,39 @@ index 0000000000..4c4eb79d68
 +};
 +
 +&gpio5 {
++	u-boot,dm-spl;
++};
++
++&iomuxc {
++	u-boot,dm-spl;
++};
++
++&i2c1 {
++	u-boot,dm-spl;
++};
++
++&osc_24m {
++	u-boot,dm-spl;
++	u-boot,dm-pre-reloc;
++};
++
++&pinctrl_i2c1 {
++	u-boot,dm-spl;
++};
++
++&pinctrl_reg_usdhc2_vmmc {
++	u-boot,dm-spl;
++};
++
++&pinctrl_usdhc2 {
++	u-boot,dm-spl;
++};
++
++&pinctrl_usdhc3 {
++	u-boot,dm-spl;
++};
++
++&reg_usdhc2_vmmc {
 +	u-boot,dm-spl;
 +};
 +
@@ -186,31 +187,23 @@ index 0000000000..4c4eb79d68
 +	assigned-clock-rates = <400000000>;
 +	assigned-clock-parents = <&clk IMX8MM_SYS_PLL1_400M>;
 +};
-+
-+&i2c1 {
-+	u-boot,dm-spl;
-+};
-+
-+&pinctrl_i2c1 {
-+	u-boot,dm-spl;
-+};
-diff --git a/arch/arm/dts/imx8mm-var-dart-u-boot.dtsi b/arch/arm/dts/imx8mm-var-dart-u-boot.dtsi
+diff --git a/arch/arm/dts/imx8mm-var-dart-customboard-u-boot.dtsi b/arch/arm/dts/imx8mm-var-dart-customboard-u-boot.dtsi
 new file mode 100644
-index 0000000000..dc3c79c6ef
+index 00000000000..dc3c79c6efa
 --- /dev/null
-+++ b/arch/arm/dts/imx8mm-var-dart-u-boot.dtsi
++++ b/arch/arm/dts/imx8mm-var-dart-customboard-u-boot.dtsi
 @@ -0,0 +1,5 @@
 +#include "imx8mm-var-common-u-boot.dtsi"
 +
 +&uart1 {
 +	u-boot,dm-spl;
 +};
-diff --git a/arch/arm/dts/imx8mm-var-dart.dts b/arch/arm/dts/imx8mm-var-dart.dts
+diff --git a/arch/arm/dts/imx8mm-var-dart-customboard.dts b/arch/arm/dts/imx8mm-var-dart-customboard.dts
 new file mode 100644
-index 0000000000..0f3020a9f5
+index 00000000000..deab5626000
 --- /dev/null
-+++ b/arch/arm/dts/imx8mm-var-dart.dts
-@@ -0,0 +1,348 @@
++++ b/arch/arm/dts/imx8mm-var-dart-customboard.dts
+@@ -0,0 +1,192 @@
 +/*
 + * Copyright 2018 NXP
 + * Copyright 2018-2020 Variscite Ltd.
@@ -228,7 +221,7 @@ index 0000000000..0f3020a9f5
 +
 +/dts-v1/;
 +
-+#include "imx8mm.dtsi"
++#include "imx8mm-var-dart.dtsi"
 +
 +/ {
 +	model = "Variscite DART-MX8M-MINI";
@@ -249,7 +242,186 @@ index 0000000000..0f3020a9f5
 +		off-on-delay-us = <20000>;
 +		enable-active-high;
 +	};
++};
 +
++&iomuxc {
++	pinctrl_i2c2: i2c2grp {
++		fsl,pins = <
++			MX8MM_IOMUXC_I2C2_SCL_I2C2_SCL			0x400001c3
++			MX8MM_IOMUXC_I2C2_SDA_I2C2_SDA			0x400001c3
++		>;
++	};
++
++	pinctrl_i2c2_gpio: i2c2grp-gpio {
++		fsl,pins = <
++			MX8MM_IOMUXC_I2C2_SCL_GPIO5_IO16		0x1c3
++			MX8MM_IOMUXC_I2C2_SDA_GPIO5_IO17		0x1c3
++		>;
++	};
++
++	pinctrl_i2c4: i2c4grp {
++		fsl,pins = <
++			MX8MM_IOMUXC_I2C4_SCL_I2C4_SCL			0x400001c3
++			MX8MM_IOMUXC_I2C4_SDA_I2C4_SDA			0x400001c3
++		>;
++	};
++
++	pinctrl_i2c4_gpio: i2c4grp-gpio {
++		fsl,pins = <
++			MX8MM_IOMUXC_I2C4_SCL_GPIO5_IO20		0x1c3
++			MX8MM_IOMUXC_I2C4_SDA_GPIO5_IO21		0x1c3
++		>;
++	};
++
++
++	pinctrl_reg_usdhc2_vmmc: regulator-usdhc2 {
++		fsl,pins = <
++			MX8MM_IOMUXC_SD2_RESET_B_GPIO2_IO19		0x41
++		>;
++	};
++
++	pinctrl_uart1: uart1grp {
++		fsl,pins = <
++			MX8MM_IOMUXC_UART1_RXD_UART1_DCE_RX		0x140
++			MX8MM_IOMUXC_UART1_TXD_UART1_DCE_TX		0x140
++		>;
++	};
++
++	pinctrl_usdhc2: usdhc2grp {
++		fsl,pins = <
++			MX8MM_IOMUXC_SD2_CLK_USDHC2_CLK		0x190
++			MX8MM_IOMUXC_SD2_CMD_USDHC2_CMD		0x1d0
++			MX8MM_IOMUXC_SD2_DATA0_USDHC2_DATA0	0x1d0
++			MX8MM_IOMUXC_SD2_DATA1_USDHC2_DATA1	0x1d0
++			MX8MM_IOMUXC_SD2_DATA2_USDHC2_DATA2	0x1d0
++			MX8MM_IOMUXC_SD2_DATA3_USDHC2_DATA3	0x1d0
++			MX8MM_IOMUXC_GPIO1_IO04_USDHC2_VSELECT	0x1d0
++		>;
++	};
++
++	pinctrl_usdhc2_100mhz: usdhc2grp100mhz {
++		fsl,pins = <
++			MX8MM_IOMUXC_SD2_CLK_USDHC2_CLK		0x194
++			MX8MM_IOMUXC_SD2_CMD_USDHC2_CMD		0x1d4
++			MX8MM_IOMUXC_SD2_DATA0_USDHC2_DATA0	0x1d4
++			MX8MM_IOMUXC_SD2_DATA1_USDHC2_DATA1	0x1d4
++			MX8MM_IOMUXC_SD2_DATA2_USDHC2_DATA2	0x1d4
++			MX8MM_IOMUXC_SD2_DATA3_USDHC2_DATA3	0x1d4
++			MX8MM_IOMUXC_GPIO1_IO04_USDHC2_VSELECT	0x1d0
++		>;
++	};
++
++	pinctrl_usdhc2_200mhz: usdhc2grp200mhz {
++		fsl,pins = <
++			MX8MM_IOMUXC_SD2_CLK_USDHC2_CLK		0x196
++			MX8MM_IOMUXC_SD2_CMD_USDHC2_CMD		0x1d6
++			MX8MM_IOMUXC_SD2_DATA0_USDHC2_DATA0	0x1d6
++			MX8MM_IOMUXC_SD2_DATA1_USDHC2_DATA1	0x1d6
++			MX8MM_IOMUXC_SD2_DATA2_USDHC2_DATA2	0x1d6
++			MX8MM_IOMUXC_SD2_DATA3_USDHC2_DATA3	0x1d6
++			MX8MM_IOMUXC_GPIO1_IO04_USDHC2_VSELECT	0x1d0
++		>;
++	};
++};
++
++&i2c2 {
++	clock-frequency = <100000>;
++	pinctrl-names = "default", "gpio";
++	pinctrl-0 = <&pinctrl_i2c2>;
++	pinctrl-1 = <&pinctrl_i2c2_gpio>;
++	scl-gpios = <&gpio5 16 GPIO_ACTIVE_HIGH>;
++	sda-gpios = <&gpio5 17 GPIO_ACTIVE_HIGH>;
++	status = "okay";
++
++	ptn5150: ptn5150@3d {
++		compatible = "nxp,ptn5150";
++		pinctrl-names = "default";
++		reg = <0x3d>;
++		i2c-bus = <0x1>;
++		status = "okay";
++	};
++};
++
++&i2c4 {
++	clock-frequency = <100000>;
++	pinctrl-names = "default", "gpio";
++	pinctrl-0 = <&pinctrl_i2c4>;
++	pinctrl-1 = <&pinctrl_i2c4_gpio>;
++	scl-gpios = <&gpio5 20 GPIO_ACTIVE_HIGH>;
++	sda-gpios = <&gpio5 21 GPIO_ACTIVE_HIGH>;
++	status = "okay";
++
++	pca9534: gpio@21 {
++				status = "okay";
++				compatible = "nxp,pca9534";
++				reg = <0x21>;
++				gpio-controller;
++				#gpio-cells = <2>;
++
++				ft5x06_ts_hog {
++						gpio-hog;
++						gpios = <4 GPIO_ACTIVE_HIGH>;
++						output-high;
++						line-name = "touch_rst";
++				};
++		};
++};
++
++&uart1 { /* console */
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_uart1>;
++	status = "okay";
++};
++
++&usbotg1 {
++	dr_mode = "otg";
++	extcon = <&ptn5150>;
++	status = "okay";
++};
++
++&usbotg2 {
++	dr_mode = "host";
++	status = "okay";
++};
++
++/* SD */
++&usdhc2 {
++	pinctrl-names = "default", "state_100mhz", "state_200mhz";
++	pinctrl-0 = <&pinctrl_usdhc2>;
++	pinctrl-1 = <&pinctrl_usdhc2_100mhz>;
++	pinctrl-2 = <&pinctrl_usdhc2_200mhz>;
++	non-removable;
++	bus-width = <4>;
++	vmmc-supply = <&reg_usdhc2_vmmc>;
++	no-1-8-v;
++	status = "okay";
++};
+diff --git a/arch/arm/dts/imx8mm-var-dart.dtsi b/arch/arm/dts/imx8mm-var-dart.dtsi
+new file mode 100644
+index 00000000000..76b230c906c
+--- /dev/null
++++ b/arch/arm/dts/imx8mm-var-dart.dtsi
+@@ -0,0 +1,209 @@
++/*
++ * Copyright 2018 NXP
++ * Copyright 2018-2020 Variscite Ltd.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version 2
++ * of the License, or (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ */
++
++/dts-v1/;
++
++#include "imx8mm.dtsi"
++
++/ {
 +	reg_eth_phy: regulator-eth-phy {
 +		compatible = "regulator-fixed";
 +		pinctrl-names = "default";
@@ -269,6 +441,7 @@ index 0000000000..0f3020a9f5
 +	phy-supply = <&reg_eth_phy>;
 +	phy-reset-gpios = <&gpio1 9 GPIO_ACTIVE_LOW>;
 +	phy-reset-duration = <10>;
++	phy-reset-post-delay = <20>;
 +	fsl,magic-packet;
 +	status = "okay";
 +
@@ -279,90 +452,14 @@ index 0000000000..0f3020a9f5
 +		ethphy0: ethernet-phy@0 {
 +			compatible = "ethernet-phy-ieee802.3-c22";
 +			reg = <0>;
++			vddio-supply = <&vddio>;
++
++			vddio: vddio-regulator {
++					regulator-min-microvolt = <1800000>;
++					regulator-max-microvolt = <1800000>;
++			};
 +		};
 +	};
-+};
-+
-+&i2c1 {
-+	clock-frequency = <100000>;
-+	pinctrl-names = "default", "gpio";
-+	pinctrl-0 = <&pinctrl_i2c1>;
-+	pinctrl-1 = <&pinctrl_i2c1_gpio>;
-+	scl-gpios = <&gpio5 14 GPIO_ACTIVE_HIGH>;
-+	sda-gpios = <&gpio5 15 GPIO_ACTIVE_HIGH>;
-+	status = "okay";
-+};
-+
-+&i2c2 {
-+	clock-frequency = <100000>;
-+	pinctrl-names = "default", "gpio";
-+	pinctrl-0 = <&pinctrl_i2c2>;
-+	pinctrl-1 = <&pinctrl_i2c2_gpio>;
-+	scl-gpios = <&gpio5 16 GPIO_ACTIVE_HIGH>;
-+	sda-gpios = <&gpio5 17 GPIO_ACTIVE_HIGH>;
-+	status = "okay";
-+};
-+
-+&i2c3 {
-+	clock-frequency = <100000>;
-+	pinctrl-names = "default", "gpio";
-+	pinctrl-0 = <&pinctrl_i2c3>;
-+	pinctrl-1 = <&pinctrl_i2c3_gpio>;
-+	scl-gpios = <&gpio5 18 GPIO_ACTIVE_HIGH>;
-+	sda-gpios = <&gpio5 19 GPIO_ACTIVE_HIGH>;
-+	status = "okay";
-+};
-+
-+&i2c4 {
-+	clock-frequency = <100000>;
-+	pinctrl-names = "default", "gpio";
-+	pinctrl-0 = <&pinctrl_i2c4>;
-+	pinctrl-1 = <&pinctrl_i2c4_gpio>;
-+	scl-gpios = <&gpio5 20 GPIO_ACTIVE_HIGH>;
-+	sda-gpios = <&gpio5 21 GPIO_ACTIVE_HIGH>;
-+	status = "okay";
-+};
-+
-+&uart1 { /* console */
-+	pinctrl-names = "default";
-+	pinctrl-0 = <&pinctrl_uart1>;
-+	status = "okay";
-+};
-+
-+&usbotg1 {
-+	status = "okay";
-+};
-+
-+&usbotg2 {
-+	status = "okay";
-+};
-+
-+&usdhc2 {
-+	pinctrl-names = "default", "state_100mhz", "state_200mhz";
-+	pinctrl-0 = <&pinctrl_usdhc2>, <&pinctrl_usdhc2_cd>;
-+	pinctrl-1 = <&pinctrl_usdhc2_100mhz>, <&pinctrl_usdhc2_cd>;
-+	pinctrl-2 = <&pinctrl_usdhc2_200mhz>, <&pinctrl_usdhc2_cd>;
-+	cd-gpios = <&gpio2 12 GPIO_ACTIVE_LOW>;
-+	bus-width = <4>;
-+	vmmc-supply = <&reg_usdhc2_vmmc>;
-+	status = "okay";
-+};
-+
-+&usdhc3 {
-+	pinctrl-names = "default", "state_100mhz", "state_200mhz";
-+	pinctrl-0 = <&pinctrl_usdhc3>;
-+	pinctrl-1 = <&pinctrl_usdhc3_100mhz>;
-+	pinctrl-2 = <&pinctrl_usdhc3_200mhz>;
-+	bus-width = <8>;
-+	non-removable;
-+	status = "okay";
-+};
-+
-+&wdog1 {
-+	pinctrl-names = "default";
-+	pinctrl-0 = <&pinctrl_wdog>;
-+	fsl,ext-reset-output;
-+	status = "okay";
 +};
 +
 +&iomuxc {
@@ -401,24 +498,10 @@ index 0000000000..0f3020a9f5
 +		>;
 +	};
 +
-+	pinctrl_i2c2: i2c2grp {
-+		fsl,pins = <
-+			MX8MM_IOMUXC_I2C2_SCL_I2C2_SCL			0x400001c3
-+			MX8MM_IOMUXC_I2C2_SDA_I2C2_SDA			0x400001c3
-+		>;
-+	};
-+
 +	pinctrl_i2c3: i2c3grp {
 +		fsl,pins = <
 +			MX8MM_IOMUXC_I2C3_SCL_I2C3_SCL			0x400001c3
 +			MX8MM_IOMUXC_I2C3_SDA_I2C3_SDA			0x400001c3
-+		>;
-+	};
-+
-+	pinctrl_i2c4: i2c4grp {
-+		fsl,pins = <
-+			MX8MM_IOMUXC_I2C4_SCL_I2C4_SCL			0x400001c3
-+			MX8MM_IOMUXC_I2C4_SDA_I2C4_SDA			0x400001c3
 +		>;
 +	};
 +
@@ -429,79 +512,10 @@ index 0000000000..0f3020a9f5
 +		>;
 +	};
 +
-+	pinctrl_i2c2_gpio: i2c2grp-gpio {
-+		fsl,pins = <
-+			MX8MM_IOMUXC_I2C2_SCL_GPIO5_IO16		0x1c3
-+			MX8MM_IOMUXC_I2C2_SDA_GPIO5_IO17		0x1c3
-+		>;
-+	};
-+
 +	pinctrl_i2c3_gpio: i2c3grp-gpio {
 +		fsl,pins = <
 +			MX8MM_IOMUXC_I2C3_SCL_GPIO5_IO18		0x1c3
 +			MX8MM_IOMUXC_I2C3_SDA_GPIO5_IO19		0x1c3
-+		>;
-+	};
-+
-+	pinctrl_i2c4_gpio: i2c4grp-gpio {
-+		fsl,pins = <
-+			MX8MM_IOMUXC_I2C4_SCL_GPIO5_IO20		0x1c3
-+			MX8MM_IOMUXC_I2C4_SDA_GPIO5_IO21		0x1c3
-+		>;
-+	};
-+
-+	pinctrl_reg_usdhc2_vmmc: regulator-usdhc2 {
-+		fsl,pins = <
-+			MX8MM_IOMUXC_SD2_RESET_B_GPIO2_IO19		0x41
-+		>;
-+	};
-+
-+	pinctrl_uart1: uart1grp {
-+		fsl,pins = <
-+			MX8MM_IOMUXC_UART1_RXD_UART1_DCE_RX		0x140
-+			MX8MM_IOMUXC_UART1_TXD_UART1_DCE_TX		0x140
-+		>;
-+	};
-+
-+	pinctrl_usdhc2_cd: usdhc2grpcd {
-+		fsl,pins = <
-+			MX8MM_IOMUXC_SD2_CD_B_GPIO2_IO12	0x1c0
-+		>;
-+	};
-+
-+	pinctrl_usdhc2: usdhc2grp {
-+		fsl,pins = <
-+			MX8MM_IOMUXC_SD2_CLK_USDHC2_CLK		0x190
-+			MX8MM_IOMUXC_SD2_CMD_USDHC2_CMD		0x1d0
-+			MX8MM_IOMUXC_SD2_DATA0_USDHC2_DATA0	0x1d0
-+			MX8MM_IOMUXC_SD2_DATA1_USDHC2_DATA1	0x1d0
-+			MX8MM_IOMUXC_SD2_DATA2_USDHC2_DATA2	0x1d0
-+			MX8MM_IOMUXC_SD2_DATA3_USDHC2_DATA3	0x1d0
-+			MX8MM_IOMUXC_GPIO1_IO04_USDHC2_VSELECT	0x1d0
-+		>;
-+	};
-+
-+	pinctrl_usdhc2_100mhz: usdhc2grp100mhz {
-+		fsl,pins = <
-+			MX8MM_IOMUXC_SD2_CLK_USDHC2_CLK		0x194
-+			MX8MM_IOMUXC_SD2_CMD_USDHC2_CMD		0x1d4
-+			MX8MM_IOMUXC_SD2_DATA0_USDHC2_DATA0	0x1d4
-+			MX8MM_IOMUXC_SD2_DATA1_USDHC2_DATA1	0x1d4
-+			MX8MM_IOMUXC_SD2_DATA2_USDHC2_DATA2	0x1d4
-+			MX8MM_IOMUXC_SD2_DATA3_USDHC2_DATA3	0x1d4
-+			MX8MM_IOMUXC_GPIO1_IO04_USDHC2_VSELECT	0x1d0
-+		>;
-+	};
-+
-+	pinctrl_usdhc2_200mhz: usdhc2grp200mhz {
-+		fsl,pins = <
-+			MX8MM_IOMUXC_SD2_CLK_USDHC2_CLK		0x196
-+			MX8MM_IOMUXC_SD2_CMD_USDHC2_CMD		0x1d6
-+			MX8MM_IOMUXC_SD2_DATA0_USDHC2_DATA0	0x1d6
-+			MX8MM_IOMUXC_SD2_DATA1_USDHC2_DATA1	0x1d6
-+			MX8MM_IOMUXC_SD2_DATA2_USDHC2_DATA2	0x1d6
-+			MX8MM_IOMUXC_SD2_DATA3_USDHC2_DATA3	0x1d6
-+			MX8MM_IOMUXC_GPIO1_IO04_USDHC2_VSELECT	0x1d0
 +		>;
 +	};
 +
@@ -559,101 +573,61 @@ index 0000000000..0f3020a9f5
 +		>;
 +	};
 +};
-diff --git a/arch/arm/dts/imx8mm-var-som-rev10.dts b/arch/arm/dts/imx8mm-var-som-rev10.dts
++
++&i2c1 {
++	clock-frequency = <100000>;
++	pinctrl-names = "default", "gpio";
++	pinctrl-0 = <&pinctrl_i2c1>;
++	pinctrl-1 = <&pinctrl_i2c1_gpio>;
++	scl-gpios = <&gpio5 14 GPIO_ACTIVE_HIGH>;
++	sda-gpios = <&gpio5 15 GPIO_ACTIVE_HIGH>;
++	status = "okay";
++};
++
++&i2c3 {
++	clock-frequency = <100000>;
++	pinctrl-names = "default", "gpio";
++	pinctrl-0 = <&pinctrl_i2c3>;
++	pinctrl-1 = <&pinctrl_i2c3_gpio>;
++	scl-gpios = <&gpio5 18 GPIO_ACTIVE_HIGH>;
++	sda-gpios = <&gpio5 19 GPIO_ACTIVE_HIGH>;
++	status = "okay";
++};
++
++/* EMMC */
++&usdhc3 {
++	pinctrl-names = "default", "state_100mhz", "state_200mhz";
++	pinctrl-0 = <&pinctrl_usdhc3>;
++	pinctrl-1 = <&pinctrl_usdhc3_100mhz>;
++	pinctrl-2 = <&pinctrl_usdhc3_200mhz>;
++	bus-width = <8>;
++	non-removable;
++	status = "okay";
++};
++
++&wdog1 {
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_wdog>;
++	fsl,ext-reset-output;
++	status = "okay";
++};
+diff --git a/arch/arm/dts/imx8mm-var-som-symphony-u-boot.dtsi b/arch/arm/dts/imx8mm-var-som-symphony-u-boot.dtsi
 new file mode 100644
-index 0000000000..58821055a7
+index 00000000000..b57381792f5
 --- /dev/null
-+++ b/arch/arm/dts/imx8mm-var-som-rev10.dts
-@@ -0,0 +1,61 @@
-+/*
-+ * Copyright 2018 NXP
-+ * Copyright 2019-2020 Variscite Ltd.
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version 2
-+ * of the License, or (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ */
-+
-+/dts-v1/;
-+
-+#include "imx8mm-var-som.dts"
-+
-+/ {
-+	model = "Variscite VAR-SOM-MX8M-MINI Rev1.0";
-+};
-+
-+&iomuxc {
-+	imx8mm-var-som {
-+		pinctrl_usdhc2_cd_rev10: usdhc2grpcd {
-+			fsl,pins = <
-+				MX8MM_IOMUXC_SD2_CD_B_GPIO2_IO12	0x1c0
-+			>;
-+		};
-+
-+		pinctrl_typec: typecgrp {
-+			fsl,pins = <
-+				MX8MM_IOMUXC_GPIO1_IO10_GPIO1_IO10	0x16
-+			>;
-+		};
-+	};
-+};
-+
-+&i2c2 {
-+	/* USB-C controller */
-+	typec_ptn5150: typec@3d {
-+		status = "okay";
-+		compatible = "nxp,ptn5150";
-+		reg = <0x3d>;
-+		pinctrl-names = "default";
-+		pinctrl-0 = <&pinctrl_typec>;
-+		connect-gpios = <&gpio1 10 GPIO_ACTIVE_HIGH>;
-+	};
-+};
-+
-+&usbotg1 {
-+	extcon = <0>, <&typec_ptn5150>;
-+};
-+
-+&usdhc2 {
-+	cd-gpios = <&gpio2 12 GPIO_ACTIVE_LOW>;
-+	pinctrl-0 = <&pinctrl_usdhc2>, <&pinctrl_usdhc2_cd_rev10>;
-+	pinctrl-1 = <&pinctrl_usdhc2_100mhz>, <&pinctrl_usdhc2_cd_rev10>;
-+	pinctrl-2 = <&pinctrl_usdhc2_200mhz>, <&pinctrl_usdhc2_cd_rev10>;
-+};
-diff --git a/arch/arm/dts/imx8mm-var-som-u-boot-rev10.dtsi b/arch/arm/dts/imx8mm-var-som-u-boot-rev10.dtsi
-new file mode 100644
-index 0000000000..b57381792f
---- /dev/null
-+++ b/arch/arm/dts/imx8mm-var-som-u-boot-rev10.dtsi
++++ b/arch/arm/dts/imx8mm-var-som-symphony-u-boot.dtsi
 @@ -0,0 +1,5 @@
 +#include "imx8mm-var-common-u-boot.dtsi"
 +
 +&uart4 {
 +	u-boot,dm-spl;
 +};
-diff --git a/arch/arm/dts/imx8mm-var-som-u-boot.dtsi b/arch/arm/dts/imx8mm-var-som-u-boot.dtsi
+diff --git a/arch/arm/dts/imx8mm-var-som-symphony.dts b/arch/arm/dts/imx8mm-var-som-symphony.dts
 new file mode 100644
-index 0000000000..b57381792f
+index 00000000000..d0fd97bda25
 --- /dev/null
-+++ b/arch/arm/dts/imx8mm-var-som-u-boot.dtsi
-@@ -0,0 +1,5 @@
-+#include "imx8mm-var-common-u-boot.dtsi"
-+
-+&uart4 {
-+	u-boot,dm-spl;
-+};
-diff --git a/arch/arm/dts/imx8mm-var-som.dts b/arch/arm/dts/imx8mm-var-som.dts
-new file mode 100644
-index 0000000000..bbe0aa0ed6
---- /dev/null
-+++ b/arch/arm/dts/imx8mm-var-som.dts
-@@ -0,0 +1,371 @@
++++ b/arch/arm/dts/imx8mm-var-som-symphony.dts
+@@ -0,0 +1,198 @@
 +/*
 + * Copyright 2018 NXP
 + * Copyright 2018-2020 Variscite Ltd.
@@ -671,7 +645,7 @@ index 0000000000..bbe0aa0ed6
 +
 +/dts-v1/;
 +
-+#include "imx8mm.dtsi"
++#include "imx8mm-var-som.dtsi"
 +
 +/ {
 +	model = "Variscite VAR-SOM-MX8M-MINI";
@@ -694,17 +668,6 @@ index 0000000000..bbe0aa0ed6
 +		u-boot,off-on-delay-us = <12000>;
 +	};
 +
-+	reg_eth_phy: regulator-eth-phy {
-+		compatible = "regulator-fixed";
-+		pinctrl-names = "default";
-+		pinctrl-0 = <&pinctrl_reg_fec1>;
-+		regulator-name = "eth_phy_pwr";
-+		regulator-min-microvolt = <3300000>;
-+		regulator-max-microvolt = <3300000>;
-+		gpio = <&gpio2 9 GPIO_ACTIVE_HIGH>;
-+		enable-active-high;
-+	};
-+
 +	reg_usb_otg2_vbus: regulator-usb-otg2-vbus {
 +		compatible = "regulator-fixed";
 +		pinctrl-names = "default";
@@ -717,37 +680,91 @@ index 0000000000..bbe0aa0ed6
 +	};
 +};
 +
-+&fec1 {
-+	pinctrl-names = "default";
-+	pinctrl-0 = <&pinctrl_fec1>;
-+	phy-mode = "rgmii";
-+	phy-handle = <&ethphy0>;
-+	phy-supply = <&reg_eth_phy>;
-+	phy-reset-gpios = <&gpio1 9 GPIO_ACTIVE_LOW>;
-+	phy-reset-duration = <10>;
-+	fsl,magic-packet;
-+	status = "okay";
++&iomuxc {
++	pinctrl_reg_usdhc2_vmmc: regulator-usdhc2 {
++		fsl,pins = <
++			MX8MM_IOMUXC_SAI2_RXC_GPIO4_IO22		0x41
++		>;
++	};
 +
-+	mdio {
-+		#address-cells = <1>;
-+		#size-cells = <0>;
++	pinctrl_uart4: uart4grp {
++		fsl,pins = <
++			MX8MM_IOMUXC_UART4_RXD_UART4_DCE_RX		0x140
++			MX8MM_IOMUXC_UART4_TXD_UART4_DCE_TX		0x140
++		>;
++	};
 +
-+		ethphy0: ethernet-phy@4 {
-+			compatible = "ethernet-phy-ieee802.3-c22";
-+			reg = <4>;
-+		};
++	pinctrl_reg_usbotg2: regulator_usbotg2 {
++		fsl,pins = <
++			MX8MM_IOMUXC_SAI3_TXD_GPIO5_IO1			0x16
++		>;
++	};
++
++	pinctrl_i2c2: i2c2grp {
++		fsl,pins = <
++			MX8MM_IOMUXC_I2C2_SCL_I2C2_SCL			0x400001c3
++			MX8MM_IOMUXC_I2C2_SDA_I2C2_SDA			0x400001c3
++		>;
++	};
++
++	pinctrl_i2c2_gpio: i2c2grp-gpio {
++		fsl,pins = <
++			MX8MM_IOMUXC_I2C2_SCL_GPIO5_IO16		0x1c3
++			MX8MM_IOMUXC_I2C2_SDA_GPIO5_IO17		0x1c3
++		>;
++	};
++
++	pinctrl_i2c4: i2c4grp {
++		fsl,pins = <
++			MX8MM_IOMUXC_I2C4_SCL_I2C4_SCL			0x400001c3
++			MX8MM_IOMUXC_I2C4_SDA_I2C4_SDA			0x400001c3
++		>;
++	};
++
++	pinctrl_i2c4_gpio: i2c4grp-gpio {
++		fsl,pins = <
++			MX8MM_IOMUXC_I2C4_SCL_GPIO5_IO20		0x1c3
++			MX8MM_IOMUXC_I2C4_SDA_GPIO5_IO21		0x1c3
++		>;
++	};
++
++	pinctrl_usdhc2: usdhc2grp {
++		fsl,pins = <
++			MX8MM_IOMUXC_SD2_CLK_USDHC2_CLK		0x190
++			MX8MM_IOMUXC_SD2_CMD_USDHC2_CMD		0x1d0
++			MX8MM_IOMUXC_SD2_DATA0_USDHC2_DATA0	0x1d0
++			MX8MM_IOMUXC_SD2_DATA1_USDHC2_DATA1	0x1d0
++			MX8MM_IOMUXC_SD2_DATA2_USDHC2_DATA2	0x1d0
++			MX8MM_IOMUXC_SD2_DATA3_USDHC2_DATA3	0x1d0
++			MX8MM_IOMUXC_GPIO1_IO04_USDHC2_VSELECT	0x1d0
++		>;
++	};
++
++	pinctrl_usdhc2_100mhz: usdhc2grp100mhz {
++		fsl,pins = <
++			MX8MM_IOMUXC_SD2_CLK_USDHC2_CLK		0x194
++			MX8MM_IOMUXC_SD2_CMD_USDHC2_CMD		0x1d4
++			MX8MM_IOMUXC_SD2_DATA0_USDHC2_DATA0	0x1d4
++			MX8MM_IOMUXC_SD2_DATA1_USDHC2_DATA1	0x1d4
++			MX8MM_IOMUXC_SD2_DATA2_USDHC2_DATA2	0x1d4
++			MX8MM_IOMUXC_SD2_DATA3_USDHC2_DATA3	0x1d4
++			MX8MM_IOMUXC_GPIO1_IO04_USDHC2_VSELECT	0x1d0
++		>;
++	};
++
++	pinctrl_usdhc2_200mhz: usdhc2grp200mhz {
++		fsl,pins = <
++			MX8MM_IOMUXC_SD2_CLK_USDHC2_CLK		0x196
++			MX8MM_IOMUXC_SD2_CMD_USDHC2_CMD		0x1d6
++			MX8MM_IOMUXC_SD2_DATA0_USDHC2_DATA0	0x1d6
++			MX8MM_IOMUXC_SD2_DATA1_USDHC2_DATA1	0x1d6
++			MX8MM_IOMUXC_SD2_DATA2_USDHC2_DATA2	0x1d6
++			MX8MM_IOMUXC_SD2_DATA3_USDHC2_DATA3	0x1d6
++			MX8MM_IOMUXC_GPIO1_IO04_USDHC2_VSELECT	0x1d0
++		>;
 +	};
 +};
 +
-+&i2c1 {
-+	clock-frequency = <100000>;
-+	pinctrl-names = "default", "gpio";
-+	pinctrl-0 = <&pinctrl_i2c1>;
-+	pinctrl-1 = <&pinctrl_i2c1_gpio>;
-+	scl-gpios = <&gpio5 14 GPIO_ACTIVE_HIGH>;
-+	sda-gpios = <&gpio5 15 GPIO_ACTIVE_HIGH>;
-+	status = "okay";
-+};
 +
 +&i2c2 {
 +	clock-frequency = <100000>;
@@ -757,16 +774,14 @@ index 0000000000..bbe0aa0ed6
 +	scl-gpios = <&gpio5 16 GPIO_ACTIVE_HIGH>;
 +	sda-gpios = <&gpio5 17 GPIO_ACTIVE_HIGH>;
 +	status = "okay";
-+};
 +
-+&i2c3 {
-+	clock-frequency = <100000>;
-+	pinctrl-names = "default", "gpio";
-+	pinctrl-0 = <&pinctrl_i2c3>;
-+	pinctrl-1 = <&pinctrl_i2c3_gpio>;
-+	scl-gpios = <&gpio5 18 GPIO_ACTIVE_HIGH>;
-+	sda-gpios = <&gpio5 19 GPIO_ACTIVE_HIGH>;
-+	status = "okay";
++	ptn5150: ptn5150@3d {
++		compatible = "nxp,ptn5150";
++		pinctrl-names = "default";
++		reg = <0x3d>;
++		i2c-bus = <0x1>;
++		status = "okay";
++	};
 +};
 +
 +&i2c4 {
@@ -787,6 +802,8 @@ index 0000000000..bbe0aa0ed6
 +};
 +
 +&usbotg1 {
++	dr_mode = "otg";
++	extcon = <&ptn5150>;
 +	status = "okay";
 +};
 +
@@ -797,32 +814,83 @@ index 0000000000..bbe0aa0ed6
 +	status = "okay";
 +};
 +
++/* SD */
 +&usdhc2 {
 +	pinctrl-names = "default", "state_100mhz", "state_200mhz";
-+	pinctrl-0 = <&pinctrl_usdhc2>, <&pinctrl_usdhc2_cd>;
-+	pinctrl-1 = <&pinctrl_usdhc2_100mhz>, <&pinctrl_usdhc2_cd>;
-+	pinctrl-2 = <&pinctrl_usdhc2_200mhz>, <&pinctrl_usdhc2_cd>;
-+	cd-gpios = <&gpio1 10 GPIO_ACTIVE_LOW>;
++	pinctrl-0 = <&pinctrl_usdhc2>;
++	pinctrl-1 = <&pinctrl_usdhc2_100mhz>;
++	pinctrl-2 = <&pinctrl_usdhc2_200mhz>;
++	non-removable;
 +	bus-width = <4>;
 +	vmmc-supply = <&reg_usdhc2_vmmc>;
++	no-1-8-v;
 +	status = "okay";
 +};
+diff --git a/arch/arm/dts/imx8mm-var-som.dtsi b/arch/arm/dts/imx8mm-var-som.dtsi
+new file mode 100644
+index 00000000000..3851ac3f7c7
+--- /dev/null
++++ b/arch/arm/dts/imx8mm-var-som.dtsi
+@@ -0,0 +1,210 @@
++/*
++ * Copyright 2018 NXP
++ * Copyright 2018-2020 Variscite Ltd.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version 2
++ * of the License, or (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ */
 +
-+&usdhc3 {
-+	pinctrl-names = "default", "state_100mhz", "state_200mhz";
-+	pinctrl-0 = <&pinctrl_usdhc3>;
-+	pinctrl-1 = <&pinctrl_usdhc3_100mhz>;
-+	pinctrl-2 = <&pinctrl_usdhc3_200mhz>;
-+	bus-width = <8>;
-+	non-removable;
-+	status = "okay";
++/dts-v1/;
++
++#include "imx8mm.dtsi"
++
++/ {
++	reg_eth_phy: regulator-eth-phy {
++		compatible = "regulator-fixed";
++		pinctrl-names = "default";
++		pinctrl-0 = <&pinctrl_reg_fec1>;
++		regulator-name = "eth_phy_pwr";
++		regulator-min-microvolt = <3300000>;
++		regulator-max-microvolt = <3300000>;
++		gpio = <&gpio2 9 GPIO_ACTIVE_HIGH>;
++		enable-active-high;
++	};
 +};
 +
-+&wdog1 {
++&fec1 {
 +	pinctrl-names = "default";
-+	pinctrl-0 = <&pinctrl_wdog>;
-+	fsl,ext-reset-output;
++	pinctrl-0 = <&pinctrl_fec1>;
++	phy-mode = "rgmii";
++	phy-handle = <&ethphy0>;
++	phy-supply = <&reg_eth_phy>;
++	phy-reset-gpios = <&gpio1 9 GPIO_ACTIVE_LOW>;
++	phy-reset-duration = <10>;
++	phy-reset-post-delay = <20>;
++	fsl,magic-packet;
 +	status = "okay";
++
++	mdio {
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		ethphy0: ethernet-phy@4 {
++			compatible = "ethernet-phy-ieee802.3-c22";
++			reg = <4>;
++			vddio-supply = <&vddio>;
++
++			vddio: vddio-regulator {
++					regulator-min-microvolt = <1800000>;
++					regulator-max-microvolt = <1800000>;
++			};
++		};
++	};
 +};
 +
 +&iomuxc {
@@ -861,24 +929,10 @@ index 0000000000..bbe0aa0ed6
 +		>;
 +	};
 +
-+	pinctrl_i2c2: i2c2grp {
-+		fsl,pins = <
-+			MX8MM_IOMUXC_I2C2_SCL_I2C2_SCL			0x400001c3
-+			MX8MM_IOMUXC_I2C2_SDA_I2C2_SDA			0x400001c3
-+		>;
-+	};
-+
 +	pinctrl_i2c3: i2c3grp {
 +		fsl,pins = <
 +			MX8MM_IOMUXC_I2C3_SCL_I2C3_SCL			0x400001c3
 +			MX8MM_IOMUXC_I2C3_SDA_I2C3_SDA			0x400001c3
-+		>;
-+	};
-+
-+	pinctrl_i2c4: i2c4grp {
-+		fsl,pins = <
-+			MX8MM_IOMUXC_I2C4_SCL_I2C4_SCL			0x400001c3
-+			MX8MM_IOMUXC_I2C4_SDA_I2C4_SDA			0x400001c3
 +		>;
 +	};
 +
@@ -889,79 +943,10 @@ index 0000000000..bbe0aa0ed6
 +		>;
 +	};
 +
-+	pinctrl_i2c2_gpio: i2c2grp-gpio {
-+		fsl,pins = <
-+			MX8MM_IOMUXC_I2C2_SCL_GPIO5_IO16		0x1c3
-+			MX8MM_IOMUXC_I2C2_SDA_GPIO5_IO17		0x1c3
-+		>;
-+	};
-+
 +	pinctrl_i2c3_gpio: i2c3grp-gpio {
 +		fsl,pins = <
 +			MX8MM_IOMUXC_I2C3_SCL_GPIO5_IO18		0x1c3
 +			MX8MM_IOMUXC_I2C3_SDA_GPIO5_IO19		0x1c3
-+		>;
-+	};
-+
-+	pinctrl_i2c4_gpio: i2c4grp-gpio {
-+		fsl,pins = <
-+			MX8MM_IOMUXC_I2C4_SCL_GPIO5_IO20		0x1c3
-+			MX8MM_IOMUXC_I2C4_SDA_GPIO5_IO21		0x1c3
-+		>;
-+	};
-+
-+	pinctrl_reg_usdhc2_vmmc: regulator-usdhc2 {
-+		fsl,pins = <
-+			MX8MM_IOMUXC_SAI2_RXC_GPIO4_IO22		0x41
-+		>;
-+	};
-+
-+	pinctrl_uart4: uart4grp {
-+		fsl,pins = <
-+			MX8MM_IOMUXC_UART4_RXD_UART4_DCE_RX		0x140
-+			MX8MM_IOMUXC_UART4_TXD_UART4_DCE_TX		0x140
-+		>;
-+	};
-+
-+	pinctrl_usdhc2_cd: usdhc2grpcd {
-+		fsl,pins = <
-+			MX8MM_IOMUXC_GPIO1_IO10_GPIO1_IO10		0x1c0
-+		>;
-+	};
-+
-+	pinctrl_usdhc2: usdhc2grp {
-+		fsl,pins = <
-+			MX8MM_IOMUXC_SD2_CLK_USDHC2_CLK		0x190
-+			MX8MM_IOMUXC_SD2_CMD_USDHC2_CMD		0x1d0
-+			MX8MM_IOMUXC_SD2_DATA0_USDHC2_DATA0	0x1d0
-+			MX8MM_IOMUXC_SD2_DATA1_USDHC2_DATA1	0x1d0
-+			MX8MM_IOMUXC_SD2_DATA2_USDHC2_DATA2	0x1d0
-+			MX8MM_IOMUXC_SD2_DATA3_USDHC2_DATA3	0x1d0
-+			MX8MM_IOMUXC_GPIO1_IO04_USDHC2_VSELECT	0x1d0
-+		>;
-+	};
-+
-+	pinctrl_usdhc2_100mhz: usdhc2grp100mhz {
-+		fsl,pins = <
-+			MX8MM_IOMUXC_SD2_CLK_USDHC2_CLK		0x194
-+			MX8MM_IOMUXC_SD2_CMD_USDHC2_CMD		0x1d4
-+			MX8MM_IOMUXC_SD2_DATA0_USDHC2_DATA0	0x1d4
-+			MX8MM_IOMUXC_SD2_DATA1_USDHC2_DATA1	0x1d4
-+			MX8MM_IOMUXC_SD2_DATA2_USDHC2_DATA2	0x1d4
-+			MX8MM_IOMUXC_SD2_DATA3_USDHC2_DATA3	0x1d4
-+			MX8MM_IOMUXC_GPIO1_IO04_USDHC2_VSELECT	0x1d0
-+		>;
-+	};
-+
-+	pinctrl_usdhc2_200mhz: usdhc2grp200mhz {
-+		fsl,pins = <
-+			MX8MM_IOMUXC_SD2_CLK_USDHC2_CLK		0x196
-+			MX8MM_IOMUXC_SD2_CMD_USDHC2_CMD		0x1d6
-+			MX8MM_IOMUXC_SD2_DATA0_USDHC2_DATA0	0x1d6
-+			MX8MM_IOMUXC_SD2_DATA1_USDHC2_DATA1	0x1d6
-+			MX8MM_IOMUXC_SD2_DATA2_USDHC2_DATA2	0x1d6
-+			MX8MM_IOMUXC_SD2_DATA3_USDHC2_DATA3	0x1d6
-+			MX8MM_IOMUXC_GPIO1_IO04_USDHC2_VSELECT	0x1d0
 +		>;
 +	};
 +
@@ -1018,327 +1003,6 @@ index 0000000000..bbe0aa0ed6
 +			MX8MM_IOMUXC_GPIO1_IO02_WDOG1_WDOG_B		0xc6
 +		>;
 +	};
-+
-+	pinctrl_reg_usbotg2: regulator_usbotg2 {
-+		fsl,pins = <
-+			MX8MM_IOMUXC_SAI3_TXD_GPIO5_IO1			0x16
-+		>;
-+	};
-+};
-diff --git a/arch/arm/dts/imx8mn-var-som-rev10.dts b/arch/arm/dts/imx8mn-var-som-rev10.dts
-new file mode 100644
-index 0000000000..2500a63e07
---- /dev/null
-+++ b/arch/arm/dts/imx8mn-var-som-rev10.dts
-@@ -0,0 +1,58 @@
-+/*
-+ * Copyright 2018 NXP
-+ * Copyright 2019-2020 Variscite Ltd.
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version 2
-+ * of the License, or (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ */
-+
-+/dts-v1/;
-+
-+#include "imx8mn-var-som.dts"
-+
-+/ {
-+	model = "Variscite VAR-SOM-MX8M-NANO Rev1.0";
-+};
-+
-+&iomuxc {
-+	imx8mn-var-som {
-+		pinctrl_usdhc2_gpio: usdhc2grpgpio {
-+			fsl,pins = <
-+				MX8MN_IOMUXC_SD2_CD_B_GPIO2_IO12	0xc1
-+			>;
-+		};
-+
-+		pinctrl_typec: typecgrp {
-+			fsl,pins = <
-+				MX8MN_IOMUXC_GPIO1_IO10_GPIO1_IO10	0x16
-+			>;
-+		};
-+	};
-+};
-+
-+&i2c2 {
-+	/* USB-C controller */
-+	typec_ptn5150: typec@3d {
-+		status = "okay";
-+		compatible = "nxp,ptn5150";
-+		reg = <0x3d>;
-+		pinctrl-names = "default";
-+		pinctrl-0 = <&pinctrl_typec>;
-+		connect-gpios = <&gpio1 10 GPIO_ACTIVE_HIGH>;
-+	};
-+};
-+
-+&usbotg1 {
-+	extcon = <0>, <&typec_ptn5150>;
-+};
-+
-+&usdhc2 {
-+	cd-gpios = <&gpio2 12 GPIO_ACTIVE_LOW>;
-+};
-diff --git a/arch/arm/dts/imx8mn-var-som.dts b/arch/arm/dts/imx8mn-var-som.dts
-new file mode 100644
-index 0000000000..60de6f4f30
---- /dev/null
-+++ b/arch/arm/dts/imx8mn-var-som.dts
-@@ -0,0 +1,498 @@
-+/*
-+ * Copyright 2018-2019 NXP
-+ * Copyright 2019-2020 Variscite Ltd.
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version 2
-+ * of the License, or (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ */
-+
-+/dts-v1/;
-+
-+#include "imx8mn.dtsi"
-+
-+/ {
-+	model = "Variscite VAR-SOM-MX8M-NANO";
-+	compatible = "variscite,imx8mn-var-som", "fsl,imx8mn";
-+	chosen {
-+		bootargs = "console=ttymxc3,115200 earlycon=ec_imx6q,0x30a60000,115200";
-+		stdout-path = &uart4;
-+	};
-+
-+	regulators {
-+		compatible = "simple-bus";
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+
-+		reg_usdhc2_vmmc: regulator-usdhc2 {
-+			compatible = "regulator-fixed";
-+			regulator-name = "VSD_3V3";
-+			regulator-min-microvolt = <3300000>;
-+			regulator-max-microvolt = <3300000>;
-+			gpio = <&gpio4 22 GPIO_ACTIVE_HIGH>;
-+			enable-active-high;
-+			startup-delay-us = <100>;
-+			u-boot,off-on-delay-us = <12000>;
-+		};
-+
-+		reg_eth_phy: eth_phy {
-+			compatible = "regulator-fixed";
-+			regulator-name = "eth_phy_pwr";
-+			regulator-min-microvolt = <3300000>;
-+			regulator-max-microvolt = <3300000>;
-+			gpio = <&gpio2 9 GPIO_ACTIVE_HIGH>;
-+			enable-active-high;
-+		};
-+	};
-+};
-+
-+&iomuxc {
-+	pinctrl-names = "default";
-+	imx8mn-var-som {
-+		pinctrl_fec1: fec1grp {
-+			fsl,pins = <
-+				MX8MN_IOMUXC_ENET_MDC_ENET1_MDC		0x3
-+				MX8MN_IOMUXC_ENET_MDIO_ENET1_MDIO		0x3
-+				MX8MN_IOMUXC_ENET_TD3_ENET1_RGMII_TD3		0x1f
-+				MX8MN_IOMUXC_ENET_TD2_ENET1_RGMII_TD2		0x1f
-+				MX8MN_IOMUXC_ENET_TD1_ENET1_RGMII_TD1		0x1f
-+				MX8MN_IOMUXC_ENET_TD0_ENET1_RGMII_TD0		0x1f
-+				MX8MN_IOMUXC_ENET_RD3_ENET1_RGMII_RD3		0x91
-+				MX8MN_IOMUXC_ENET_RD2_ENET1_RGMII_RD2		0x91
-+				MX8MN_IOMUXC_ENET_RD1_ENET1_RGMII_RD1		0x91
-+				MX8MN_IOMUXC_ENET_RD0_ENET1_RGMII_RD0		0x91
-+				MX8MN_IOMUXC_ENET_TXC_ENET1_RGMII_TXC		0x1f
-+				MX8MN_IOMUXC_ENET_RXC_ENET1_RGMII_RXC		0x91
-+				MX8MN_IOMUXC_ENET_RX_CTL_ENET1_RGMII_RX_CTL	0x91
-+				MX8MN_IOMUXC_ENET_TX_CTL_ENET1_RGMII_TX_CTL	0x1f
-+				MX8MN_IOMUXC_GPIO1_IO09_GPIO1_IO9		0x19
-+				MX8MN_IOMUXC_SD1_DATA7_GPIO2_IO9 		0x41
-+			>;
-+		};
-+
-+		pinctrl_i2c1: i2c1grp {
-+			fsl,pins = <
-+				MX8MN_IOMUXC_I2C1_SCL_I2C1_SCL			0x400001c3
-+				MX8MN_IOMUXC_I2C1_SDA_I2C1_SDA			0x400001c3
-+			>;
-+		};
-+
-+		pinctrl_i2c2: i2c2grp {
-+			fsl,pins = <
-+				MX8MN_IOMUXC_I2C2_SCL_I2C2_SCL			0x400001c3
-+				MX8MN_IOMUXC_I2C2_SDA_I2C2_SDA			0x400001c3
-+			>;
-+		};
-+
-+		pinctrl_i2c3: i2c3grp {
-+			fsl,pins = <
-+				MX8MN_IOMUXC_I2C3_SCL_I2C3_SCL			0x400001c3
-+				MX8MN_IOMUXC_I2C3_SDA_I2C3_SDA			0x400001c3
-+			>;
-+		};
-+
-+		pinctrl_i2c4: i2c4grp {
-+			fsl,pins = <
-+				MX8MN_IOMUXC_I2C4_SCL_I2C4_SCL			0x400001c3
-+				MX8MN_IOMUXC_I2C4_SDA_I2C4_SDA			0x400001c3
-+			>;
-+		};
-+
-+		pinctrl_i2c1_gpio: i2c1grp-gpio {
-+			fsl,pins = <
-+				MX8MN_IOMUXC_I2C1_SCL_GPIO5_IO14		0x1c3
-+				MX8MN_IOMUXC_I2C1_SDA_GPIO5_IO15		0x1c3
-+			>;
-+		};
-+
-+		pinctrl_i2c2_gpio: i2c2grp-gpio {
-+			fsl,pins = <
-+				MX8MN_IOMUXC_I2C2_SCL_GPIO5_IO16		0x1c3
-+				MX8MN_IOMUXC_I2C2_SDA_GPIO5_IO17		0x1c3
-+			>;
-+		};
-+
-+		pinctrl_i2c3_gpio: i2c3grp-gpio {
-+			fsl,pins = <
-+				MX8MN_IOMUXC_I2C3_SCL_GPIO5_IO18		0x1c3
-+				MX8MN_IOMUXC_I2C3_SDA_GPIO5_IO19		0x1c3
-+			>;
-+		};
-+
-+		pinctrl_i2c4_gpio: i2c4grp-gpio {
-+			fsl,pins = <
-+				MX8MN_IOMUXC_I2C4_SCL_GPIO5_IO20		0x1c3
-+				MX8MN_IOMUXC_I2C4_SDA_GPIO5_IO21		0x1c3
-+			>;
-+		};
-+
-+		pinctrl_pmic: pmicirq {
-+			fsl,pins = <
-+				MX8MN_IOMUXC_SD1_DATA6_GPIO2_IO8		0x41
-+			>;
-+		};
-+
-+		pinctrl_uart4: uart4grp {
-+			fsl,pins = <
-+				MX8MN_IOMUXC_UART4_RXD_UART4_DCE_RX		0x49
-+				MX8MN_IOMUXC_UART4_TXD_UART4_DCE_TX		0x49
-+			>;
-+		};
-+
-+		pinctrl_usdhc2_gpio: usdhc2grpgpio {
-+			fsl,pins = <
-+				MX8MN_IOMUXC_SAI2_RXC_GPIO4_IO22		0x41
-+				MX8MN_IOMUXC_GPIO1_IO10_GPIO1_IO10		0x41
-+			>;
-+		};
-+
-+		pinctrl_usdhc2: usdhc2grp {
-+			fsl,pins = <
-+				MX8MN_IOMUXC_SD2_CLK_USDHC2_CLK		0x190
-+				MX8MN_IOMUXC_SD2_CMD_USDHC2_CMD		0x1d0
-+				MX8MN_IOMUXC_SD2_DATA0_USDHC2_DATA0		0x1d0
-+				MX8MN_IOMUXC_SD2_DATA1_USDHC2_DATA1		0x1d0
-+				MX8MN_IOMUXC_SD2_DATA2_USDHC2_DATA2		0x1d0
-+				MX8MN_IOMUXC_SD2_DATA3_USDHC2_DATA3		0x1d0
-+				MX8MN_IOMUXC_GPIO1_IO04_USDHC2_VSELECT		0x1d0
-+			>;
-+		};
-+
-+		pinctrl_usdhc2_100mhz: usdhc2grp100mhz {
-+			fsl,pins = <
-+				MX8MN_IOMUXC_SD2_CLK_USDHC2_CLK		0x194
-+				MX8MN_IOMUXC_SD2_CMD_USDHC2_CMD		0x1d4
-+				MX8MN_IOMUXC_SD2_DATA0_USDHC2_DATA0		0x1d4
-+				MX8MN_IOMUXC_SD2_DATA1_USDHC2_DATA1		0x1d4
-+				MX8MN_IOMUXC_SD2_DATA2_USDHC2_DATA2		0x1d4
-+				MX8MN_IOMUXC_SD2_DATA3_USDHC2_DATA3		0x1d4
-+				MX8MN_IOMUXC_GPIO1_IO04_USDHC2_VSELECT		0x1d0
-+			>;
-+		};
-+
-+		pinctrl_usdhc2_200mhz: usdhc2grp200mhz {
-+			fsl,pins = <
-+				MX8MN_IOMUXC_SD2_CLK_USDHC2_CLK		0x196
-+				MX8MN_IOMUXC_SD2_CMD_USDHC2_CMD		0x1d6
-+				MX8MN_IOMUXC_SD2_DATA0_USDHC2_DATA0		0x1d6
-+				MX8MN_IOMUXC_SD2_DATA1_USDHC2_DATA1		0x1d6
-+				MX8MN_IOMUXC_SD2_DATA2_USDHC2_DATA2		0x1d6
-+				MX8MN_IOMUXC_SD2_DATA3_USDHC2_DATA3		0x1d6
-+				MX8MN_IOMUXC_GPIO1_IO04_USDHC2_VSELECT		0x1d0
-+			>;
-+		};
-+
-+		pinctrl_usdhc3: usdhc3grp {
-+			fsl,pins = <
-+				MX8MN_IOMUXC_NAND_WE_B_USDHC3_CLK		0x40000190
-+				MX8MN_IOMUXC_NAND_WP_B_USDHC3_CMD		0x1d0
-+				MX8MN_IOMUXC_NAND_DATA04_USDHC3_DATA0		0x1d0
-+				MX8MN_IOMUXC_NAND_DATA05_USDHC3_DATA1		0x1d0
-+				MX8MN_IOMUXC_NAND_DATA06_USDHC3_DATA2		0x1d0
-+				MX8MN_IOMUXC_NAND_DATA07_USDHC3_DATA3		0x1d0
-+				MX8MN_IOMUXC_NAND_RE_B_USDHC3_DATA4		0x1d0
-+				MX8MN_IOMUXC_NAND_CE2_B_USDHC3_DATA5		0x1d0
-+				MX8MN_IOMUXC_NAND_CE3_B_USDHC3_DATA6		0x1d0
-+				MX8MN_IOMUXC_NAND_CLE_USDHC3_DATA7		0x1d0
-+				MX8MN_IOMUXC_NAND_CE1_B_USDHC3_STROBE 		0x190
-+			>;
-+		};
-+
-+		pinctrl_usdhc3_100mhz: usdhc3grp100mhz {
-+			fsl,pins = <
-+				MX8MN_IOMUXC_NAND_WE_B_USDHC3_CLK		0x40000194
-+				MX8MN_IOMUXC_NAND_WP_B_USDHC3_CMD		0x1d4
-+				MX8MN_IOMUXC_NAND_DATA04_USDHC3_DATA0		0x1d4
-+				MX8MN_IOMUXC_NAND_DATA05_USDHC3_DATA1		0x1d4
-+				MX8MN_IOMUXC_NAND_DATA06_USDHC3_DATA2		0x1d4
-+				MX8MN_IOMUXC_NAND_DATA07_USDHC3_DATA3		0x1d4
-+				MX8MN_IOMUXC_NAND_RE_B_USDHC3_DATA4		0x1d4
-+				MX8MN_IOMUXC_NAND_CE2_B_USDHC3_DATA5		0x1d4
-+				MX8MN_IOMUXC_NAND_CE3_B_USDHC3_DATA6		0x1d4
-+				MX8MN_IOMUXC_NAND_CLE_USDHC3_DATA7		0x1d4
-+				MX8MN_IOMUXC_NAND_CE1_B_USDHC3_STROBE 		0x194
-+			>;
-+		};
-+
-+		pinctrl_usdhc3_200mhz: usdhc3grp200mhz {
-+			fsl,pins = <
-+				MX8MN_IOMUXC_NAND_WE_B_USDHC3_CLK		0x40000196
-+				MX8MN_IOMUXC_NAND_WP_B_USDHC3_CMD		0x1d6
-+				MX8MN_IOMUXC_NAND_DATA04_USDHC3_DATA0		0x1d6
-+				MX8MN_IOMUXC_NAND_DATA05_USDHC3_DATA1		0x1d6
-+				MX8MN_IOMUXC_NAND_DATA06_USDHC3_DATA2		0x1d6
-+				MX8MN_IOMUXC_NAND_DATA07_USDHC3_DATA3		0x1d6
-+				MX8MN_IOMUXC_NAND_RE_B_USDHC3_DATA4		0x1d6
-+				MX8MN_IOMUXC_NAND_CE2_B_USDHC3_DATA5		0x1d6
-+				MX8MN_IOMUXC_NAND_CE3_B_USDHC3_DATA6		0x1d6
-+				MX8MN_IOMUXC_NAND_CLE_USDHC3_DATA7		0x1d6
-+				MX8MN_IOMUXC_NAND_CE1_B_USDHC3_STROBE 		0x196
-+			>;
-+		};
-+
-+		pinctrl_wdog: wdoggrp {
-+			fsl,pins = <
-+				MX8MN_IOMUXC_GPIO1_IO02_WDOG1_WDOG_B		0xc6
-+			>;
-+		};
-+	};
 +};
 +
 +&i2c1 {
@@ -1348,161 +1012,6 @@ index 0000000000..60de6f4f30
 +	pinctrl-1 = <&pinctrl_i2c1_gpio>;
 +	scl-gpios = <&gpio5 14 GPIO_ACTIVE_HIGH>;
 +	sda-gpios = <&gpio5 15 GPIO_ACTIVE_HIGH>;
-+	status = "okay";
-+
-+	pmic: bd71837@4b {
-+		reg = <0x4b>;
-+		compatible = "rohm,bd71837";
-+		/* PMIC BD71837 PMIC_nINT GPIO1_IO3 */
-+		pinctrl-0 = <&pinctrl_pmic>;
-+		gpio_intr = <&gpio2 8 GPIO_ACTIVE_LOW>;
-+
-+		gpo {
-+			rohm,drv = <0x0C>;	/* 0b0000_1100 all gpos with cmos output mode */
-+		};
-+
-+		regulators {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+
-+			bd71837,pmic-buck2-uses-i2c-dvs;
-+			bd71837,pmic-buck2-dvs-voltage = <1000000>, <900000>, <0>; /* VDD_ARM: Run-Idle */
-+
-+			buck1_reg: regulator@0 {
-+				reg = <0>;
-+				regulator-compatible = "buck1";
-+				regulator-min-microvolt = <700000>;
-+				regulator-max-microvolt = <1300000>;
-+				regulator-boot-on;
-+				regulator-always-on;
-+				regulator-ramp-delay = <1250>;
-+			};
-+
-+			buck2_reg: regulator@1 {
-+				reg = <1>;
-+				regulator-compatible = "buck2";
-+				regulator-min-microvolt = <700000>;
-+				regulator-max-microvolt = <1300000>;
-+				regulator-boot-on;
-+				regulator-always-on;
-+				regulator-ramp-delay = <1250>;
-+			};
-+
-+			buck3_reg: regulator@2 {
-+				reg = <2>;
-+				regulator-compatible = "buck3";
-+				regulator-min-microvolt = <700000>;
-+				regulator-max-microvolt = <1300000>;
-+			};
-+
-+			buck4_reg: regulator@3 {
-+				reg = <3>;
-+				regulator-compatible = "buck4";
-+				regulator-min-microvolt = <700000>;
-+				regulator-max-microvolt = <1300000>;
-+			};
-+
-+			buck5_reg: regulator@4 {
-+				reg = <4>;
-+				regulator-compatible = "buck5";
-+				regulator-min-microvolt = <700000>;
-+				regulator-max-microvolt = <1350000>;
-+			};
-+
-+			buck6_reg: regulator@5 {
-+				reg = <5>;
-+				regulator-compatible = "buck6";
-+				regulator-min-microvolt = <3000000>;
-+				regulator-max-microvolt = <3300000>;
-+				regulator-boot-on;
-+				regulator-always-on;
-+			};
-+
-+			buck7_reg: regulator@6 {
-+				reg = <6>;
-+				regulator-compatible = "buck7";
-+				regulator-min-microvolt = <1605000>;
-+				regulator-max-microvolt = <1995000>;
-+				regulator-boot-on;
-+				regulator-always-on;
-+			};
-+
-+			buck8_reg: regulator@7 {
-+				reg = <7>;
-+				regulator-compatible = "buck8";
-+				regulator-min-microvolt = <800000>;
-+				regulator-max-microvolt = <1400000>;
-+				regulator-boot-on;
-+				regulator-always-on;
-+			};
-+
-+			ldo1_reg: regulator@8 {
-+				reg = <8>;
-+				regulator-compatible = "ldo1";
-+				regulator-min-microvolt = <3000000>;
-+				regulator-max-microvolt = <3300000>;
-+				regulator-boot-on;
-+				regulator-always-on;
-+			};
-+
-+			ldo2_reg: regulator@9 {
-+				reg = <9>;
-+				regulator-compatible = "ldo2";
-+				regulator-min-microvolt = <900000>;
-+				regulator-max-microvolt = <900000>;
-+				regulator-boot-on;
-+				regulator-always-on;
-+			};
-+
-+			ldo3_reg: regulator@10 {
-+				reg = <10>;
-+				regulator-compatible = "ldo3";
-+				regulator-min-microvolt = <1800000>;
-+				regulator-max-microvolt = <3300000>;
-+				regulator-boot-on;
-+				regulator-always-on;
-+			};
-+
-+			ldo4_reg: regulator@11 {
-+				reg = <11>;
-+				regulator-compatible = "ldo4";
-+				regulator-min-microvolt = <900000>;
-+				regulator-max-microvolt = <1800000>;
-+			};
-+
-+			ldo5_reg: regulator@12 {
-+				reg = <12>;
-+				regulator-compatible = "ldo5";
-+				regulator-min-microvolt = <1800000>;
-+				regulator-max-microvolt = <3300000>;
-+			};
-+
-+			ldo6_reg: regulator@13 {
-+				reg = <13>;
-+				regulator-compatible = "ldo6";
-+				regulator-min-microvolt = <900000>;
-+				regulator-max-microvolt = <1800000>;
-+				regulator-boot-on;
-+				regulator-always-on;
-+			};
-+
-+			ldo7_reg: regulator@14 {
-+				reg = <14>;
-+				regulator-compatible = "ldo7";
-+				regulator-min-microvolt = <1800000>;
-+				regulator-max-microvolt = <3300000>;
-+			};
-+		};
-+	};
-+};
-+
-+&i2c2 {
-+	clock-frequency = <100000>;
-+	pinctrl-names = "default", "gpio";
-+	pinctrl-0 = <&pinctrl_i2c2>;
-+	pinctrl-1 = <&pinctrl_i2c2_gpio>;
-+	scl-gpios = <&gpio5 16 GPIO_ACTIVE_HIGH>;
-+	sda-gpios = <&gpio5 17 GPIO_ACTIVE_HIGH>;
 +	status = "okay";
 +};
 +
@@ -1516,59 +1025,7 @@ index 0000000000..60de6f4f30
 +	status = "okay";
 +};
 +
-+&i2c4 {
-+	clock-frequency = <100000>;
-+	pinctrl-names = "default", "gpio";
-+	pinctrl-0 = <&pinctrl_i2c4>;
-+	pinctrl-1 = <&pinctrl_i2c4_gpio>;
-+	scl-gpios = <&gpio5 20 GPIO_ACTIVE_HIGH>;
-+	sda-gpios = <&gpio5 21 GPIO_ACTIVE_HIGH>;
-+	status = "okay";
-+};
-+
-+&fec1 {
-+	pinctrl-names = "default";
-+	pinctrl-0 = <&pinctrl_fec1>;
-+	phy-mode = "rgmii";
-+	phy-handle = <&ethphy0>;
-+	fsl,magic-packet;
-+	phy-supply = <&reg_eth_phy>;
-+	phy-reset-gpios = <&gpio1 9 GPIO_ACTIVE_LOW>;
-+	phy-reset-duration = <10>;
-+	status = "okay";
-+
-+	mdio {
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+
-+		ethphy0: ethernet-phy@0 {
-+			compatible = "ethernet-phy-ieee802.3-c22";
-+			reg = <4>;
-+			at803x,led-act-blind-workaround;
-+			at803x,eee-okay;
-+			at803x,vddio-1p8v;
-+		};
-+	};
-+};
-+
-+ /* Console */
-+&uart4 {
-+	pinctrl-names = "default";
-+	pinctrl-0 = <&pinctrl_uart4>;
-+	status = "okay";
-+};
-+
-+&usdhc2 {
-+	pinctrl-names = "default", "state_100mhz", "state_200mhz";
-+	pinctrl-0 = <&pinctrl_usdhc2>, <&pinctrl_usdhc2_gpio>;
-+	pinctrl-1 = <&pinctrl_usdhc2_100mhz>, <&pinctrl_usdhc2_gpio>;
-+	pinctrl-2 = <&pinctrl_usdhc2_200mhz>, <&pinctrl_usdhc2_gpio>;
-+	bus-width = <4>;
-+	cd-gpios = <&gpio1 10 GPIO_ACTIVE_LOW>;
-+	vmmc-supply = <&reg_usdhc2_vmmc>;
-+	status = "okay";
-+};
-+
++/* EMMC */
 +&usdhc3 {
 +	pinctrl-names = "default", "state_100mhz", "state_200mhz";
 +	pinctrl-0 = <&pinctrl_usdhc3>;
@@ -1585,21 +1042,13 @@ index 0000000000..60de6f4f30
 +	fsl,ext-reset-output;
 +	status = "okay";
 +};
-+
-+&A53_0 {
-+	arm-supply = <&buck2_reg>;
-+};
-+
-+&usbotg1 {
-+	status = "okay";
-+};
 diff --git a/arch/arm/mach-imx/imx8m/Kconfig b/arch/arm/mach-imx/imx8m/Kconfig
-index 51c93d6ac5..a3b28a557f 100644
+index 5391facb907..f46b3b8756a 100644
 --- a/arch/arm/mach-imx/imx8m/Kconfig
 +++ b/arch/arm/mach-imx/imx8m/Kconfig
-@@ -145,6 +145,14 @@ config TARGET_IMX8MN_DDR4_AB2
+@@ -167,6 +167,18 @@ config TARGET_KONTRON_MX8MM
  	select SUPPORT_SPL
- 	select IMX8M_DDR4
+ 	select IMX8M_LPDDR4
  
 +config TARGET_IMX8MM_VAR_DART
 +	bool "imx8mm_var_dart"
@@ -1608,24 +1057,27 @@ index 51c93d6ac5..a3b28a557f 100644
 +	select IMX8M_DDR4
 +	select IMX8M_LPDDR4
 +	select IMX8M_BOARD_INIT_DRAM
++	select FSL_CAAM
++	select FSL_BLOB
++	select MISC
++	select SPL_CRYPTO_SUPPORT if SPL
 +
- config TARGET_VERDIN_IMX8MM
-        bool "Support Toradex Verdin iMX8M Mini module"
-        select IMX8MM
-@@ -166,6 +174,7 @@ source "board/freescale/imx8mm_evk/Kconfig"
- source "board/freescale/imx8mm_val/Kconfig"
- source "board/freescale/imx8mn_evk/Kconfig"
- source "board/freescale/imx8mp_evk/Kconfig"
-+source "board/variscite/imx8mm_var_dart/Kconfig"
+ config TARGET_IMX8MN_EVK
+ 	bool "imx8mn LPDDR4 EVK board"
+ 	select IMX8MN
+@@ -363,5 +375,6 @@ source "board/technexion/pico-imx8mq/Kconfig"
+ source "board/variscite/imx8mn_var_som/Kconfig"
  source "board/toradex/verdin-imx8mm/Kconfig"
  source "board/toradex/verdin-imx8mp/Kconfig"
++source "board/variscite/imx8mm_var_dart/Kconfig"
  
+ endif
 diff --git a/board/variscite/imx8mm_var_dart/Kconfig b/board/variscite/imx8mm_var_dart/Kconfig
 new file mode 100644
-index 0000000000..f0654490ee
+index 00000000000..f99dd068630
 --- /dev/null
 +++ b/board/variscite/imx8mm_var_dart/Kconfig
-@@ -0,0 +1,14 @@
+@@ -0,0 +1,15 @@
 +if TARGET_IMX8MM_VAR_DART
 +
 +config SYS_BOARD
@@ -1638,14 +1090,15 @@ index 0000000000..f0654490ee
 +	default "imx8mm_var_dart"
 +
 +source "board/freescale/common/Kconfig"
++source "board/variscite/common/Kconfig"
 +
 +endif
 diff --git a/board/variscite/imx8mm_var_dart/Makefile b/board/variscite/imx8mm_var_dart/Makefile
 new file mode 100644
-index 0000000000..f4a1041541
+index 00000000000..1bc727a4904
 --- /dev/null
 +++ b/board/variscite/imx8mm_var_dart/Makefile
-@@ -0,0 +1,20 @@
+@@ -0,0 +1,21 @@
 +#
 +# Copyright 2018 NXP
 +# Copyright 2019 Variscite Ltd.
@@ -1664,14 +1117,15 @@ index 0000000000..f4a1041541
 +obj-y += ../common/mmc.o
 +obj-$(CONFIG_VIDEO) += ../common/video.o
 +obj-$(CONFIG_FEC_MXC) += ../common/eth.o
++obj-$(CONFIG_EXTCON_PTN5150) += ../common/extcon-ptn5150.o
 +obj-$(CONFIG_IMX8M_BOARD_INIT_DRAM) += ../common/imx8_dram.o
 +endif
 diff --git a/board/variscite/imx8mm_var_dart/ddr4_timing.c b/board/variscite/imx8mm_var_dart/ddr4_timing.c
 new file mode 100644
-index 0000000000..edb13a1ba3
+index 00000000000..9d2c3448f48
 --- /dev/null
 +++ b/board/variscite/imx8mm_var_dart/ddr4_timing.c
-@@ -0,0 +1,558 @@
+@@ -0,0 +1,540 @@
 +/*
 + * Copyright 2019 NXP
 + *
@@ -1744,24 +1198,6 @@ index 0000000000..edb13a1ba3
 +	{ 0x3d400220, 0x3f01 },
 +	{ 0x3d400240, 0x6000610 },
 +	{ 0x3d400244, 0x1323 },
-+	{ 0x3d400250, 0x317d1a07 },
-+	{ 0x3d400254, 0xf },
-+	{ 0x3d40025c, 0x2a001b76 },
-+	{ 0x3d400264, 0x7300b473 },
-+	{ 0x3d40026c, 0x30000e06 },
-+	{ 0x3d400300, 0x14 },
-+	{ 0x3d400304, 0x0 },
-+	{ 0x3d40030c, 0x0 },
-+	{ 0x3d400320, 0x1 },
-+	{ 0x3d40036c, 0x10 },
-+	{ 0x3d400400, 0x100 },
-+	{ 0x3d400404, 0x13193 },
-+	{ 0x3d400408, 0x6096 },
-+	{ 0x3d400490, 0x1 },
-+	{ 0x3d400494, 0x2000c00 },
-+	{ 0x3d400498, 0x3c00db },
-+	{ 0x3d40049c, 0x100009 },
-+	{ 0x3d4004a0, 0x2 },
 +	{ 0x3d402050, 0x210070 },
 +	{ 0x3d402064, 0x40005e },
 +	{ 0x3d4020dc, 0x40105 },
@@ -2232,10 +1668,10 @@ index 0000000000..edb13a1ba3
 +};
 diff --git a/board/variscite/imx8mm_var_dart/imx8mm_var_dart.c b/board/variscite/imx8mm_var_dart/imx8mm_var_dart.c
 new file mode 100644
-index 0000000000..b5b4874949
+index 00000000000..86f66d7a009
 --- /dev/null
 +++ b/board/variscite/imx8mm_var_dart/imx8mm_var_dart.c
-@@ -0,0 +1,225 @@
+@@ -0,0 +1,272 @@
 +/*
 + * Copyright 2018 NXP
 + * Copyright 2018-2020 Variscite Ltd.
@@ -2244,6 +1680,7 @@ index 0000000000..b5b4874949
 + */
 +
 +#include <common.h>
++#include <env.h>
 +#include <asm/io.h>
 +#include <asm/mach-imx/iomux-v3.h>
 +#include <asm-generic/gpio.h>
@@ -2255,6 +1692,7 @@ index 0000000000..b5b4874949
 +#include <usb.h>
 +#include <dm.h>
 +
++#include "../common/extcon-ptn5150.h"
 +#include "../common/imx8_eeprom.h"
 +#include "imx8mm_var_dart.h"
 +
@@ -2262,8 +1700,9 @@ index 0000000000..b5b4874949
 +
 +extern int var_setup_mac(struct var_eeprom *eeprom);
 +
-+#ifdef CONFIG_SPL_BUILD
 +#define GPIO_PAD_CTRL	(PAD_CTL_DSE6 | PAD_CTL_FSEL1 | PAD_CTL_PUE | PAD_CTL_PE)
++
++#ifdef CONFIG_SPL_BUILD
 +#define ID_GPIO 	IMX_GPIO_NR(2, 11)
 +
 +static iomux_v3_cfg_t const id_pads[] = {
@@ -2306,10 +1745,18 @@ index 0000000000..b5b4874949
 +
 +int var_get_som_rev(struct var_eeprom *ep)
 +{
-+	if (ep->somrev == 0)
++	switch (ep->somrev) {
++	case 0:
 +		return SOM_REV_10;
-+	else
++	case 1:
 +		return SOM_REV_11;
++	case 2:
++		return SOM_REV_12;
++	case 3:
++		return SOM_REV_13;
++	default:
++		return UNKNOWN_REV;
++	}
 +}
 +
 +#define UART_PAD_CTRL	(PAD_CTL_DSE6 | PAD_CTL_FSEL1)
@@ -2368,15 +1815,25 @@ index 0000000000..b5b4874949
 +#endif
 +
 +#ifdef CONFIG_CI_UDC
-+#define USB_OTG1_ID_GPIO  IMX_GPIO_NR(1, 10)
 +
-+static iomux_v3_cfg_t const usb_pads[] = {
-+	IMX8MM_PAD_GPIO1_IO10_GPIO1_IO10  | MUX_PAD_CTRL(NO_PAD_CTRL),
-+};
++#ifdef CONFIG_EXTCON_PTN5150
++static struct extcon_ptn5150 usb_ptn5150;
++#endif
 +
 +int board_usb_init(int index, enum usb_init_type init)
 +{
 +	imx8m_usb_power(index, true);
++
++#if (!defined(CONFIG_SPL_BUILD) && defined(CONFIG_EXTCON_PTN5150))
++	if (index == 0) {
++		/* Verify port is in proper mode */
++		int phy_mode = extcon_ptn5150_phy_mode(&usb_ptn5150);
++
++		//Only verify phy_mode if ptn5150 is initialized
++		if (phy_mode >= 0 && phy_mode != init)
++			return -ENODEV;
++	}
++#endif
 +
 +	return 0;
 +}
@@ -2388,38 +1845,24 @@ index 0000000000..b5b4874949
 +	return 0;
 +}
 +
-+/* Used only on VAR-SOM-MX8M-MINI Rev1.0 (with extcon) */
++#ifdef CONFIG_EXTCON_PTN5150
 +int board_ehci_usb_phy_mode(struct udevice *dev)
 +{
-+	if (dev->seq == 1)
-+		return USB_INIT_HOST;
-+	else
-+		return gpio_get_value(USB_OTG1_ID_GPIO) ?
-+			USB_INIT_DEVICE : USB_INIT_HOST;
-+}
++	int usb_phy_mode = extcon_ptn5150_phy_mode(&usb_ptn5150);
 +
-+static void setup_usb(void)
-+{
-+	struct var_eeprom *ep = VAR_EEPROM_DATA;
-+	int som_rev = var_get_som_rev(ep);
++	/* Default to host mode if not connected */
++	if (usb_phy_mode < 0)
++		usb_phy_mode = USB_INIT_HOST;
 +
-+	if ((get_board_id() == VAR_SOM_MX8M_MINI) &&
-+	    (som_rev == SOM_REV_10)) {
-+		imx_iomux_v3_setup_multiple_pads(usb_pads, ARRAY_SIZE(usb_pads));
-+		gpio_request(USB_OTG1_ID_GPIO, "usb_otg1_id");
-+		gpio_direction_input(USB_OTG1_ID_GPIO);
-+	}
++	return usb_phy_mode;
 +}
++#endif
 +#endif
 +
 +int board_init(void)
 +{
 +#ifdef CONFIG_FEC_MXC
 +	setup_fec();
-+#endif
-+
-+#ifdef CONFIG_CI_UDC
-+	setup_usb();
 +#endif
 +
 +	return 0;
@@ -2431,8 +1874,13 @@ index 0000000000..b5b4874949
 +	int som_rev;
 +	char sdram_size_str[SDRAM_SIZE_STR_LEN];
 +	int id = get_board_id();
-+
 +	struct var_eeprom *ep = VAR_EEPROM_DATA;
++	struct var_carrier_eeprom carrier_eeprom;
++	char carrier_rev[CARRIER_REV_LEN] = {0};
++
++#ifdef CONFIG_EXTCON_PTN5150
++	extcon_ptn5150_setup(&usb_ptn5150);
++#endif
 +
 +#ifdef CONFIG_FEC_MXC
 +	var_setup_mac(ep);
@@ -2447,13 +1895,31 @@ index 0000000000..b5b4874949
 +	if (id == VAR_SOM_MX8M_MINI) {
 +		env_set("board_name", "VAR-SOM-MX8M-MINI");
 +		env_set("console", "ttymxc3,115200");
-+		if (som_rev == SOM_REV_10)
++		switch (som_rev) {
++		case SOM_REV_10:
 +			env_set("som_rev", "som_rev10");
-+		else
++			break;
++		case SOM_REV_11:
 +			env_set("som_rev", "som_rev11");
++			break;
++		case SOM_REV_12:
++			env_set("som_rev", "som_rev12");
++			break;
++		case SOM_REV_13:
++			env_set("som_rev", "som_rev13");
++			break;
++		}
++		var_carrier_eeprom_read(CARRIER_EEPROM_BUS_SOM, CARRIER_EEPROM_ADDR, &carrier_eeprom);
++		var_carrier_eeprom_get_revision(&carrier_eeprom, carrier_rev, sizeof(carrier_rev));
++		env_set("carrier_rev", carrier_rev);
 +	}
-+	else if (id == DART_MX8M_MINI)
++	else if (id == DART_MX8M_MINI) {
 +		env_set("board_name", "DART-MX8M-MINI");
++
++		var_carrier_eeprom_read(CARRIER_EEPROM_BUS_DART, CARRIER_EEPROM_ADDR, &carrier_eeprom);
++		var_carrier_eeprom_get_revision(&carrier_eeprom, carrier_rev, sizeof(carrier_rev));
++		env_set("carrier_rev", carrier_rev);
++	}
 +
 +#ifdef CONFIG_ENV_IS_IN_MMC
 +	board_late_mmc_env_init();
@@ -2461,12 +1927,29 @@ index 0000000000..b5b4874949
 +
 +	return 0;
 +}
++
++#ifdef CONFIG_FSL_FASTBOOT
++#ifdef CONFIG_ANDROID_RECOVERY
++
++#define BACK_KEY IMX_GPIO_NR(4, 6)
++#define BACK_PAD_CTRL	(PAD_CTL_DSE6 | PAD_CTL_HYS | PAD_CTL_PUE | PAD_CTL_PE)
++
++static iomux_v3_cfg_t const back_pads[] = {
++	IMX8MM_PAD_SAI1_RXD4_GPIO4_IO6 | MUX_PAD_CTRL(BACK_PAD_CTRL),
++};
++
++int is_recovery_key_pressing(void)
++{
++	return 0;
++}
++#endif /*CONFIG_ANDROID_RECOVERY*/
++#endif /*CONFIG_FSL_FASTBOOT*/
 diff --git a/board/variscite/imx8mm_var_dart/imx8mm_var_dart.h b/board/variscite/imx8mm_var_dart/imx8mm_var_dart.h
 new file mode 100644
-index 0000000000..03c0307b70
+index 00000000000..14020914b4d
 --- /dev/null
 +++ b/board/variscite/imx8mm_var_dart/imx8mm_var_dart.h
-@@ -0,0 +1,14 @@
+@@ -0,0 +1,16 @@
 +int var_get_som_rev(struct var_eeprom *ep);
 +int get_board_id(void);
 +
@@ -2479,21 +1962,27 @@ index 0000000000..03c0307b70
 +enum {
 +	SOM_REV_10,
 +	SOM_REV_11,
++	SOM_REV_12,
++	SOM_REV_13,
 +	UNKNOWN_REV
 +};
 diff --git a/board/variscite/imx8mm_var_dart/lpddr4_timing.c b/board/variscite/imx8mm_var_dart/lpddr4_timing.c
 new file mode 100644
-index 0000000000..ebd92c61d5
+index 00000000000..00d33c013b4
 --- /dev/null
 +++ b/board/variscite/imx8mm_var_dart/lpddr4_timing.c
-@@ -0,0 +1,1123 @@
+@@ -0,0 +1,1125 @@
 +/*
-+ * Copyright 2018 NXP
++ * Copyright 2019 NXP
 + *
 + * SPDX-License-Identifier:	GPL-2.0+
 + *
 + * Generated code from MX8M_DDR_tool
-+ * Align with uboot-imx_v2018.03_4.14.78_1.0.0_ga
++ *
++ * Align with uboot version:
++ * imx_v2019.04_5.4.x and above version
++ * For imx_v2018.03_4.14.78_1.0.0_ga ~ imx_v2018.04_4.19.35_1.1.0_ga:
++ * please replace #include <asm/arch/ddr.h> with #include <asm/arch/imx8m_ddr.h>
 + */
 +
 +#include <linux/kernel.h>
@@ -2692,8 +2181,8 @@ index 0000000000..ebd92c61d5
 +	{ 0x220024, 0x1ab },
 +	{ 0x2003a, 0x0 },
 +	{ 0x20056, 0x3 },
-+	{ 0x120056, 0xa },
-+	{ 0x220056, 0xa },
++	{ 0x120056, 0x3 },
++	{ 0x220056, 0x3 },
 +	{ 0x1004d, 0xe00 },
 +	{ 0x1014d, 0xe00 },
 +	{ 0x1104d, 0xe00 },
@@ -2812,6 +2301,7 @@ index 0000000000..ebd92c61d5
 +	{ 0x2200ca, 0x24 },
 +};
 +
++
 +/* P0 message block parameter for training firmware */
 +static struct dram_cfg_param ddr_fsp0_cfg[] = {
 +	{ 0xd0000, 0x0 },
@@ -2822,7 +2312,6 @@ index 0000000000..ebd92c61d5
 +	{ 0x54008, 0x131f },
 +	{ 0x54009, 0xc8 },
 +	{ 0x5400b, 0x2 },
-+	{ 0x5400d, 0x100 },
 +	{ 0x54012, 0x310 },
 +	{ 0x54019, 0x2dd4 },
 +	{ 0x5401a, 0x31 },
@@ -2862,7 +2351,6 @@ index 0000000000..ebd92c61d5
 +	{ 0x54008, 0x121f },
 +	{ 0x54009, 0xc8 },
 +	{ 0x5400b, 0x2 },
-+	{ 0x5400d, 0x100 },
 +	{ 0x54012, 0x310 },
 +	{ 0x54019, 0x84 },
 +	{ 0x5401a, 0x31 },
@@ -2902,7 +2390,6 @@ index 0000000000..ebd92c61d5
 +	{ 0x54008, 0x121f },
 +	{ 0x54009, 0xc8 },
 +	{ 0x5400b, 0x2 },
-+	{ 0x5400d, 0x100 },
 +	{ 0x54012, 0x310 },
 +	{ 0x54019, 0x84 },
 +	{ 0x5401a, 0x31 },
@@ -3612,10 +3099,10 @@ index 0000000000..ebd92c61d5
 +};
 diff --git a/board/variscite/imx8mm_var_dart/spl.c b/board/variscite/imx8mm_var_dart/spl.c
 new file mode 100644
-index 0000000000..6aa77e5fc3
+index 00000000000..8a6c579f6a9
 --- /dev/null
 +++ b/board/variscite/imx8mm_var_dart/spl.c
-@@ -0,0 +1,326 @@
+@@ -0,0 +1,318 @@
 +// SPDX-License-Identifier: GPL-2.0+
 +/*
 + * Copyright 2018-2019 NXP
@@ -3626,6 +3113,7 @@ index 0000000000..6aa77e5fc3
 +#include <common.h>
 +#include <cpu_func.h>
 +#include <hang.h>
++#include <init.h>
 +#include <spl.h>
 +#include <asm/io.h>
 +#include <errno.h>
@@ -3642,7 +3130,8 @@ index 0000000000..6aa77e5fc3
 +#include <mmc.h>
 +#include <asm/mach-imx/boot_mode.h>
 +#include <asm/arch/ddr.h>
-+
++#include <fsl_sec.h>
++#include <linux/delay.h>
 +#include "../common/imx8_eeprom.h"
 +#include "imx8mm_var_dart.h"
 +
@@ -3738,7 +3227,7 @@ index 0000000000..6aa77e5fc3
 +	{USDHC3_BASE_ADDR, 0, 8},
 +};
 +
-+int board_mmc_init(bd_t *bis)
++int board_mmc_init(struct bd_info *bis)
 +{
 +	int i, ret;
 +
@@ -3823,23 +3312,26 @@ index 0000000000..6aa77e5fc3
 +	pmic_probe(p);
 +
 +	/* decrease RESET key long push time from the default 10s to 10ms */
-+	pmic_reg_write(p, BD71837_PWRONCONFIG1, 0x0);
++	pmic_reg_write(p, BD718XX_PWRONCONFIG1, 0x0);
 +
 +	/* unlock the PMIC regs */
-+	pmic_reg_write(p, BD71837_REGLOCK, 0x1);
++	pmic_reg_write(p, BD718XX_REGLOCK, 0x1);
 +
 +	/* increase VDD_SOC to typical value 0.85v before first DRAM access */
-+	pmic_reg_write(p, BD71837_BUCK1_VOLT_RUN, 0x0f);
++	pmic_reg_write(p, BD718XX_BUCK1_VOLT_RUN, 0x0f);
 +
 +	/* increase VDD_DRAM to 0.975v for 3Ghz DDR */
-+	pmic_reg_write(p, BD71837_BUCK5_VOLT, 0x83);
++	pmic_reg_write(p, BD718XX_1ST_NODVS_BUCK_VOLT, 0x83);
 +
 +	/* increase NVCC_DRAM_1V2 to 1.2v for DDR4 */
 +	if (get_board_id() == VAR_SOM_MX8M_MINI)
-+		pmic_reg_write(p, BD71837_BUCK8_VOLT, 0x28);
++		pmic_reg_write(p, BD718XX_4TH_NODVS_BUCK_VOLT, 0x28);
++
++	/* enable LDO5 - required to access I2C bus 3 */
++	pmic_reg_write(p, BD718XX_LDO5_VOLT, 0xc0);
 +
 +	/* lock the PMIC regs */
-+	pmic_reg_write(p, BD71837_REGLOCK, 0x11);
++	pmic_reg_write(p, BD718XX_REGLOCK, 0x11);
 +
 +	return 0;
 +}
@@ -3849,6 +3341,11 @@ index 0000000000..6aa77e5fc3
 +{
 +	struct var_eeprom *ep = VAR_EEPROM_DATA;
 +
++#ifdef CONFIG_FSL_CAAM
++	if (sec_init()) {
++		printf("\nsec_init failed!\n");
++	}
++#endif
 +#ifndef CONFIG_SPL_USB_SDP_SUPPORT
 +	/* Serial download mode */
 +	if (is_usb_boot()) {
@@ -3867,19 +3364,10 @@ index 0000000000..6aa77e5fc3
 +{
 +	int id = get_board_id();
 +
-+	if ((id == DART_MX8M_MINI) && !strcmp(name, "imx8mm-var-dart")) {
++	if ((id == DART_MX8M_MINI) && !strcmp(name, "imx8mm-var-dart-customboard"))
 +		return 0;
-+	} else if (id == VAR_SOM_MX8M_MINI) {
-+		struct var_eeprom *ep = VAR_EEPROM_DATA;
-+		int rev = var_get_som_rev(ep);
-+
-+		if ((rev == SOM_REV_11) && !strcmp(name, "imx8mm-var-som"))
-+			return 0;
-+		else if ((rev == SOM_REV_10) && !strcmp(name, "imx8mm-var-som-rev10"))
-+			return 0;
-+		else
-+			return -1;
-+	}
++	else if ((id == VAR_SOM_MX8M_MINI) && !strcmp(name, "imx8mm-var-som-symphony"))
++		return 0;
 +	else
 +		return -1;
 +}
@@ -3933,21 +3421,12 @@ index 0000000000..6aa77e5fc3
 +
 +	board_init_r(NULL, 0);
 +}
-+
-+int do_reset(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
-+{
-+	puts ("resetting ...\n");
-+
-+	reset_cpu(WDOG1_BASE_ADDR);
-+
-+	return 0;
-+}
 diff --git a/configs/imx8mm_var_dart_defconfig b/configs/imx8mm_var_dart_defconfig
 new file mode 100644
-index 0000000000..8dec1bd40c
+index 00000000000..49f6cb38fff
 --- /dev/null
 +++ b/configs/imx8mm_var_dart_defconfig
-@@ -0,0 +1,111 @@
+@@ -0,0 +1,135 @@
 +CONFIG_ARM=y
 +CONFIG_SPL_SYS_ICACHE_OFF=y
 +CONFIG_SPL_SYS_DCACHE_OFF=y
@@ -3956,21 +3435,25 @@ index 0000000000..8dec1bd40c
 +CONFIG_SPL_GPIO_SUPPORT=y
 +CONFIG_SPL_LIBCOMMON_SUPPORT=y
 +CONFIG_SPL_LIBGENERIC_SUPPORT=y
++CONFIG_NR_DRAM_BANKS=3
++CONFIG_SYS_MEMTEST_START=0x40000000
++CONFIG_SYS_MEMTEST_END=0x50000000
++CONFIG_ENV_SIZE=0x4000
++CONFIG_ENV_OFFSET=0x400000
 +CONFIG_SYS_I2C_MXC_I2C1=y
 +CONFIG_SYS_I2C_MXC_I2C2=y
 +CONFIG_SYS_I2C_MXC_I2C3=y
 +CONFIG_SYS_I2C_MXC_I2C4=y
-+CONFIG_ENV_SIZE=0x1000
-+CONFIG_ENV_OFFSET=0x400000
 +CONFIG_DM_GPIO=y
++CONFIG_SPL_TEXT_BASE=0x7E1000
 +CONFIG_TARGET_IMX8MM_VAR_DART=y
++CONFIG_EXTCON_PTN5150=y
 +CONFIG_SPL_MMC_SUPPORT=y
 +CONFIG_SPL_SERIAL_SUPPORT=y
 +CONFIG_SPL_DRIVERS_MISC_SUPPORT=y
-+CONFIG_NR_DRAM_BANKS=3
 +CONFIG_SPL=y
-+CONFIG_CSF_SIZE=0x2000
-+CONFIG_SPL_TEXT_BASE=0x7E1000
++CONFIG_DEFAULT_DEVICE_TREE="imx8mm-var-dart-customboard"
++CONFIG_DISTRO_DEFAULTS=y
 +CONFIG_FIT=y
 +CONFIG_FIT_EXTERNAL_OFFSET=0x3000
 +CONFIG_SPL_LOAD_FIT=y
@@ -3978,10 +3461,11 @@ index 0000000000..8dec1bd40c
 +CONFIG_OF_SYSTEM_SETUP=y
 +CONFIG_SYS_EXTRA_OPTIONS="IMX_CONFIG=arch/arm/mach-imx/imx8m/imximage.cfg"
 +CONFIG_BOOTDELAY=1
++CONFIG_BOOTCOMMAND="run bsp_bootcmd"
 +CONFIG_DEFAULT_FDT_FILE="imx8mm-var-dart.dtb"
-+CONFIG_BOARD_LATE_INIT=y
 +CONFIG_ARCH_MISC_INIT=y
 +CONFIG_BOARD_EARLY_INIT_F=y
++CONFIG_BOARD_LATE_INIT=y
 +CONFIG_SPL_BOARD_INIT=y
 +CONFIG_SPL_SEPARATE_BSS=y
 +CONFIG_SPL_I2C_SUPPORT=y
@@ -3989,28 +3473,34 @@ index 0000000000..8dec1bd40c
 +CONFIG_SPL_USB_HOST_SUPPORT=y
 +CONFIG_SPL_USB_GADGET=y
 +CONFIG_SPL_USB_SDP_SUPPORT=y
-+CONFIG_HUSH_PARSER=y
 +CONFIG_SYS_PROMPT="u-boot=> "
++# CONFIG_BOOTM_NETBSD is not set
++# CONFIG_CMD_EXPORTENV is not set
++# CONFIG_CMD_IMPORTENV is not set
++CONFIG_CMD_ERASEENV=y
++CONFIG_CMD_NVEDIT_EFI=y
 +CONFIG_CMD_MEMTEST=y
 +CONFIG_CMD_CLK=y
++CONFIG_CMD_DFU=y
 +CONFIG_CMD_FUSE=y
 +CONFIG_CMD_GPIO=y
 +CONFIG_CMD_I2C=y
 +CONFIG_CMD_MMC=y
-+CONFIG_CMD_DHCP=y
++CONFIG_CMD_USB=y
 +CONFIG_BOOTP_PREFER_SERVERIP=y
-+CONFIG_CMD_MII=y
-+CONFIG_CMD_PING=y
++CONFIG_CMD_SNTP=y
 +CONFIG_CMD_CACHE=y
++CONFIG_CMD_EFIDEBUG=y
++CONFIG_CMD_RTC=y
++CONFIG_CMD_TIME=y
++CONFIG_CMD_GETTIME=y
++CONFIG_CMD_TIMER=y
 +CONFIG_CMD_REGULATOR=y
-+CONFIG_CMD_EXT4=y
 +CONFIG_CMD_EXT4_WRITE=y
-+CONFIG_CMD_FAT=y
-+CONFIG_CMD_FS_GENERIC=y
 +CONFIG_OF_CONTROL=y
-+CONFIG_DEFAULT_DEVICE_TREE="imx8mm-var-dart"
 +CONFIG_ENV_IS_IN_MMC=y
 +CONFIG_SYS_RELOC_GD_ENV_ADDR=y
++CONFIG_SYS_MMC_ENV_DEV=1
 +CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG=y
 +CONFIG_NET_RANDOM_ETHADDR=y
 +CONFIG_REGMAP=y
@@ -4018,11 +3508,17 @@ index 0000000000..8dec1bd40c
 +CONFIG_CLK_COMPOSITE_CCF=y
 +CONFIG_CLK_IMX8MM=y
 +CONFIG_IMX8M_DDRPHY_FW_OFFSET=73728
++CONFIG_DFU_TFTP=y
++CONFIG_DFU_MMC=y
++CONFIG_DFU_RAM=y
 +CONFIG_USB_FUNCTION_FASTBOOT=y
++CONFIG_UDP_FUNCTION_FASTBOOT=y
 +CONFIG_FASTBOOT_BUF_ADDR=0x42800000
 +CONFIG_FASTBOOT_BUF_SIZE=0x40000000
 +CONFIG_FASTBOOT_FLASH=y
++CONFIG_GPIO_HOG=y
 +CONFIG_MXC_GPIO=y
++CONFIG_DM_PCA953X=y
 +CONFIG_DM_I2C=y
 +CONFIG_SYS_I2C_MXC=y
 +CONFIG_DM_MMC=y
@@ -4034,6 +3530,7 @@ index 0000000000..8dec1bd40c
 +CONFIG_FSL_ESDHC_IMX=y
 +CONFIG_PHYLIB=y
 +CONFIG_PHY_ATHEROS=y
++CONFIG_PHY_ADIN=y
 +CONFIG_DM_ETH=y
 +CONFIG_PHY_GIGE=y
 +CONFIG_FEC_MXC=y
@@ -4044,11 +3541,12 @@ index 0000000000..8dec1bd40c
 +CONFIG_DM_REGULATOR_FIXED=y
 +CONFIG_DM_REGULATOR_GPIO=y
 +CONFIG_DM_RESET=y
++CONFIG_DM_RTC=y
++CONFIG_RTC_EMULATION=y
 +CONFIG_MXC_UART=y
 +CONFIG_SYSRESET=y
 +CONFIG_SYSRESET_PSCI=y
 +CONFIG_DM_THERMAL=y
-+CONFIG_NXP_TMU=y
 +CONFIG_USB=y
 +CONFIG_DM_USB=y
 +CONFIG_USB_EHCI_HCD=y
@@ -4059,12 +3557,17 @@ index 0000000000..8dec1bd40c
 +CONFIG_CI_UDC=y
 +CONFIG_SDP_LOADADDR=0x40400000
 +CONFIG_OF_LIBFDT_OVERLAY=y
++CONFIG_EFI_SET_TIME=y
++CONFIG_EFI_RUNTIME_UPDATE_CAPSULE=y
++CONFIG_EFI_CAPSULE_ON_DISK=y
++CONFIG_EFI_CAPSULE_FIRMWARE_RAW=y
++CONFIG_EFI_SECURE_BOOT=y
 diff --git a/include/configs/imx8mm_var_dart.h b/include/configs/imx8mm_var_dart.h
 new file mode 100644
-index 0000000000..ff28538c77
+index 00000000000..7d3271bd1c0
 --- /dev/null
 +++ b/include/configs/imx8mm_var_dart.h
-@@ -0,0 +1,249 @@
+@@ -0,0 +1,279 @@
 +/* SPDX-License-Identifier: GPL-2.0+ */
 +/*
 + * Copyright 2018 NXP
@@ -4075,14 +3578,15 @@ index 0000000000..ff28538c77
 +#define __IMX8MM_VAR_DART_H
 +
 +#include <linux/sizes.h>
++#include <linux/stringify.h>
 +#include <asm/arch/imx-regs.h>
 +#include "imx_env.h"
 +
++#define CONFIG_SYS_BOOTM_LEN		(32 * SZ_1M)
 +#define CONFIG_SPL_MAX_SIZE		(148 * 1024)
 +#define CONFIG_SYS_MONITOR_LEN		SZ_512K
 +#define CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_USE_SECTOR
 +#define CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_SECTOR	(0x300 + CONFIG_SECONDARY_BOOT_SECTOR_OFFSET)
-+#define CONFIG_SYS_MMCSD_FS_BOOT_PARTITION	1
 +#define CONFIG_SYS_UBOOT_BASE	\
 +	(QSPI0_AMBA_BASE + CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_SECTOR * 512)
 +
@@ -4100,10 +3604,15 @@ index 0000000000..ff28538c77
 +
 +#define CONFIG_POWER
 +#define CONFIG_POWER_I2C
++#if defined(CONFIG_IMX8M_LPDDR4) && defined(CONFIG_TARGET_IMX8MM_EVK)
++#define CONFIG_POWER_PCA9450
++#else
 +#define CONFIG_POWER_BD71837
++#endif
 +
 +#define CONFIG_SYS_I2C
 +
++#define CONFIG_SYS_I2C_SPEED		100000
 +#endif
 +
 +#define CONFIG_CMD_READ
@@ -4121,6 +3630,22 @@ index 0000000000..ff28538c77
 +#define FEC_QUIRK_ENET_MAC
 +#endif
 +
++#ifdef CONFIG_DISTRO_DEFAULTS
++#define BOOT_TARGET_DEVICES(func) \
++       func(USB, usb, 0) \
++       func(MMC, mmc, 1) \
++       func(MMC, mmc, 2)
++
++#include <config_distro_bootcmd.h>
++/* redefine BOOTENV_EFI_SET_FDTFILE_FALLBACK to use Variscite function to load fdt */
++#undef BOOTENV_EFI_SET_FDTFILE_FALLBACK
++#define BOOTENV_EFI_SET_FDTFILE_FALLBACK \
++	"setenv efi_dtb_prefixes; " \
++	"run loadfdt; "
++#else
++#define BOOTENV
++#endif
++
 +#define CONFIG_MFG_ENV_SETTINGS \
 +	CONFIG_MFG_ENV_SETTINGS_DEFAULT \
 +	"initrd_addr=0x43800000\0" \
@@ -4132,24 +3657,32 @@ index 0000000000..ff28538c77
 +#define CONFIG_EXTRA_ENV_SETTINGS		\
 +	CONFIG_MFG_ENV_SETTINGS \
 +	"bootdir=/boot\0"	\
-+	"script=boot.scr\0" \
++	BOOTENV \
++	"scriptaddr=0x43500000\0" \
++	"kernel_addr_r=" __stringify(CONFIG_LOADADDR) "\0" \
++	"bsp_script=boot.scr\0" \
 +	"image=Image.gz\0" \
-+	"console=ttymxc0,115200\0" \
 +	"img_addr=0x42000000\0"			\
++	"console=ttymxc0,115200\0" \
++	"fdt_addr_r=0x43000000\0" \
 +	"fdt_addr=0x43000000\0"			\
 +	"fdt_high=0xffffffffffffffff\0"		\
 +	"boot_fdt=try\0" \
-+	"ip_dyn=yes\0" \
++	"boot_fit=no\0" \
 +	"fdt_file=undefined\0" \
++	"ip_dyn=yes\0" \
 +	"mmcdev="__stringify(CONFIG_SYS_MMC_ENV_DEV)"\0" \
 +	"mmcblk=1\0" \
-+	"mmcautodetect=yes\0" \
 +	"mmcpart=1\0" \
++	"mmcautodetect=yes\0" \
 +	"m4_addr=0x7e0000\0" \
 +	"m4_bin=hello_world.bin\0" \
 +	"use_m4=no\0" \
++	"dfu_alt_info=mmc 2=1 raw 0x42 0x1000 mmcpart\0" \
 +	"loadm4bin=load mmc ${mmcdev}:${mmcpart} ${loadaddr} ${bootdir}/${m4_bin}; " \
-+		"cp.b ${loadaddr} ${m4_addr} ${filesize}\0" \
++		"cp.b ${loadaddr} ${m4_addr} ${filesize}; " \
++		"echo Init rsc_table region memory; " \
++		"mw.b 400ff000 0 10\0" \
 +	"runm4bin=" \
 +		"if test ${m4_addr} = 0x7e0000; then " \
 +			"echo Booting M4 from TCM; " \
@@ -4161,7 +3694,7 @@ index 0000000000..ff28538c77
 +	"optargs=setenv bootargs ${bootargs} ${kernelargs};\0" \
 +	"mmcargs=setenv bootargs console=${console} " \
 +		"root=/dev/mmcblk${mmcblk}p${mmcpart} rootwait rw ${cma_size}\0 " \
-+	"loadbootscript=load mmc ${mmcdev}:${mmcpart} ${loadaddr} ${bootdir}/${script};\0" \
++	"loadbootscript=load mmc ${mmcdev}:${mmcpart} ${loadaddr} ${bootdir}/${bsp_script};\0" \
 +	"bootscript=echo Running bootscript from mmc ...; " \
 +		"source\0" \
 +	"loadimage=load mmc ${mmcdev}:${mmcpart} ${img_addr} ${bootdir}/${image};" \
@@ -4169,13 +3702,17 @@ index 0000000000..ff28538c77
 +	"findfdt=" \
 +		"if test $fdt_file = undefined; then " \
 +			"if test $board_name = VAR-SOM-MX8M-MINI; then " \
-+				"if test $som_rev = som_rev10; then " \
-+					"setenv fdt_file imx8mm-var-som-rev10.dtb; " \
++				"if test $carrier_rev = legacy; then " \
++					"setenv fdt_file imx8mm-var-som-symphony-legacy.dtb; " \
 +				"else " \
-+					"setenv fdt_file imx8mm-var-som.dtb; " \
-+				"fi;" \
++					"setenv fdt_file imx8mm-var-som-symphony.dtb; " \
++				"fi; " \
 +			"else " \
-+				"setenv fdt_file imx8mm-var-dart.dtb;" \
++				"if test $carrier_rev = legacy; then " \
++					"setenv fdt_file imx8mm-var-dart-dt8mcustomboard-legacy.dtb; " \
++				"else " \
++					"setenv fdt_file imx8mm-var-dart-dt8mcustomboard.dtb; " \
++				"fi; " \
 +			"fi; " \
 +		"fi; \0" \
 +	"loadfdt=run findfdt; " \
@@ -4190,40 +3727,39 @@ index 0000000000..ff28538c77
 +	"mmcboot=echo Booting from mmc ...; " \
 +		"run mmcargs; " \
 +		"run optargs; " \
-+		"if test ${boot_fdt} = yes || test ${boot_fdt} = try; then " \
++		"if test ${boot_fit} = yes || test ${boot_fit} = try; then " \
++			"bootm ${loadaddr}; " \
++		"else " \
 +			"if run loadfdt; then " \
-+				"booti ${loadaddr} - ${fdt_addr}; " \
++				"booti ${loadaddr} - ${fdt_addr_r}; " \
 +			"else " \
 +				"echo WARN: Cannot load the DT; " \
 +			"fi; " \
-+		"else " \
-+			"echo wait for boot; " \
 +		"fi;\0" \
 +	"netargs=setenv bootargs console=${console} " \
 +		"root=/dev/nfs ${cma_size} " \
-+		"ip=dhcp nfsroot=${serverip}:${nfsroot},v3,tcp\0" \
++		"ip=dhcp nfsroot=${serverip}:${nfsroot},v3,tcp ${cma_size}\0" \
 +	"netboot=echo Booting from net ...; " \
++		"run netargs;  " \
++		"run optargs;  " \
 +		"if test ${ip_dyn} = yes; then " \
 +			"setenv get_cmd dhcp; " \
 +		"else " \
 +			"setenv get_cmd tftp; " \
 +		"fi; " \
 +		"${get_cmd} ${img_addr} ${image}; unzip ${img_addr} ${loadaddr};" \
-+		"run netargs; " \
-+		"run optargs; " \
-+		"if test ${boot_fdt} = yes || test ${boot_fdt} = try; then " \
++		"if test ${boot_fit} = yes || test ${boot_fit} = try; then " \
++			"bootm ${loadaddr}; " \
++		"else " \
 +			"run findfdt; " \
 +			"echo fdt_file=${fdt_file}; " \
 +			"if ${get_cmd} ${fdt_addr} ${fdt_file}; then " \
-+				"booti ${loadaddr} - ${fdt_addr}; " \
++				"booti ${loadaddr} - ${fdt_addr_r}; " \
 +			"else " \
 +				"echo WARN: Cannot load the DT; " \
 +			"fi; " \
-+		"else " \
-+			"booti; " \
-+		"fi;\0"
-+
-+#define CONFIG_BOOTCOMMAND \
++		"fi;\0" \
++	"bsp_bootcmd=echo Running BSP bootcmd ...; " \
 +	"run ramsize_check; " \
 +	"mmc dev ${mmcdev}; "\
 +	"if mmc rescan; then " \
@@ -4239,9 +3775,8 @@ index 0000000000..ff28538c77
 +				"run netboot; " \
 +			"fi; " \
 +		"fi; " \
-+	"else " \
-+		"booti ${loadaddr} - ${fdt_addr}; " \
 +	"fi;"
++
 +
 +/* Link Definitions */
 +#define CONFIG_LOADADDR			0x40480000
@@ -4256,19 +3791,16 @@ index 0000000000..ff28538c77
 +	(CONFIG_SYS_INIT_RAM_ADDR + CONFIG_SYS_INIT_SP_OFFSET)
 +
 +#define CONFIG_ENV_OVERWRITE
-+#define CONFIG_SYS_MMC_ENV_DEV		1   /* USDHC2 */
 +
 +/* Size of malloc() pool */
 +#define CONFIG_SYS_MALLOC_LEN		SZ_32M
 +
++/* DDR configs */
 +#define CONFIG_SYS_SDRAM_BASE           0x40000000
 +#define PHYS_SDRAM                      0x40000000
 +#define DEFAULT_SDRAM_SIZE		(512 * SZ_1M) /* 512MB Minimum DDR4, see get_dram_size */
 +#define VAR_EEPROM_DRAM_START          (CONFIG_SYS_MEMTEST_START + \
 +					(DEFAULT_SDRAM_SIZE >> 1))
-+
-+#define CONFIG_SYS_MEMTEST_START	PHYS_SDRAM
-+#define CONFIG_SYS_MEMTEST_END		(CONFIG_SYS_MEMTEST_START + (DEFAULT_SDRAM_SIZE >> 1))
 +
 +#define CONFIG_MXC_UART_BASE		UART1_BASE_ADDR
 +
@@ -4290,16 +3822,8 @@ index 0000000000..ff28538c77
 +
 +#define CONFIG_SYS_MMC_IMG_LOAD_PART	1
 +
-+#ifndef CONFIG_DM_I2C
-+#define CONFIG_SYS_I2C
-+#endif
-+
-+#define CONFIG_SYS_I2C_SPEED		100000
-+
 +/* USB configs */
 +#ifndef CONFIG_SPL_BUILD
-+#define CONFIG_CMD_USB
-+#define CONFIG_USB_STORAGE
 +#define CONFIG_USBD_HS
 +
 +#define CONFIG_CMD_USB_MASS_STORAGE
@@ -4313,7 +3837,16 @@ index 0000000000..ff28538c77
 +#define CONFIG_MXC_USB_PORTSC		(PORT_PTS_UTMI | PORT_PTS_PTW)
 +#define CONFIG_USB_MAX_CONTROLLER_COUNT	2
 +
++/* Carrier board EEPROM */
++#define CARRIER_EEPROM_BUS_SOM		0x02
++#define CARRIER_EEPROM_BUS_DART		0x01
++#define CARRIER_EEPROM_ADDR		0x54
++
++#if defined(CONFIG_ANDROID_SUPPORT)
++#include "imx8mm_var_dart_android.h"
++#endif
++
 +#endif
 -- 
-2.35.1
+2.34.1
 

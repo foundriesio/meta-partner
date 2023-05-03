@@ -1,0 +1,40 @@
+From d7348d6ed53a6fc1f3f02f0618c802711beec9ed Mon Sep 17 00:00:00 2001
+From: FrancescoFerraro <francesco.f@variscite.com>
+Date: Fri, 14 Oct 2022 19:36:38 +0200
+Subject: [PATCH 06/12] imx8mm_var_dart: disable CONFIG_EFI_MM_COMM_TEE
+
+This commit avoid the following errors testing efi command
+from U-Boot prompt, for example:
+
+u-boot=> efidebug devices
+Scanning disk mmc@30b50000.blk...
+Scanning disk mmc@30b60000.blk...
+Found 3 disks
+optee optee: OP-TEE api uid mismatch
+Unable to open OP-TEE session (err=-19)
+mm_communicate failed!
+Error: Cannot initialize UEFI sub-system, r = 3
+u-boot=>
+
+Signed-off-by: FrancescoFerraro <francesco.f@variscite.com>
+(cherry picked from commit 9a4c677508b0a2d8972020100ae335d36197ef70)
+Signed-off-by: Vanessa Maegima <vanessa.maegima@foundries.io>
+---
+ configs/imx8mm_var_dart_defconfig | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/configs/imx8mm_var_dart_defconfig b/configs/imx8mm_var_dart_defconfig
+index 6464f432e71..dfe5196b6b6 100644
+--- a/configs/imx8mm_var_dart_defconfig
++++ b/configs/imx8mm_var_dart_defconfig
+@@ -146,7 +146,6 @@ CONFIG_SHA384=y
+ CONFIG_LZO=y
+ CONFIG_BZIP2=y
+ CONFIG_OF_LIBFDT_OVERLAY=y
+-CONFIG_EFI_MM_COMM_TEE=y
+ CONFIG_EFI_VAR_BUF_SIZE=139264
+ CONFIG_EFI_SET_TIME=y
+ CONFIG_EFI_RUNTIME_UPDATE_CAPSULE=y
+-- 
+2.34.1
+

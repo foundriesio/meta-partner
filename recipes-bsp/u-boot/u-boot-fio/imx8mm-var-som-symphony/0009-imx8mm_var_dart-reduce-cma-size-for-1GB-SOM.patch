@@ -1,0 +1,39 @@
+From ab6fc63c419fb03baa3d40653a6772554d103c4b Mon Sep 17 00:00:00 2001
+From: FrancescoFerraro <francesco.f@variscite.com>
+Date: Mon, 31 Oct 2022 18:23:33 +0100
+Subject: [PATCH 09/12] imx8mm_var_dart: reduce cma size for 1GB SOM
+
+Adding OPTEE support the DDR size is reduced by 32MB, this is confirmed
+reding "DRAM:  992 MiB" in the U-Boot output console and also looking at
+https://github.com/varigit/uboot-imx/blob/6914b6f539e45b49f9621da8eb5bfa82b7f74248/board/variscite/common/imx8_dram.c#L102
+
+Also using the device tree files that enabled M4 support, a further
+reduction is necessary to avoid the CMA allocation from failing.
+
+Signed-off-by: FrancescoFerraro <francesco.f@variscite.com>
+(cherry picked from commit ab1c9e7dae4d1fd25ba7fedfe3a6bf399dd318ae)
+Signed-off-by: Vanessa Maegima <vanessa.maegima@foundries.io>
+---
+ include/configs/imx8mm_var_dart.h | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
+
+diff --git a/include/configs/imx8mm_var_dart.h b/include/configs/imx8mm_var_dart.h
+index 300da1d173f..1705bdc8135 100644
+--- a/include/configs/imx8mm_var_dart.h
++++ b/include/configs/imx8mm_var_dart.h
+@@ -139,7 +139,11 @@
+ 		"if test $sdram_size -le 512; then " \
+ 			"setenv cma_size cma=320M; " \
+ 		"else " \
+-			"setenv cma_size cma=640M; " \
++			"if test $sdram_size -le 1024; then " \
++				"setenv cma_size cma=576M; " \
++			"else " \
++				"setenv cma_size cma=640M; " \
++			"fi; " \
+ 		"fi;\0" \
+ 	"mmcboot=echo Booting from mmc ...; " \
+ 		"run mmcargs; " \
+-- 
+2.34.1
+
