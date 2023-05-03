@@ -7,7 +7,7 @@ SRCREV_FORMAT = "linux-firmware"
 SRCREV_brcm = "8081cd2bddb1569abe91eb50bd687a2066a33342"
 BRANCH_brcm = "8.2.0.16"
 SRC_URI:append = " \
-           git://github.com/varigit/bcm_4343w_fw.git;protocol=git;branch=${BRANCH_brcm};destsuffix=brcm;name=brcm \
+           git://github.com/varigit/bcm_4343w_fw.git;protocol=https;branch=${BRANCH_brcm};destsuffix=brcm;name=brcm \
 "
 do_install:append() {
         install -m 0755 ${WORKDIR}/brcm/brcm/* ${D}${nonarch_base_libdir}/firmware/brcm/
