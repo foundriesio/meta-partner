@@ -1,0 +1,53 @@
+From 66b78c2d8a20057ea20dcbe1859d3a641fd36235 Mon Sep 17 00:00:00 2001
+From: Vanessa Maegima <vanessa.maegima@foundries.io>
+Date: Wed, 3 May 2023 16:01:45 -0300
+Subject: [PATCH] [FIO internal] board: variscite: imx8mn_var_som: fix
+ compilation errors
+
+warning: implicit declaration of function 'setup_fec'; did you mean
+'setup_i2c'? [-Wimplicit-function-declaration]
+|   141 |                 setup_fec();
+|       |                 ^~~~~~~~~
+|       |                 setup_i2c
+
+error: 'usb_ptn5150' undeclared (first use in this function)
+|   174 |                 extcon_ptn5150_setup(&usb_ptn5150);
+|       |                                       ^~~~~~~~~~~
+
+Signed-off-by: Vanessa Maegima <vanessa.maegima@foundries.io>
+---
+ board/variscite/imx8mn_var_som/imx8mn_var_som.c | 11 ++++++-----
+ 1 file changed, 6 insertions(+), 5 deletions(-)
+
+diff --git a/board/variscite/imx8mn_var_som/imx8mn_var_som.c b/board/variscite/imx8mn_var_som/imx8mn_var_som.c
+index d171471564c..9aa19b84a3f 100644
+--- a/board/variscite/imx8mn_var_som/imx8mn_var_som.c
++++ b/board/variscite/imx8mn_var_som/imx8mn_var_som.c
+@@ -137,9 +137,9 @@ int board_ehci_usb_phy_mode(struct udevice *dev)
+ 
+ int board_init(void)
+ {
+-	if (CONFIG_IS_ENABLED(FEC_MXC)) {
+-		setup_fec();
+-	}
++#ifdef CONFIG_FEC_MXC
++	setup_fec();
++#endif
+ 
+ 	return 0;
+ }
+@@ -170,8 +170,9 @@ int board_late_init(void)
+ 	struct var_carrier_eeprom carrier_eeprom;
+ 	char carrier_rev[CARRIER_REV_LEN] = {0};
+ 
+-	if (CONFIG_IS_ENABLED(EXTCON_PTN5150)) {
+-		extcon_ptn5150_setup(&usb_ptn5150);
++#ifdef CONFIG_EXTCON_PTN5150
++	extcon_ptn5150_setup(&usb_ptn5150);
++#endif
+ 	}
+ 
+ 
+-- 
+2.34.1
+

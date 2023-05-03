@@ -37,4 +37,5 @@ SRC_URI:append:imx8mn-var-som = " \
     file://0002-Add-support-for-Variscite-s-VAR-SOM-MX8M-NANO.patch \
     file://0003-imx8mn_var_som-align-with-the-reference-NXP-EVK.patch \
     file://0004-mach-imx8m-imx8mn_var_som-select-IMX_REDUCE_DMEM_PAD.patch \
+    file://0001-FIO-internal-board-variscite-imx8mn_var_som-fix-comp.patch \
 "
