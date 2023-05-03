@@ -1,0 +1,28 @@
+From ae7cc5072389ec1272b087e76f890b55bc644511 Mon Sep 17 00:00:00 2001
+From: FrancescoFerraro <francesco.f@variscite.com>
+Date: Sun, 19 Mar 2023 09:12:35 +0100
+Subject: [PATCH 4/4] mach: imx8m: imx8mn_var_som: select
+ IMX_REDUCE_DMEM_PADDING
+
+Signed-off-by: FrancescoFerraro <francesco.f@variscite.com>
+(cherry picked from commit b826a06b6b8376bc0047a3f7c4d2d9ec6f29e428)
+Signed-off-by: Vanessa Maegima <vanessa.maegima@foundries.io>
+---
+ arch/arm/mach-imx/imx8m/Kconfig | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/arch/arm/mach-imx/imx8m/Kconfig b/arch/arm/mach-imx/imx8m/Kconfig
+index 76c252c7e78..70a6ac053f4 100644
+--- a/arch/arm/mach-imx/imx8m/Kconfig
++++ b/arch/arm/mach-imx/imx8m/Kconfig
+@@ -231,6 +231,7 @@ config TARGET_IMX8MN_VAR_SOM
+ 	select FSL_BLOB
+ 	select MISC
+ 	select SPL_CRYPTO_SUPPORT if SPL
++	select IMX_REDUCE_DMEM_PADDING
+ 
+ config TARGET_IMX8MN_VENICE
+ 	bool "Support Gateworks Venice iMX8M Nano module"
+-- 
+2.34.1
+

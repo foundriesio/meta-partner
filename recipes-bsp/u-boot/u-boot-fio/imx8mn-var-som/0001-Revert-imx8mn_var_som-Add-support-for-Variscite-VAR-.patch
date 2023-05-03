@@ -1,0 +1,2152 @@
+From dbf15701ccf68a4a6677fc538b6fb106497b2240 Mon Sep 17 00:00:00 2001
+From: Diego Dorta <diego.d@variscite.com>
+Date: Sat, 25 Feb 2023 11:37:47 -0300
+Subject: [PATCH 1/4] Revert "imx8mn_var_som: Add support for Variscite
+ VAR-SOM-MX8M-NANO board"
+
+Signed-off-by: Diego Dorta <diego.d@variscite.com>
+(cherry picked from commit 874281fa00821f1dcdbfdaa89d339ae6224b5060)
+Signed-off-by: Vanessa Maegima <vanessa.maegima@foundries.io>
+---
+ arch/arm/dts/Makefile                         |   1 -
+ .../dts/imx8mn-var-som-symphony-u-boot.dtsi   | 256 --------
+ arch/arm/dts/imx8mn-var-som-symphony.dts      | 240 --------
+ arch/arm/dts/imx8mn-var-som.dtsi              | 547 ------------------
+ arch/arm/mach-imx/imx8m/Kconfig               |   8 -
+ board/variscite/imx8mn_var_som/Kconfig        |  17 -
+ board/variscite/imx8mn_var_som/MAINTAINERS    |   7 -
+ board/variscite/imx8mn_var_som/Makefile       |  12 -
+ board/variscite/imx8mn_var_som/ddr4_timing.c  | 528 -----------------
+ .../variscite/imx8mn_var_som/imx8mn_var_som.c |  30 -
+ board/variscite/imx8mn_var_som/spl.c          |  93 ---
+ configs/imx8mn_var_som_defconfig              |  96 ---
+ doc/board/index.rst                           |   1 -
+ doc/board/variscite/imx8mn_var_som.rst        |  56 --
+ doc/board/variscite/index.rst                 |   9 -
+ include/configs/imx8mn_var_som.h              |  90 ---
+ 16 files changed, 1991 deletions(-)
+ delete mode 100644 arch/arm/dts/imx8mn-var-som-symphony-u-boot.dtsi
+ delete mode 100644 arch/arm/dts/imx8mn-var-som-symphony.dts
+ delete mode 100644 arch/arm/dts/imx8mn-var-som.dtsi
+ delete mode 100644 board/variscite/imx8mn_var_som/Kconfig
+ delete mode 100644 board/variscite/imx8mn_var_som/MAINTAINERS
+ delete mode 100644 board/variscite/imx8mn_var_som/Makefile
+ delete mode 100644 board/variscite/imx8mn_var_som/ddr4_timing.c
+ delete mode 100644 board/variscite/imx8mn_var_som/imx8mn_var_som.c
+ delete mode 100644 board/variscite/imx8mn_var_som/spl.c
+ delete mode 100644 configs/imx8mn_var_som_defconfig
+ delete mode 100644 doc/board/variscite/imx8mn_var_som.rst
+ delete mode 100644 doc/board/variscite/index.rst
+ delete mode 100644 include/configs/imx8mn_var_som.h
+
+diff --git a/arch/arm/dts/Makefile b/arch/arm/dts/Makefile
+index 45a79f02017..9dbc9b005dc 100644
+--- a/arch/arm/dts/Makefile
++++ b/arch/arm/dts/Makefile
+@@ -987,7 +987,6 @@ dtb-$(CONFIG_ARCH_IMX8M) += \
+ 	imx8mq-cm.dtb \
+ 	imx8mn-evk.dtb \
+ 	imx8mn-ab2.dtb \
+-	imx8mn-var-som-symphony.dtb \
+ 	imx8mn-venice.dtb \
+ 	imx8mn-venice-gw7902.dtb \
+ 	imx8mq-ddr3l-val.dtb \
+diff --git a/arch/arm/dts/imx8mn-var-som-symphony-u-boot.dtsi b/arch/arm/dts/imx8mn-var-som-symphony-u-boot.dtsi
+deleted file mode 100644
+index ce475885df6..00000000000
+--- a/arch/arm/dts/imx8mn-var-som-symphony-u-boot.dtsi
++++ /dev/null
+@@ -1,256 +0,0 @@
+-// SPDX-License-Identifier: GPL-2.0+
+-/*
+- * Copyright 2021 Collabora Ltd.
+- */
+-
+-/ {
+-	binman: binman {
+-		multiple-images;
+-	};
+-
+-	wdt-reboot {
+-		compatible = "wdt-reboot";
+-		wdt = <&wdog1>;
+-		u-boot,dm-spl;
+-	};
+-};
+-
+-&{/soc@0} {
+-	u-boot,dm-pre-reloc;
+-	u-boot,dm-spl;
+-};
+-
+-&{/soc@0/bus@30800000/i2c@30a20000/pmic@4b} {
+-	u-boot,dm-spl;
+-};
+-
+-&{/soc@0/bus@30800000/i2c@30a20000/pmic@4b/regulators} {
+-	u-boot,dm-spl;
+-};
+-
+-&aips1 {
+-	u-boot,dm-pre-reloc;
+-	u-boot,dm-spl;
+-};
+-
+-&aips3 {
+-	u-boot,dm-spl;
+-};
+-
+-&aips4 {
+-	u-boot,dm-spl;
+-};
+-
+-&clk {
+-	u-boot,dm-pre-reloc;
+-	u-boot,dm-spl;
+-	/delete-property/ assigned-clocks;
+-	/delete-property/ assigned-clock-parents;
+-	/delete-property/ assigned-clock-rates;
+-};
+-
+-&gpio1 {
+-	u-boot,dm-spl;
+-};
+-
+-&gpio2 {
+-	u-boot,dm-spl;
+-};
+-
+-&gpio4 {
+-	u-boot,dm-spl;
+-};
+-
+-&i2c1 {
+-	u-boot,dm-spl;
+-};
+-
+-&iomuxc {
+-	u-boot,dm-spl;
+-};
+-
+-&osc_24m {
+-	u-boot,dm-pre-reloc;
+-	u-boot,dm-spl;
+-};
+-
+-&pinctrl_i2c1 {
+-	u-boot,dm-spl;
+-};
+-
+-&pinctrl_pmic {
+-	u-boot,dm-spl;
+-};
+-
+-&pinctrl_reg_usdhc2_vmmc {
+-	u-boot,dm-spl;
+-};
+-
+-&pinctrl_uart4 {
+-	u-boot,dm-spl;
+-};
+-
+-&pinctrl_usdhc2 {
+-	u-boot,dm-spl;
+-};
+-
+-&pinctrl_usdhc3 {
+-	u-boot,dm-spl;
+-};
+-
+-&pinctrl_wdog {
+-	u-boot,dm-spl;
+-};
+-
+-&uart4 {
+-	u-boot,dm-spl;
+-};
+-
+-&usdhc2 {
+-	u-boot,dm-spl;
+-};
+-
+-&usdhc3 {
+-	u-boot,dm-spl;
+-};
+-
+-&wdog1 {
+-	u-boot,dm-spl;
+-};
+-
+-&binman {
+-	u-boot-spl-ddr {
+-		align = <4>;
+-		align-size = <4>;
+-		filename = "u-boot-spl-ddr.bin";
+-		pad-byte = <0xff>;
+-
+-		u-boot-spl {
+-			align-end = <4>;
+-			filename = "u-boot-spl.bin";
+-		};
+-
+-		1d-imem {
+-			filename = "ddr4_imem_1d.bin";
+-			size = <0x8000>;
+-			type = "blob-ext";
+-		};
+-
+-		1d_dmem {
+-			filename = "ddr4_dmem_1d.bin";
+-			size = <0x4000>;
+-			type = "blob-ext";
+-		};
+-
+-		2d_imem {
+-			filename = "ddr4_imem_2d.bin";
+-			size = <0x8000>;
+-			type = "blob-ext";
+-		};
+-
+-		2d_dmem {
+-			filename = "ddr4_dmem_2d.bin";
+-			size = <0x4000>;
+-			type = "blob-ext";
+-		};
+-	};
+-
+-	spl {
+-		filename = "spl.bin";
+-
+-		mkimage {
+-			args = "-n spl/u-boot-spl.cfgout -T imx8mimage -e 0x912000";
+-
+-			blob {
+-				filename = "u-boot-spl-ddr.bin";
+-			};
+-		};
+-	};
+-
+-	itb {
+-		filename = "u-boot.itb";
+-
+-		fit {
+-			description = "Configuration to load ATF before U-Boot";
+-			fit,external-offset = <CONFIG_FIT_EXTERNAL_OFFSET>;
+-			fit,fdt-list = "of-list";
+-			#address-cells = <1>;
+-
+-			images {
+-				uboot {
+-					arch = "arm64";
+-					compression = "none";
+-					description = "U-Boot (64-bit)";
+-					load = <CONFIG_SYS_TEXT_BASE>;
+-					type = "standalone";
+-
+-					uboot_blob {
+-						filename = "u-boot-nodtb.bin";
+-						type = "blob-ext";
+-					};
+-				};
+-
+-				atf {
+-					arch = "arm64";
+-					compression = "none";
+-					description = "ARM Trusted Firmware";
+-					entry = <0x960000>;
+-					load = <0x960000>;
+-					type = "firmware";
+-
+-					atf_blob {
+-						filename = "bl31.bin";
+-						type = "blob-ext";
+-					};
+-				};
+-
+-				binman_fip: fip {
+-					arch = "arm64";
+-					compression = "none";
+-					description = "Trusted Firmware FIP";
+-					load = <0x40310000>;
+-					type = "firmware";
+-				};
+-
+-				@fdt-SEQ {
+-					compression = "none";
+-					description = "NAME";
+-					type = "flat_dt";
+-
+-					uboot_fdt_blob {
+-						filename = "u-boot.dtb";
+-						type = "blob-ext";
+-					};
+-				};
+-			};
+-
+-			configurations {
+-				default = "@config-DEFAULT-SEQ";
+-
+-				binman_configuration: @config-SEQ {
+-					description = "NAME";
+-					fdt = "fdt-SEQ";
+-					firmware = "uboot";
+-					loadables = "atf";
+-				};
+-			};
+-		};
+-	};
+-
+-	imx-boot {
+-		filename = "flash.bin";
+-		pad-byte = <0x00>;
+-
+-		spl {
+-			filename = "spl.bin";
+-			offset = <0x0>;
+-			type = "blob-ext";
+-		};
+-
+-		binman_uboot: uboot {
+-			filename = "u-boot.itb";
+-			offset = <0x58000>;
+-			type = "blob-ext";
+-		};
+-	};
+-};
+diff --git a/arch/arm/dts/imx8mn-var-som-symphony.dts b/arch/arm/dts/imx8mn-var-som-symphony.dts
+deleted file mode 100644
+index f61c48776cf..00000000000
+--- a/arch/arm/dts/imx8mn-var-som-symphony.dts
++++ /dev/null
+@@ -1,240 +0,0 @@
+-// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+-/*
+- * Copyright 2019-2020 Variscite Ltd.
+- * Copyright (C) 2020 Krzysztof Kozlowski <krzk@kernel.org>
+- */
+-
+-/dts-v1/;
+-
+-#include "imx8mn-var-som.dtsi"
+-
+-/ {
+-	model = "Variscite VAR-SOM-MX8MN Symphony evaluation board";
+-	compatible = "variscite,var-som-mx8mn-symphony", "variscite,var-som-mx8mn", "fsl,imx8mn";
+-
+-	reg_usdhc2_vmmc: regulator-usdhc2-vmmc {
+-		compatible = "regulator-fixed";
+-		pinctrl-names = "default";
+-		pinctrl-0 = <&pinctrl_reg_usdhc2_vmmc>;
+-		regulator-name = "VSD_3V3";
+-		regulator-min-microvolt = <3300000>;
+-		regulator-max-microvolt = <3300000>;
+-		gpio = <&gpio4 22 GPIO_ACTIVE_HIGH>;
+-		enable-active-high;
+-	};
+-
+-	gpio-keys {
+-		compatible = "gpio-keys";
+-
+-		back {
+-			label = "Back";
+-			gpios = <&pca9534 1 GPIO_ACTIVE_LOW>;
+-			linux,code = <KEY_BACK>;
+-		};
+-
+-		home {
+-			label = "Home";
+-			gpios = <&pca9534 2 GPIO_ACTIVE_LOW>;
+-			linux,code = <KEY_HOME>;
+-		};
+-
+-		menu {
+-			label = "Menu";
+-			gpios = <&pca9534 3 GPIO_ACTIVE_LOW>;
+-			linux,code = <KEY_MENU>;
+-		};
+-	};
+-
+-	leds {
+-		compatible = "gpio-leds";
+-
+-		led {
+-			label = "Heartbeat";
+-			gpios = <&pca9534 0 GPIO_ACTIVE_LOW>;
+-			linux,default-trigger = "heartbeat";
+-		};
+-	};
+-};
+-
+-&ethphy {
+-	reset-gpios = <&pca9534 5 GPIO_ACTIVE_HIGH>;
+-};
+-
+-&i2c2 {
+-	clock-frequency = <400000>;
+-	pinctrl-names = "default";
+-	pinctrl-0 = <&pinctrl_i2c2>;
+-	status = "okay";
+-
+-	pca9534: gpio@20 {
+-		compatible = "nxp,pca9534";
+-		reg = <0x20>;
+-		gpio-controller;
+-		pinctrl-names = "default";
+-		pinctrl-0 = <&pinctrl_pca9534>;
+-		interrupt-parent = <&gpio1>;
+-		interrupts = <7 IRQ_TYPE_EDGE_FALLING>;
+-		#gpio-cells = <2>;
+-		wakeup-source;
+-
+-		/* USB 3.0 OTG (usbotg1) / SATA port switch, set to USB 3.0 */
+-		usb3-sata-sel-hog {
+-			gpio-hog;
+-			gpios = <4 GPIO_ACTIVE_HIGH>;
+-			output-low;
+-			line-name = "usb3_sata_sel";
+-		};
+-
+-		som-vselect-hog {
+-			gpio-hog;
+-			gpios = <6 GPIO_ACTIVE_HIGH>;
+-			output-low;
+-			line-name = "som_vselect";
+-		};
+-
+-		enet-sel-hog {
+-			gpio-hog;
+-			gpios = <7 GPIO_ACTIVE_HIGH>;
+-			output-low;
+-			line-name = "enet_sel";
+-		};
+-	};
+-
+-	extcon_usbotg1: typec@3d {
+-		compatible = "nxp,ptn5150";
+-		reg = <0x3d>;
+-		interrupt-parent = <&gpio1>;
+-		interrupts = <11 IRQ_TYPE_LEVEL_LOW>;
+-		pinctrl-names = "default";
+-		pinctrl-0 = <&pinctrl_ptn5150>;
+-		status = "okay";
+-	};
+-};
+-
+-&i2c3 {
+-	/* Capacitive touch controller */
+-	ft5x06_ts: touchscreen@38 {
+-		compatible = "edt,edt-ft5406";
+-		reg = <0x38>;
+-		pinctrl-names = "default";
+-		pinctrl-0 = <&pinctrl_captouch>;
+-		interrupt-parent = <&gpio5>;
+-		interrupts = <4 IRQ_TYPE_LEVEL_HIGH>;
+-
+-		touchscreen-size-x = <800>;
+-		touchscreen-size-y = <480>;
+-		touchscreen-inverted-x;
+-		touchscreen-inverted-y;
+-	};
+-
+-	rtc@68 {
+-		compatible = "dallas,ds1337";
+-		reg = <0x68>;
+-	};
+-};
+-
+-/* Header */
+-&uart1 {
+-	pinctrl-names = "default";
+-	pinctrl-0 = <&pinctrl_uart1>;
+-	status = "okay";
+-};
+-
+-/* Header */
+-&uart3 {
+-	pinctrl-names = "default";
+-	pinctrl-0 = <&pinctrl_uart3>;
+-	status = "okay";
+-};
+-
+-&usbotg1 {
+-	disable-over-current;
+-	extcon = <&extcon_usbotg1>, <&extcon_usbotg1>;
+-};
+-
+-&pinctrl_fec1 {
+-	fsl,pins = <
+-		MX8MN_IOMUXC_ENET_MDC_ENET1_MDC			0x3
+-		MX8MN_IOMUXC_ENET_MDIO_ENET1_MDIO		0x3
+-		MX8MN_IOMUXC_ENET_TD3_ENET1_RGMII_TD3		0x1f
+-		MX8MN_IOMUXC_ENET_TD2_ENET1_RGMII_TD2		0x1f
+-		MX8MN_IOMUXC_ENET_TD1_ENET1_RGMII_TD1		0x1f
+-		MX8MN_IOMUXC_ENET_TD0_ENET1_RGMII_TD0		0x1f
+-		MX8MN_IOMUXC_ENET_RD3_ENET1_RGMII_RD3		0x91
+-		MX8MN_IOMUXC_ENET_RD2_ENET1_RGMII_RD2		0x91
+-		MX8MN_IOMUXC_ENET_RD1_ENET1_RGMII_RD1		0x91
+-		MX8MN_IOMUXC_ENET_RD0_ENET1_RGMII_RD0		0x91
+-		MX8MN_IOMUXC_ENET_TXC_ENET1_RGMII_TXC		0x1f
+-		MX8MN_IOMUXC_ENET_RXC_ENET1_RGMII_RXC		0x91
+-		MX8MN_IOMUXC_ENET_RX_CTL_ENET1_RGMII_RX_CTL	0x91
+-		MX8MN_IOMUXC_ENET_TX_CTL_ENET1_RGMII_TX_CTL	0x1f
+-		/* Remove the MX8MM_IOMUXC_GPIO1_IO09_GPIO1_IO9 as not used */
+-	>;
+-};
+-
+-&pinctrl_fec1_sleep {
+-	fsl,pins = <
+-		MX8MN_IOMUXC_ENET_MDC_GPIO1_IO16		0x120
+-		MX8MN_IOMUXC_ENET_MDIO_GPIO1_IO17		0x120
+-		MX8MN_IOMUXC_ENET_TD3_GPIO1_IO18		0x120
+-		MX8MN_IOMUXC_ENET_TD2_GPIO1_IO19		0x120
+-		MX8MN_IOMUXC_ENET_TD1_GPIO1_IO20		0x120
+-		MX8MN_IOMUXC_ENET_TD0_GPIO1_IO21		0x120
+-		MX8MN_IOMUXC_ENET_RD3_GPIO1_IO29		0x120
+-		MX8MN_IOMUXC_ENET_RD2_GPIO1_IO28		0x120
+-		MX8MN_IOMUXC_ENET_RD1_GPIO1_IO27		0x120
+-		MX8MN_IOMUXC_ENET_RD0_GPIO1_IO26		0x120
+-		MX8MN_IOMUXC_ENET_TXC_GPIO1_IO23		0x120
+-		MX8MN_IOMUXC_ENET_RXC_GPIO1_IO25		0x120
+-		MX8MN_IOMUXC_ENET_RX_CTL_GPIO1_IO24		0x120
+-		MX8MN_IOMUXC_ENET_TX_CTL_GPIO1_IO22		0x120
+-		/* Remove the MX8MM_IOMUXC_GPIO1_IO09_GPIO1_IO9 as not used */
+-	>;
+-};
+-
+-&iomuxc {
+-	pinctrl_captouch: captouchgrp {
+-		fsl,pins = <
+-			MX8MN_IOMUXC_SPDIF_RX_GPIO5_IO4		0x16
+-		>;
+-	};
+-
+-	pinctrl_i2c2: i2c2grp {
+-		fsl,pins = <
+-			MX8MN_IOMUXC_I2C2_SCL_I2C2_SCL		0x400001c3
+-			MX8MN_IOMUXC_I2C2_SDA_I2C2_SDA		0x400001c3
+-		>;
+-	};
+-
+-	pinctrl_pca9534: pca9534grp {
+-		fsl,pins = <
+-			MX8MN_IOMUXC_GPIO1_IO07_GPIO1_IO7	0x16
+-		>;
+-	};
+-
+-	pinctrl_ptn5150: ptn5150grp {
+-		fsl,pins = <
+-			MX8MN_IOMUXC_GPIO1_IO11_GPIO1_IO11	0x16
+-		>;
+-	};
+-
+-	pinctrl_reg_usdhc2_vmmc: regusdhc2vmmcgrp {
+-		fsl,pins = <
+-			MX8MN_IOMUXC_SAI2_RXC_GPIO4_IO22	0x41
+-		>;
+-	};
+-
+-	pinctrl_uart1: uart1grp {
+-		fsl,pins = <
+-			MX8MN_IOMUXC_UART1_RXD_UART1_DCE_RX	0x140
+-			MX8MN_IOMUXC_UART1_TXD_UART1_DCE_TX	0x140
+-		>;
+-	};
+-
+-	pinctrl_uart3: uart3grp {
+-		fsl,pins = <
+-			MX8MN_IOMUXC_UART3_RXD_UART3_DCE_RX	0x140
+-			MX8MN_IOMUXC_UART3_TXD_UART3_DCE_TX	0x140
+-		>;
+-	};
+-};
+diff --git a/arch/arm/dts/imx8mn-var-som.dtsi b/arch/arm/dts/imx8mn-var-som.dtsi
+deleted file mode 100644
+index f97209fbd8b..00000000000
+--- a/arch/arm/dts/imx8mn-var-som.dtsi
++++ /dev/null
+@@ -1,547 +0,0 @@
+-// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+-/*
+- * Copyright 2019 NXP
+- * Copyright 2019-2020 Variscite Ltd.
+- * Copyright (C) 2020 Krzysztof Kozlowski <krzk@kernel.org>
+- */
+-
+-#include "imx8mn.dtsi"
+-
+-/ {
+-	model = "Variscite VAR-SOM-MX8MN module";
+-	compatible = "variscite,var-som-mx8mn", "fsl,imx8mn";
+-
+-	chosen {
+-		stdout-path = &uart4;
+-	};
+-
+-	memory@40000000 {
+-		device_type = "memory";
+-		reg = <0x0 0x40000000 0 0x40000000>;
+-	};
+-
+-	reg_eth_phy: regulator-eth-phy {
+-		compatible = "regulator-fixed";
+-		pinctrl-names = "default";
+-		pinctrl-0 = <&pinctrl_reg_eth_phy>;
+-		regulator-name = "eth_phy_pwr";
+-		regulator-min-microvolt = <3300000>;
+-		regulator-max-microvolt = <3300000>;
+-		gpio = <&gpio2 9 GPIO_ACTIVE_HIGH>;
+-		enable-active-high;
+-	};
+-};
+-
+-&A53_0 {
+-	cpu-supply = <&buck2_reg>;
+-};
+-
+-&A53_1 {
+-	cpu-supply = <&buck2_reg>;
+-};
+-
+-&A53_2 {
+-	cpu-supply = <&buck2_reg>;
+-};
+-
+-&A53_3 {
+-	cpu-supply = <&buck2_reg>;
+-};
+-
+-&ecspi1 {
+-	pinctrl-names = "default";
+-	pinctrl-0 = <&pinctrl_ecspi1>;
+-	cs-gpios = <&gpio1 14 GPIO_ACTIVE_LOW>,
+-		   <&gpio1  0 GPIO_ACTIVE_LOW>;
+-	/delete-property/ dmas;
+-	/delete-property/ dma-names;
+-	status = "okay";
+-
+-	/* Resistive touch controller */
+-	touchscreen@0 {
+-		reg = <0>;
+-		compatible = "ti,ads7846";
+-		pinctrl-names = "default";
+-		pinctrl-0 = <&pinctrl_restouch>;
+-		interrupt-parent = <&gpio1>;
+-		interrupts = <3 IRQ_TYPE_EDGE_FALLING>;
+-
+-		spi-max-frequency = <1500000>;
+-		pendown-gpio = <&gpio1 3 GPIO_ACTIVE_LOW>;
+-
+-		ti,x-min = /bits/ 16 <125>;
+-		touchscreen-size-x = /bits/ 16 <4008>;
+-		ti,y-min = /bits/ 16 <282>;
+-		touchscreen-size-y = /bits/ 16 <3864>;
+-		ti,x-plate-ohms = /bits/ 16 <180>;
+-		touchscreen-max-pressure = /bits/ 16 <255>;
+-		touchscreen-average-samples = /bits/ 16 <10>;
+-		ti,debounce-tol = /bits/ 16 <3>;
+-		ti,debounce-rep = /bits/ 16 <1>;
+-		ti,settle-delay-usec = /bits/ 16 <150>;
+-		ti,keep-vref-on;
+-		wakeup-source;
+-	};
+-};
+-
+-&fec1 {
+-	pinctrl-names = "default", "sleep";
+-	pinctrl-0 = <&pinctrl_fec1>;
+-	pinctrl-1 = <&pinctrl_fec1_sleep>;
+-	phy-mode = "rgmii";
+-	phy-handle = <&ethphy>;
+-	phy-supply = <&reg_eth_phy>;
+-	phy-reset-gpios = <&gpio1 9 GPIO_ACTIVE_LOW>;
+-	phy-reset-duration = <10>;
+-	fsl,magic-packet;
+-	status = "okay";
+-
+-	mdio {
+-		#address-cells = <1>;
+-		#size-cells = <0>;
+-
+-		ethphy: ethernet-phy@4 {
+-			compatible = "ethernet-phy-ieee802.3-c22";
+-			reg = <4>;
+-		};
+-	};
+-};
+-
+-&i2c1 {
+-	clock-frequency = <400000>;
+-	pinctrl-names = "default";
+-	pinctrl-0 = <&pinctrl_i2c1>;
+-	status = "okay";
+-
+-	pmic@4b {
+-		compatible = "rohm,bd71847";
+-		reg = <0x4b>;
+-		pinctrl-names = "default";
+-		pinctrl-0 = <&pinctrl_pmic>;
+-		interrupt-parent = <&gpio2>;
+-		interrupts = <8 IRQ_TYPE_LEVEL_LOW>;
+-		rohm,reset-snvs-powered;
+-
+-		regulators {
+-			buck1_reg: BUCK1 {
+-				regulator-name = "buck1";
+-				regulator-min-microvolt = <700000>;
+-				regulator-max-microvolt = <1300000>;
+-				regulator-boot-on;
+-				regulator-always-on;
+-				regulator-ramp-delay = <1250>;
+-			};
+-
+-			buck2_reg: BUCK2 {
+-				regulator-name = "buck2";
+-				regulator-min-microvolt = <700000>;
+-				regulator-max-microvolt = <1300000>;
+-				regulator-boot-on;
+-				regulator-always-on;
+-				regulator-ramp-delay = <1250>;
+-				rohm,dvs-run-voltage = <1000000>;
+-				rohm,dvs-idle-voltage = <900000>;
+-			};
+-
+-			buck3_reg: BUCK3 {
+-				regulator-name = "buck3";
+-				regulator-min-microvolt = <700000>;
+-				regulator-max-microvolt = <1350000>;
+-				regulator-boot-on;
+-				regulator-always-on;
+-			};
+-
+-			buck4_reg: BUCK4 {
+-				regulator-name = "buck4";
+-				regulator-min-microvolt = <2600000>;
+-				regulator-max-microvolt = <3300000>;
+-				regulator-boot-on;
+-				regulator-always-on;
+-			};
+-
+-			buck5_reg: BUCK5 {
+-				regulator-name = "buck5";
+-				regulator-min-microvolt = <1605000>;
+-				regulator-max-microvolt = <1995000>;
+-				regulator-boot-on;
+-				regulator-always-on;
+-			};
+-
+-			buck6_reg: BUCK6 {
+-				regulator-name = "buck6";
+-				regulator-min-microvolt = <800000>;
+-				regulator-max-microvolt = <1400000>;
+-				regulator-boot-on;
+-				regulator-always-on;
+-			};
+-
+-			ldo1_reg: LDO1 {
+-				regulator-name = "ldo1";
+-				regulator-min-microvolt = <1600000>;
+-				regulator-max-microvolt = <1900000>;
+-				regulator-boot-on;
+-				regulator-always-on;
+-			};
+-
+-			ldo2_reg: LDO2 {
+-				regulator-name = "ldo2";
+-				regulator-min-microvolt = <800000>;
+-				regulator-max-microvolt = <900000>;
+-				regulator-boot-on;
+-				regulator-always-on;
+-			};
+-
+-			ldo3_reg: LDO3 {
+-				regulator-name = "ldo3";
+-				regulator-min-microvolt = <1800000>;
+-				regulator-max-microvolt = <3300000>;
+-				regulator-boot-on;
+-				regulator-always-on;
+-			};
+-
+-			ldo4_reg: LDO4 {
+-				regulator-name = "ldo4";
+-				regulator-min-microvolt = <900000>;
+-				regulator-max-microvolt = <1800000>;
+-				regulator-always-on;
+-			};
+-
+-			ldo5_reg: LDO5 {
+-				regulator-compatible = "ldo5";
+-				regulator-min-microvolt = <1800000>;
+-				regulator-max-microvolt = <1800000>;
+-				regulator-always-on;
+-			};
+-
+-			ldo6_reg: LDO6 {
+-				regulator-name = "ldo6";
+-				regulator-min-microvolt = <900000>;
+-				regulator-max-microvolt = <1800000>;
+-				regulator-boot-on;
+-				regulator-always-on;
+-			};
+-		};
+-	};
+-};
+-
+-&i2c3 {
+-	clock-frequency = <400000>;
+-	pinctrl-names = "default";
+-	pinctrl-0 = <&pinctrl_i2c3>;
+-	status = "okay";
+-
+-	/* TODO: configure audio, as of now just put a placeholder */
+-	wm8904: codec@1a {
+-		compatible = "wlf,wm8904";
+-		reg = <0x1a>;
+-		status = "disabled";
+-	};
+-};
+-
+-&snvs_pwrkey {
+-	status = "okay";
+-};
+-
+-/* Bluetooth */
+-&uart2 {
+-	pinctrl-names = "default";
+-	pinctrl-0 = <&pinctrl_uart2>;
+-	assigned-clocks = <&clk IMX8MN_CLK_UART2>;
+-	assigned-clock-parents = <&clk IMX8MN_SYS_PLL1_80M>;
+-	uart-has-rtscts;
+-	status = "okay";
+-};
+-
+-/* Console */
+-&uart4 {
+-	pinctrl-names = "default";
+-	pinctrl-0 = <&pinctrl_uart4>;
+-	status = "okay";
+-};
+-
+-&usbotg1 {
+-	dr_mode = "peripheral";
+-	status = "okay";
+-};
+-
+-/* WIFI */
+-&usdhc1 {
+-	#address-cells = <1>;
+-	#size-cells = <0>;
+-	pinctrl-names = "default", "state_100mhz", "state_200mhz";
+-	pinctrl-0 = <&pinctrl_usdhc1>;
+-	pinctrl-1 = <&pinctrl_usdhc1_100mhz>;
+-	pinctrl-2 = <&pinctrl_usdhc1_200mhz>;
+-	bus-width = <4>;
+-	non-removable;
+-	keep-power-in-suspend;
+-	status = "okay";
+-
+-	brcmf: bcrmf@1 {
+-		reg = <1>;
+-		compatible = "brcm,bcm4329-fmac";
+-	};
+-};
+-
+-/* SD */
+-&usdhc2 {
+-	assigned-clocks = <&clk IMX8MN_CLK_USDHC2>;
+-	assigned-clock-rates = <200000000>;
+-	pinctrl-names = "default", "state_100mhz", "state_200mhz";
+-	pinctrl-0 = <&pinctrl_usdhc2>, <&pinctrl_usdhc2_gpio>;
+-	pinctrl-1 = <&pinctrl_usdhc2_100mhz>, <&pinctrl_usdhc2_gpio>;
+-	pinctrl-2 = <&pinctrl_usdhc2_200mhz>, <&pinctrl_usdhc2_gpio>;
+-	cd-gpios = <&gpio1 10 GPIO_ACTIVE_LOW>;
+-	bus-width = <4>;
+-	vmmc-supply = <&reg_usdhc2_vmmc>;
+-	status = "okay";
+-};
+-
+-/* eMMC */
+-&usdhc3 {
+-	assigned-clocks = <&clk IMX8MN_CLK_USDHC3_ROOT>;
+-	assigned-clock-rates = <400000000>;
+-	pinctrl-names = "default", "state_100mhz", "state_200mhz";
+-	pinctrl-0 = <&pinctrl_usdhc3>;
+-	pinctrl-1 = <&pinctrl_usdhc3_100mhz>;
+-	pinctrl-2 = <&pinctrl_usdhc3_200mhz>;
+-	bus-width = <8>;
+-	non-removable;
+-	status = "okay";
+-};
+-
+-&wdog1 {
+-	pinctrl-names = "default";
+-	pinctrl-0 = <&pinctrl_wdog>;
+-	fsl,ext-reset-output;
+-	status = "okay";
+-};
+-
+-&iomuxc {
+-	pinctrl_ecspi1: ecspi1grp {
+-		fsl,pins = <
+-			MX8MN_IOMUXC_ECSPI1_SCLK_ECSPI1_SCLK		0x13
+-			MX8MN_IOMUXC_ECSPI1_MOSI_ECSPI1_MOSI		0x13
+-			MX8MN_IOMUXC_ECSPI1_MISO_ECSPI1_MISO		0x13
+-			MX8MN_IOMUXC_GPIO1_IO14_GPIO1_IO14		0x13
+-			MX8MN_IOMUXC_GPIO1_IO00_GPIO1_IO0		0x13
+-		>;
+-	};
+-
+-	pinctrl_fec1: fec1grp {
+-		fsl,pins = <
+-			MX8MN_IOMUXC_ENET_MDC_ENET1_MDC			0x3
+-			MX8MN_IOMUXC_ENET_MDIO_ENET1_MDIO		0x3
+-			MX8MN_IOMUXC_ENET_TD3_ENET1_RGMII_TD3		0x1f
+-			MX8MN_IOMUXC_ENET_TD2_ENET1_RGMII_TD2		0x1f
+-			MX8MN_IOMUXC_ENET_TD1_ENET1_RGMII_TD1		0x1f
+-			MX8MN_IOMUXC_ENET_TD0_ENET1_RGMII_TD0		0x1f
+-			MX8MN_IOMUXC_ENET_RD3_ENET1_RGMII_RD3		0x91
+-			MX8MN_IOMUXC_ENET_RD2_ENET1_RGMII_RD2		0x91
+-			MX8MN_IOMUXC_ENET_RD1_ENET1_RGMII_RD1		0x91
+-			MX8MN_IOMUXC_ENET_RD0_ENET1_RGMII_RD0		0x91
+-			MX8MN_IOMUXC_ENET_TXC_ENET1_RGMII_TXC		0x1f
+-			MX8MN_IOMUXC_ENET_RXC_ENET1_RGMII_RXC		0x91
+-			MX8MN_IOMUXC_ENET_RX_CTL_ENET1_RGMII_RX_CTL	0x91
+-			MX8MN_IOMUXC_ENET_TX_CTL_ENET1_RGMII_TX_CTL	0x1f
+-			MX8MN_IOMUXC_GPIO1_IO09_GPIO1_IO9		0x19
+-		>;
+-	};
+-
+-	pinctrl_fec1_sleep: fec1sleepgrp {
+-		fsl,pins = <
+-			MX8MN_IOMUXC_ENET_MDC_GPIO1_IO16		0x120
+-			MX8MN_IOMUXC_ENET_MDIO_GPIO1_IO17		0x120
+-			MX8MN_IOMUXC_ENET_TD3_GPIO1_IO18		0x120
+-			MX8MN_IOMUXC_ENET_TD2_GPIO1_IO19		0x120
+-			MX8MN_IOMUXC_ENET_TD1_GPIO1_IO20		0x120
+-			MX8MN_IOMUXC_ENET_TD0_GPIO1_IO21		0x120
+-			MX8MN_IOMUXC_ENET_RD3_GPIO1_IO29		0x120
+-			MX8MN_IOMUXC_ENET_RD2_GPIO1_IO28		0x120
+-			MX8MN_IOMUXC_ENET_RD1_GPIO1_IO27		0x120
+-			MX8MN_IOMUXC_ENET_RD0_GPIO1_IO26		0x120
+-			MX8MN_IOMUXC_ENET_TXC_GPIO1_IO23		0x120
+-			MX8MN_IOMUXC_ENET_RXC_GPIO1_IO25		0x120
+-			MX8MN_IOMUXC_ENET_RX_CTL_GPIO1_IO24		0x120
+-			MX8MN_IOMUXC_ENET_TX_CTL_GPIO1_IO22		0x120
+-			MX8MN_IOMUXC_GPIO1_IO09_GPIO1_IO9		0x120
+-		>;
+-	};
+-
+-	pinctrl_i2c1: i2c1grp {
+-		fsl,pins = <
+-			MX8MN_IOMUXC_I2C1_SCL_I2C1_SCL		0x400001c3
+-			MX8MN_IOMUXC_I2C1_SDA_I2C1_SDA		0x400001c3
+-		>;
+-	};
+-
+-	pinctrl_i2c3: i2c3grp {
+-		fsl,pins = <
+-			MX8MN_IOMUXC_I2C3_SCL_I2C3_SCL		0x400001c3
+-			MX8MN_IOMUXC_I2C3_SDA_I2C3_SDA		0x400001c3
+-		>;
+-	};
+-
+-	pinctrl_pmic: pmicirqgrp {
+-		fsl,pins = <
+-			MX8MN_IOMUXC_SD1_DATA6_GPIO2_IO8	0x141
+-		>;
+-	};
+-
+-	pinctrl_reg_eth_phy: regethphygrp {
+-		fsl,pins = <
+-			MX8MN_IOMUXC_SD1_DATA7_GPIO2_IO9	0x41
+-		>;
+-	};
+-
+-	pinctrl_restouch: restouchgrp {
+-		fsl,pins = <
+-			MX8MN_IOMUXC_GPIO1_IO03_GPIO1_IO3	0x1c0
+-		>;
+-	};
+-
+-	pinctrl_uart2: uart2grp {
+-		fsl,pins = <
+-			MX8MN_IOMUXC_SAI3_TXFS_UART2_DCE_RX	0x140
+-			MX8MN_IOMUXC_SAI3_TXC_UART2_DCE_TX	0x140
+-			MX8MN_IOMUXC_SAI3_RXC_UART2_DCE_CTS_B	0x140
+-			MX8MN_IOMUXC_SAI3_RXD_UART2_DCE_RTS_B	0x140
+-		>;
+-	};
+-
+-	pinctrl_uart4: uart4grp {
+-		fsl,pins = <
+-			MX8MN_IOMUXC_UART4_RXD_UART4_DCE_RX	0x140
+-			MX8MN_IOMUXC_UART4_TXD_UART4_DCE_TX	0x140
+-		>;
+-	};
+-
+-	pinctrl_usdhc1: usdhc1grp {
+-		fsl,pins = <
+-			MX8MN_IOMUXC_SD1_CLK_USDHC1_CLK		0x190
+-			MX8MN_IOMUXC_SD1_CMD_USDHC1_CMD		0x1d0
+-			MX8MN_IOMUXC_SD1_DATA0_USDHC1_DATA0	0x1d0
+-			MX8MN_IOMUXC_SD1_DATA1_USDHC1_DATA1	0x1d0
+-			MX8MN_IOMUXC_SD1_DATA2_USDHC1_DATA2	0x1d0
+-			MX8MN_IOMUXC_SD1_DATA3_USDHC1_DATA3	0x1d0
+-		>;
+-	};
+-
+-	pinctrl_usdhc1_100mhz: usdhc1-100mhzgrp {
+-		fsl,pins = <
+-			MX8MN_IOMUXC_SD1_CLK_USDHC1_CLK		0x194
+-			MX8MN_IOMUXC_SD1_CMD_USDHC1_CMD		0x1d4
+-			MX8MN_IOMUXC_SD1_DATA0_USDHC1_DATA0	0x1d4
+-			MX8MN_IOMUXC_SD1_DATA1_USDHC1_DATA1	0x1d4
+-			MX8MN_IOMUXC_SD1_DATA2_USDHC1_DATA2	0x1d4
+-			MX8MN_IOMUXC_SD1_DATA3_USDHC1_DATA3	0x1d4
+-		>;
+-	};
+-
+-	pinctrl_usdhc1_200mhz: usdhc1-200mhzgrp {
+-		fsl,pins = <
+-			MX8MN_IOMUXC_SD1_CLK_USDHC1_CLK		0x196
+-			MX8MN_IOMUXC_SD1_CMD_USDHC1_CMD		0x1d6
+-			MX8MN_IOMUXC_SD1_DATA0_USDHC1_DATA0	0x1d6
+-			MX8MN_IOMUXC_SD1_DATA1_USDHC1_DATA1	0x1d6
+-			MX8MN_IOMUXC_SD1_DATA2_USDHC1_DATA2	0x1d6
+-			MX8MN_IOMUXC_SD1_DATA3_USDHC1_DATA3	0x1d6
+-		>;
+-	};
+-
+-	pinctrl_usdhc2_gpio: usdhc2gpiogrp {
+-		fsl,pins = <
+-			MX8MN_IOMUXC_GPIO1_IO10_GPIO1_IO10	0x41
+-		>;
+-	};
+-
+-	pinctrl_usdhc2: usdhc2grp {
+-		fsl,pins = <
+-			MX8MN_IOMUXC_SD2_CLK_USDHC2_CLK		0x190
+-			MX8MN_IOMUXC_SD2_CMD_USDHC2_CMD		0x1d0
+-			MX8MN_IOMUXC_SD2_DATA0_USDHC2_DATA0	0x1d0
+-			MX8MN_IOMUXC_SD2_DATA1_USDHC2_DATA1	0x1d0
+-			MX8MN_IOMUXC_SD2_DATA2_USDHC2_DATA2	0x1d0
+-			MX8MN_IOMUXC_SD2_DATA3_USDHC2_DATA3	0x1d0
+-			MX8MN_IOMUXC_GPIO1_IO04_USDHC2_VSELECT	0x1d0
+-		>;
+-	};
+-
+-	pinctrl_usdhc2_100mhz: usdhc2-100mhzgrp {
+-		fsl,pins = <
+-			MX8MN_IOMUXC_SD2_CLK_USDHC2_CLK		0x194
+-			MX8MN_IOMUXC_SD2_CMD_USDHC2_CMD		0x1d4
+-			MX8MN_IOMUXC_SD2_DATA0_USDHC2_DATA0	0x1d4
+-			MX8MN_IOMUXC_SD2_DATA1_USDHC2_DATA1	0x1d4
+-			MX8MN_IOMUXC_SD2_DATA2_USDHC2_DATA2	0x1d4
+-			MX8MN_IOMUXC_SD2_DATA3_USDHC2_DATA3	0x1d4
+-			MX8MN_IOMUXC_GPIO1_IO04_USDHC2_VSELECT	0x1d0
+-		>;
+-	};
+-
+-	pinctrl_usdhc2_200mhz: usdhc2-200mhzgrp {
+-		fsl,pins = <
+-			MX8MN_IOMUXC_SD2_CLK_USDHC2_CLK		0x196
+-			MX8MN_IOMUXC_SD2_CMD_USDHC2_CMD		0x1d6
+-			MX8MN_IOMUXC_SD2_DATA0_USDHC2_DATA0	0x1d6
+-			MX8MN_IOMUXC_SD2_DATA1_USDHC2_DATA1	0x1d6
+-			MX8MN_IOMUXC_SD2_DATA2_USDHC2_DATA2	0x1d6
+-			MX8MN_IOMUXC_SD2_DATA3_USDHC2_DATA3	0x1d6
+-			MX8MN_IOMUXC_GPIO1_IO04_USDHC2_VSELECT	0x1d0
+-		>;
+-	};
+-
+-	pinctrl_usdhc3: usdhc3grp {
+-		fsl,pins = <
+-			MX8MN_IOMUXC_NAND_WE_B_USDHC3_CLK	0x190
+-			MX8MN_IOMUXC_NAND_WP_B_USDHC3_CMD	0x1d0
+-			MX8MN_IOMUXC_NAND_DATA04_USDHC3_DATA0	0x1d0
+-			MX8MN_IOMUXC_NAND_DATA05_USDHC3_DATA1	0x1d0
+-			MX8MN_IOMUXC_NAND_DATA06_USDHC3_DATA2	0x1d0
+-			MX8MN_IOMUXC_NAND_DATA07_USDHC3_DATA3	0x1d0
+-			MX8MN_IOMUXC_NAND_RE_B_USDHC3_DATA4	0x1d0
+-			MX8MN_IOMUXC_NAND_CE2_B_USDHC3_DATA5	0x1d0
+-			MX8MN_IOMUXC_NAND_CE3_B_USDHC3_DATA6	0x1d0
+-			MX8MN_IOMUXC_NAND_CLE_USDHC3_DATA7	0x1d0
+-			MX8MN_IOMUXC_NAND_CE1_B_USDHC3_STROBE	0x190
+-		>;
+-	};
+-
+-	pinctrl_usdhc3_100mhz: usdhc3-100mhzgrp {
+-		fsl,pins = <
+-			MX8MN_IOMUXC_NAND_WE_B_USDHC3_CLK	0x194
+-			MX8MN_IOMUXC_NAND_WP_B_USDHC3_CMD	0x1d4
+-			MX8MN_IOMUXC_NAND_DATA04_USDHC3_DATA0	0x1d4
+-			MX8MN_IOMUXC_NAND_DATA05_USDHC3_DATA1	0x1d4
+-			MX8MN_IOMUXC_NAND_DATA06_USDHC3_DATA2	0x1d4
+-			MX8MN_IOMUXC_NAND_DATA07_USDHC3_DATA3	0x1d4
+-			MX8MN_IOMUXC_NAND_RE_B_USDHC3_DATA4	0x1d4
+-			MX8MN_IOMUXC_NAND_CE2_B_USDHC3_DATA5	0x1d4
+-			MX8MN_IOMUXC_NAND_CE3_B_USDHC3_DATA6	0x1d4
+-			MX8MN_IOMUXC_NAND_CLE_USDHC3_DATA7	0x1d4
+-			MX8MN_IOMUXC_NAND_CE1_B_USDHC3_STROBE	0x194
+-		>;
+-	};
+-
+-	pinctrl_usdhc3_200mhz: usdhc3-200mhzgrp {
+-		fsl,pins = <
+-			MX8MN_IOMUXC_NAND_WE_B_USDHC3_CLK	0x196
+-			MX8MN_IOMUXC_NAND_WP_B_USDHC3_CMD	0x1d6
+-			MX8MN_IOMUXC_NAND_DATA04_USDHC3_DATA0	0x1d6
+-			MX8MN_IOMUXC_NAND_DATA05_USDHC3_DATA1	0x1d6
+-			MX8MN_IOMUXC_NAND_DATA06_USDHC3_DATA2	0x1d6
+-			MX8MN_IOMUXC_NAND_DATA07_USDHC3_DATA3	0x1d6
+-			MX8MN_IOMUXC_NAND_RE_B_USDHC3_DATA4	0x1d6
+-			MX8MN_IOMUXC_NAND_CE2_B_USDHC3_DATA5	0x1d6
+-			MX8MN_IOMUXC_NAND_CE3_B_USDHC3_DATA6	0x1d6
+-			MX8MN_IOMUXC_NAND_CLE_USDHC3_DATA7	0x1d6
+-			MX8MN_IOMUXC_NAND_CE1_B_USDHC3_STROBE	0x196
+-		>;
+-	};
+-
+-	pinctrl_wdog: wdoggrp {
+-		fsl,pins = <
+-			MX8MN_IOMUXC_GPIO1_IO02_WDOG1_WDOG_B	0x166
+-		>;
+-	};
+-};
+diff --git a/arch/arm/mach-imx/imx8m/Kconfig b/arch/arm/mach-imx/imx8m/Kconfig
+index 5391facb907..be018ee31ca 100644
+--- a/arch/arm/mach-imx/imx8m/Kconfig
++++ b/arch/arm/mach-imx/imx8m/Kconfig
+@@ -254,13 +254,6 @@ config TARGET_PICO_IMX8MQ
+ 	select IMX8MQ
+ 	select IMX8M_LPDDR4
+ 
+-config TARGET_IMX8MN_VAR_SOM
+-	bool "imx8mn_var_som"
+-	select BINMAN
+-	select IMX8MN
+-	select SUPPORT_SPL
+-	select IMX8M_DDR4
+-
+ config TARGET_KONTRON_PITX_IMX8M
+ 	bool "Support Kontron pITX-imx8m"
+ 	select BINMAN
+@@ -360,7 +353,6 @@ source "board/phytec/phycore_imx8mm/Kconfig"
+ source "board/phytec/phycore_imx8mp/Kconfig"
+ source "board/ronetix/imx8mq-cm/Kconfig"
+ source "board/technexion/pico-imx8mq/Kconfig"
+-source "board/variscite/imx8mn_var_som/Kconfig"
+ source "board/toradex/verdin-imx8mm/Kconfig"
+ source "board/toradex/verdin-imx8mp/Kconfig"
+ 
+diff --git a/board/variscite/imx8mn_var_som/Kconfig b/board/variscite/imx8mn_var_som/Kconfig
+deleted file mode 100644
+index cfe6fc8c2c7..00000000000
+--- a/board/variscite/imx8mn_var_som/Kconfig
++++ /dev/null
+@@ -1,17 +0,0 @@
+-if TARGET_IMX8MN_VAR_SOM
+-
+-config SYS_BOARD
+-	default "imx8mn_var_som"
+-
+-config SYS_VENDOR
+-	default "variscite"
+-
+-config SYS_CONFIG_NAME
+-	default "imx8mn_var_som"
+-
+-config IMX_CONFIG
+-	default "board/variscite/imx8mn_var_som/imximage-8mn-ddr4.cfg"
+-
+-source "board/freescale/common/Kconfig"
+-
+-endif
+diff --git a/board/variscite/imx8mn_var_som/MAINTAINERS b/board/variscite/imx8mn_var_som/MAINTAINERS
+deleted file mode 100644
+index 068f807ae69..00000000000
+--- a/board/variscite/imx8mn_var_som/MAINTAINERS
++++ /dev/null
+@@ -1,7 +0,0 @@
+-ARM i.MX8MN VARISCITE VAR-SOM-MX8MN MODULE
+-M:	Ariel D'Alessandro <ariel.dalessandro@collabora.com>
+-S:	Maintained
+-F:	arch/arm/dts/imx8mn-var-som*
+-F:	board/variscite/imx8mn_var_som/
+-F:	configs/imx8mn_var_som_defconfig
+-F:	include/configs/imx8mn_var_som.h
+diff --git a/board/variscite/imx8mn_var_som/Makefile b/board/variscite/imx8mn_var_som/Makefile
+deleted file mode 100644
+index a8b6a343ffc..00000000000
+--- a/board/variscite/imx8mn_var_som/Makefile
++++ /dev/null
+@@ -1,12 +0,0 @@
+-#
+-# Copyright 2021 Collabora Ltd.
+-#
+-# SPDX-License-Identifier:      GPL-2.0+
+-#
+-
+-obj-y += imx8mn_var_som.o
+-
+-ifdef CONFIG_SPL_BUILD
+-obj-y += spl.o
+-obj-y += ddr4_timing.o
+-endif
+diff --git a/board/variscite/imx8mn_var_som/ddr4_timing.c b/board/variscite/imx8mn_var_som/ddr4_timing.c
+deleted file mode 100644
+index 0ed69eeb3de..00000000000
+--- a/board/variscite/imx8mn_var_som/ddr4_timing.c
++++ /dev/null
+@@ -1,528 +0,0 @@
+-// SPDX-License-Identifier: GPL-2.0+
+-/*
+- * Copyright 2019 NXP
+- *
+- * Generated code from MX8M_DDR_tool
+- * Align with uboot version:
+- * imx_v2018.03_4.14.78_1.0.0_ga ~ imx_v2018.04_4.19.35_1.0.0_ga
+- */
+-
+-#include <linux/kernel.h>
+-#include <asm/arch/ddr.h>
+-
+-static struct dram_cfg_param ddr_ddrc_cfg[] = {
+-	/** Initialize DDRC registers **/
+-	{ 0x3d400000, 0x81040010 },
+-	{ 0x3d400030, 0x20 },
+-	{ 0x3d400034, 0x221306 },
+-	{ 0x3d400050, 0x210070 },
+-	{ 0x3d400054, 0x10008 },
+-	{ 0x3d400060, 0x0 },
+-	{ 0x3d400064, 0x9200d2 },
+-	{ 0x3d4000c0, 0x0 },
+-	{ 0x3d4000c4, 0x1000 },
+-	{ 0x3d4000d0, 0xc0030126 },
+-	{ 0x3d4000d4, 0x770000 },
+-	{ 0x3d4000dc, 0x8340105 },
+-	{ 0x3d4000e0, 0x180200 },
+-	{ 0x3d4000e4, 0x110000 },
+-	{ 0x3d4000e8, 0x2000600 },
+-	{ 0x3d4000ec, 0x810 },
+-	{ 0x3d4000f0, 0x20 },
+-	{ 0x3d4000f4, 0xec7 },
+-	{ 0x3d400100, 0x11122914 },
+-	{ 0x3d400104, 0x4051c },
+-	{ 0x3d400108, 0x608050d },
+-	{ 0x3d40010c, 0x400c },
+-	{ 0x3d400110, 0x8030409 },
+-	{ 0x3d400114, 0x6060403 },
+-	{ 0x3d40011c, 0x606 },
+-	{ 0x3d400120, 0x5050d08 },
+-	{ 0x3d400124, 0x2040a },
+-	{ 0x3d40012c, 0x1409010e },
+-	{ 0x3d400130, 0x8 },
+-	{ 0x3d40013c, 0x0 },
+-	{ 0x3d400180, 0x1000040 },
+-	{ 0x3d400184, 0x493e },
+-	{ 0x3d400190, 0x38b8207 },
+-	{ 0x3d400194, 0x2020303 },
+-	{ 0x3d400198, 0x7f04011 },
+-	{ 0x3d40019c, 0xb0 },
+-	{ 0x3d4001a0, 0xe0400018 },
+-	{ 0x3d4001a4, 0x48005a },
+-	{ 0x3d4001a8, 0x80000000 },
+-	{ 0x3d4001b0, 0x1 },
+-	{ 0x3d4001b4, 0xb07 },
+-	{ 0x3d4001b8, 0x4 },
+-	{ 0x3d4001c0, 0x1 },
+-	{ 0x3d4001c4, 0x0 },
+-	{ 0x3d400200, 0x3f1f },
+-	{ 0x3d400204, 0x3f0909 },
+-	{ 0x3d400208, 0x700 },
+-	{ 0x3d40020c, 0x0 },
+-	{ 0x3d400210, 0x1f1f },
+-	{ 0x3d400214, 0x7070707 },
+-	{ 0x3d400218, 0x7070707 },
+-	{ 0x3d40021c, 0xf0f },
+-	{ 0x3d400220, 0x3f01 },
+-	{ 0x3d400240, 0x6000610 },
+-	{ 0x3d400244, 0x1323 },
+-	{ 0x3d400400, 0x100 },
+-	{ 0x3d400250, 0x317d1a07 },
+-	{ 0x3d400254, 0xf },
+-	{ 0x3d40025c, 0x2a001b76 },
+-	{ 0x3d400264, 0x7300b473 },
+-	{ 0x3d40026c, 0x30000e06 },
+-	{ 0x3d400300, 0x14 },
+-	{ 0x3d40036c, 0x10 },
+-	{ 0x3d400404, 0x13193 },
+-	{ 0x3d400408, 0x6096 },
+-	{ 0x3d400490, 0x1 },
+-	{ 0x3d400494, 0x2000c00 },
+-	{ 0x3d400498, 0x3c00db },
+-	{ 0x3d40049c, 0x100009 },
+-	{ 0x3d4004a0, 0x2 },
+-	{ 0x3d402050, 0x210070 },
+-	{ 0x3d402064, 0x40005e },
+-	{ 0x3d4020dc, 0x40105 },
+-	{ 0x3d4020e0, 0x0 },
+-	{ 0x3d4020e8, 0x2000600 },
+-	{ 0x3d4020ec, 0x10 },
+-	{ 0x3d402100, 0xb081209 },
+-	{ 0x3d402104, 0x2020d },
+-	{ 0x3d402108, 0x5050309 },
+-	{ 0x3d40210c, 0x400c },
+-	{ 0x3d402110, 0x5030206 },
+-	{ 0x3d402114, 0x3030202 },
+-	{ 0x3d40211c, 0x303 },
+-	{ 0x3d402120, 0x3030d04 },
+-	{ 0x3d402124, 0x20208 },
+-	{ 0x3d40212c, 0x1005010e },
+-	{ 0x3d402130, 0x8 },
+-	{ 0x3d40213c, 0x0 },
+-	{ 0x3d402180, 0x1000040 },
+-	{ 0x3d402190, 0x3858204 },
+-	{ 0x3d402194, 0x2020303 },
+-	{ 0x3d4021b4, 0x504 },
+-	{ 0x3d4021b8, 0x4 },
+-	{ 0x3d402240, 0x6000604 },
+-	{ 0x3d4020f4, 0xec7 },
+-};
+-
+-/* PHY Initialize Configuration */
+-static struct dram_cfg_param ddr_ddrphy_cfg[] = {
+-	{ 0x1005f, 0x2fd },
+-	{ 0x1015f, 0x2fd },
+-	{ 0x1105f, 0x2fd },
+-	{ 0x1115f, 0x2fd },
+-	{ 0x11005f, 0x2fd },
+-	{ 0x11015f, 0x2fd },
+-	{ 0x11105f, 0x2fd },
+-	{ 0x11115f, 0x2fd },
+-	{ 0x55, 0x355 },
+-	{ 0x1055, 0x355 },
+-	{ 0x2055, 0x355 },
+-	{ 0x3055, 0x355 },
+-	{ 0x4055, 0x55 },
+-	{ 0x5055, 0x55 },
+-	{ 0x6055, 0x355 },
+-	{ 0x7055, 0x355 },
+-	{ 0x8055, 0x355 },
+-	{ 0x9055, 0x355 },
+-	{ 0x200c5, 0xa },
+-	{ 0x1200c5, 0x6 },
+-	{ 0x2002e, 0x2 },
+-	{ 0x12002e, 0x1 },
+-	{ 0x20024, 0x8 },
+-	{ 0x2003a, 0x2 },
+-	{ 0x120024, 0x8 },
+-	{ 0x2003a, 0x2 },
+-	{ 0x20056, 0x6 },
+-	{ 0x120056, 0xa },
+-	{ 0x1004d, 0x1a },
+-	{ 0x1014d, 0x1a },
+-	{ 0x1104d, 0x1a },
+-	{ 0x1114d, 0x1a },
+-	{ 0x11004d, 0x1a },
+-	{ 0x11014d, 0x1a },
+-	{ 0x11104d, 0x1a },
+-	{ 0x11114d, 0x1a },
+-	{ 0x10049, 0xe38 },
+-	{ 0x10149, 0xe38 },
+-	{ 0x11049, 0xe38 },
+-	{ 0x11149, 0xe38 },
+-	{ 0x110049, 0xe38 },
+-	{ 0x110149, 0xe38 },
+-	{ 0x111049, 0xe38 },
+-	{ 0x111149, 0xe38 },
+-	{ 0x43, 0x63 },
+-	{ 0x1043, 0x63 },
+-	{ 0x2043, 0x63 },
+-	{ 0x3043, 0x63 },
+-	{ 0x4043, 0x63 },
+-	{ 0x5043, 0x63 },
+-	{ 0x6043, 0x63 },
+-	{ 0x7043, 0x63 },
+-	{ 0x8043, 0x63 },
+-	{ 0x9043, 0x63 },
+-	{ 0x20018, 0x1 },
+-	{ 0x20075, 0x2 },
+-	{ 0x20050, 0x0 },
+-	{ 0x20008, 0x258 },
+-	{ 0x120008, 0x10a },
+-	{ 0x20088, 0x9 },
+-	{ 0x200b2, 0x268 },
+-	{ 0x10043, 0x5b1 },
+-	{ 0x10143, 0x5b1 },
+-	{ 0x11043, 0x5b1 },
+-	{ 0x11143, 0x5b1 },
+-	{ 0x1200b2, 0x268 },
+-	{ 0x110043, 0x5b1 },
+-	{ 0x110143, 0x5b1 },
+-	{ 0x111043, 0x5b1 },
+-	{ 0x111143, 0x5b1 },
+-	{ 0x200fa, 0x1 },
+-	{ 0x1200fa, 0x1 },
+-	{ 0x20019, 0x5 },
+-	{ 0x120019, 0x5 },
+-	{ 0x200f0, 0x5555 },
+-	{ 0x200f1, 0x5555 },
+-	{ 0x200f2, 0x5555 },
+-	{ 0x200f3, 0x5555 },
+-	{ 0x200f4, 0x5555 },
+-	{ 0x200f5, 0x5555 },
+-	{ 0x200f6, 0x5555 },
+-	{ 0x200f7, 0xf000 },
+-	{ 0x20025, 0x0 },
+-	{ 0x2002d, 0x0 },
+-	{ 0x12002d, 0x0 },
+-	{ 0x2005b, 0x7529 },
+-	{ 0x2005c, 0x0 },
+-	{ 0x200c7, 0x21 },
+-	{ 0x200ca, 0x24 },
+-	{ 0x200cc, 0x1f7 },
+-	{ 0x1200c7, 0x21 },
+-	{ 0x1200ca, 0x24 },
+-	{ 0x1200cc, 0x1f7 },
+-	{ 0x2007d, 0x212 },
+-	{ 0x12007d, 0x212 },
+-	{ 0x2007c, 0x61 },
+-	{ 0x12007c, 0x61 },
+-	{ 0x1004a, 0x500 },
+-	{ 0x1104a, 0x500 },
+-	{ 0x2002c, 0x0 },
+-};
+-
+-/* P0 message block parameter for training firmware */
+-static struct dram_cfg_param ddr_fsp0_cfg[] = {
+-	{ 0xd0000, 0x0 },
+-	{ 0x54003, 0x960 },
+-	{ 0x54004, 0x2 },
+-	{ 0x54005, 0x2830 },
+-	{ 0x54006, 0x25e },
+-	{ 0x54007, 0x1000 },
+-	{ 0x54008, 0x101 },
+-	{ 0x5400b, 0x31f },
+-	{ 0x5400c, 0xc8 },
+-	{ 0x5400d, 0x100 },
+-	{ 0x54012, 0x1 },
+-	{ 0x5402f, 0x834 },
+-	{ 0x54030, 0x105 },
+-	{ 0x54031, 0x18 },
+-	{ 0x54032, 0x200 },
+-	{ 0x54033, 0x200 },
+-	{ 0x54034, 0x600 },
+-	{ 0x54035, 0x810 },
+-	{ 0x54036, 0x101 },
+-	{ 0x5403f, 0x1221 },
+-	{ 0x541fc, 0x100 },
+-	{ 0xd0000, 0x1 },
+-};
+-
+-/* P1 message block parameter for training firmware */
+-static struct dram_cfg_param ddr_fsp1_cfg[] = {
+-	{ 0xd0000, 0x0 },
+-	{ 0x54002, 0x1 },
+-	{ 0x54003, 0x42a },
+-	{ 0x54004, 0x2 },
+-	{ 0x54005, 0x2830 },
+-	{ 0x54006, 0x25e },
+-	{ 0x54007, 0x1000 },
+-	{ 0x54008, 0x101 },
+-	{ 0x5400b, 0x21f },
+-	{ 0x5400c, 0xc8 },
+-	{ 0x5400d, 0x100 },
+-	{ 0x54012, 0x1 },
+-	{ 0x5402f, 0x4 },
+-	{ 0x54030, 0x105 },
+-	{ 0x54033, 0x200 },
+-	{ 0x54034, 0x600 },
+-	{ 0x54035, 0x10 },
+-	{ 0x54036, 0x101 },
+-	{ 0x5403f, 0x1221 },
+-	{ 0x541fc, 0x100 },
+-	{ 0xd0000, 0x1 },
+-};
+-
+-/* P0 2D message block parameter for training firmware */
+-static struct dram_cfg_param ddr_fsp0_2d_cfg[] = {
+-	{ 0xd0000, 0x0 },
+-	{ 0x54003, 0x960 },
+-	{ 0x54004, 0x2 },
+-	{ 0x54005, 0x2830 },
+-	{ 0x54006, 0x25e },
+-	{ 0x54007, 0x1000 },
+-	{ 0x54008, 0x101 },
+-	{ 0x5400b, 0x61 },
+-	{ 0x5400c, 0xc8 },
+-	{ 0x5400d, 0x100 },
+-	{ 0x5400e, 0x1f7f },
+-	{ 0x54012, 0x1 },
+-	{ 0x5402f, 0x834 },
+-	{ 0x54030, 0x105 },
+-	{ 0x54031, 0x18 },
+-	{ 0x54032, 0x200 },
+-	{ 0x54033, 0x200 },
+-	{ 0x54034, 0x600 },
+-	{ 0x54035, 0x810 },
+-	{ 0x54036, 0x101 },
+-	{ 0x5403f, 0x1221 },
+-	{ 0x541fc, 0x100 },
+-	{ 0xd0000, 0x1 },
+-};
+-
+-/* DRAM PHY init engine image */
+-static struct dram_cfg_param ddr_phy_pie[] = {
+-	{ 0xd0000, 0x0 },
+-	{ 0x90000, 0x10 },
+-	{ 0x90001, 0x400 },
+-	{ 0x90002, 0x10e },
+-	{ 0x90003, 0x0 },
+-	{ 0x90004, 0x0 },
+-	{ 0x90005, 0x8 },
+-	{ 0x90029, 0xb },
+-	{ 0x9002a, 0x480 },
+-	{ 0x9002b, 0x109 },
+-	{ 0x9002c, 0x8 },
+-	{ 0x9002d, 0x448 },
+-	{ 0x9002e, 0x139 },
+-	{ 0x9002f, 0x8 },
+-	{ 0x90030, 0x478 },
+-	{ 0x90031, 0x109 },
+-	{ 0x90032, 0x2 },
+-	{ 0x90033, 0x10 },
+-	{ 0x90034, 0x139 },
+-	{ 0x90035, 0xb },
+-	{ 0x90036, 0x7c0 },
+-	{ 0x90037, 0x139 },
+-	{ 0x90038, 0x44 },
+-	{ 0x90039, 0x633 },
+-	{ 0x9003a, 0x159 },
+-	{ 0x9003b, 0x14f },
+-	{ 0x9003c, 0x630 },
+-	{ 0x9003d, 0x159 },
+-	{ 0x9003e, 0x47 },
+-	{ 0x9003f, 0x633 },
+-	{ 0x90040, 0x149 },
+-	{ 0x90041, 0x4f },
+-	{ 0x90042, 0x633 },
+-	{ 0x90043, 0x179 },
+-	{ 0x90044, 0x8 },
+-	{ 0x90045, 0xe0 },
+-	{ 0x90046, 0x109 },
+-	{ 0x90047, 0x0 },
+-	{ 0x90048, 0x7c8 },
+-	{ 0x90049, 0x109 },
+-	{ 0x9004a, 0x0 },
+-	{ 0x9004b, 0x1 },
+-	{ 0x9004c, 0x8 },
+-	{ 0x9004d, 0x0 },
+-	{ 0x9004e, 0x45a },
+-	{ 0x9004f, 0x9 },
+-	{ 0x90050, 0x0 },
+-	{ 0x90051, 0x448 },
+-	{ 0x90052, 0x109 },
+-	{ 0x90053, 0x40 },
+-	{ 0x90054, 0x633 },
+-	{ 0x90055, 0x179 },
+-	{ 0x90056, 0x1 },
+-	{ 0x90057, 0x618 },
+-	{ 0x90058, 0x109 },
+-	{ 0x90059, 0x40c0 },
+-	{ 0x9005a, 0x633 },
+-	{ 0x9005b, 0x149 },
+-	{ 0x9005c, 0x8 },
+-	{ 0x9005d, 0x4 },
+-	{ 0x9005e, 0x48 },
+-	{ 0x9005f, 0x4040 },
+-	{ 0x90060, 0x633 },
+-	{ 0x90061, 0x149 },
+-	{ 0x90062, 0x0 },
+-	{ 0x90063, 0x4 },
+-	{ 0x90064, 0x48 },
+-	{ 0x90065, 0x40 },
+-	{ 0x90066, 0x633 },
+-	{ 0x90067, 0x149 },
+-	{ 0x90068, 0x10 },
+-	{ 0x90069, 0x4 },
+-	{ 0x9006a, 0x18 },
+-	{ 0x9006b, 0x0 },
+-	{ 0x9006c, 0x4 },
+-	{ 0x9006d, 0x78 },
+-	{ 0x9006e, 0x549 },
+-	{ 0x9006f, 0x633 },
+-	{ 0x90070, 0x159 },
+-	{ 0x90071, 0xd49 },
+-	{ 0x90072, 0x633 },
+-	{ 0x90073, 0x159 },
+-	{ 0x90074, 0x94a },
+-	{ 0x90075, 0x633 },
+-	{ 0x90076, 0x159 },
+-	{ 0x90077, 0x441 },
+-	{ 0x90078, 0x633 },
+-	{ 0x90079, 0x149 },
+-	{ 0x9007a, 0x42 },
+-	{ 0x9007b, 0x633 },
+-	{ 0x9007c, 0x149 },
+-	{ 0x9007d, 0x1 },
+-	{ 0x9007e, 0x633 },
+-	{ 0x9007f, 0x149 },
+-	{ 0x90080, 0x0 },
+-	{ 0x90081, 0xe0 },
+-	{ 0x90082, 0x109 },
+-	{ 0x90083, 0xa },
+-	{ 0x90084, 0x10 },
+-	{ 0x90085, 0x109 },
+-	{ 0x90086, 0x9 },
+-	{ 0x90087, 0x3c0 },
+-	{ 0x90088, 0x149 },
+-	{ 0x90089, 0x9 },
+-	{ 0x9008a, 0x3c0 },
+-	{ 0x9008b, 0x159 },
+-	{ 0x9008c, 0x18 },
+-	{ 0x9008d, 0x10 },
+-	{ 0x9008e, 0x109 },
+-	{ 0x9008f, 0x0 },
+-	{ 0x90090, 0x3c0 },
+-	{ 0x90091, 0x109 },
+-	{ 0x90092, 0x18 },
+-	{ 0x90093, 0x4 },
+-	{ 0x90094, 0x48 },
+-	{ 0x90095, 0x18 },
+-	{ 0x90096, 0x4 },
+-	{ 0x90097, 0x58 },
+-	{ 0x90098, 0xb },
+-	{ 0x90099, 0x10 },
+-	{ 0x9009a, 0x109 },
+-	{ 0x9009b, 0x1 },
+-	{ 0x9009c, 0x10 },
+-	{ 0x9009d, 0x109 },
+-	{ 0x9009e, 0x5 },
+-	{ 0x9009f, 0x7c0 },
+-	{ 0x900a0, 0x109 },
+-	{ 0x900a1, 0x0 },
+-	{ 0x900a2, 0x8140 },
+-	{ 0x900a3, 0x10c },
+-	{ 0x900a4, 0x10 },
+-	{ 0x900a5, 0x8138 },
+-	{ 0x900a6, 0x10c },
+-	{ 0x900a7, 0x8 },
+-	{ 0x900a8, 0x7c8 },
+-	{ 0x900a9, 0x101 },
+-	{ 0x900aa, 0x8 },
+-	{ 0x900ab, 0x448 },
+-	{ 0x900ac, 0x109 },
+-	{ 0x900ad, 0xf },
+-	{ 0x900ae, 0x7c0 },
+-	{ 0x900af, 0x109 },
+-	{ 0x900b0, 0x47 },
+-	{ 0x900b1, 0x630 },
+-	{ 0x900b2, 0x109 },
+-	{ 0x900b3, 0x8 },
+-	{ 0x900b4, 0x618 },
+-	{ 0x900b5, 0x109 },
+-	{ 0x900b6, 0x8 },
+-	{ 0x900b7, 0xe0 },
+-	{ 0x900b8, 0x109 },
+-	{ 0x900b9, 0x0 },
+-	{ 0x900ba, 0x7c8 },
+-	{ 0x900bb, 0x109 },
+-	{ 0x900bc, 0x8 },
+-	{ 0x900bd, 0x8140 },
+-	{ 0x900be, 0x10c },
+-	{ 0x900bf, 0x0 },
+-	{ 0x900c0, 0x1 },
+-	{ 0x900c1, 0x8 },
+-	{ 0x900c2, 0x8 },
+-	{ 0x900c3, 0x4 },
+-	{ 0x900c4, 0x8 },
+-	{ 0x900c5, 0x8 },
+-	{ 0x900c6, 0x7c8 },
+-	{ 0x900c7, 0x101 },
+-	{ 0x90006, 0x0 },
+-	{ 0x90007, 0x0 },
+-	{ 0x90008, 0x8 },
+-	{ 0x90009, 0x0 },
+-	{ 0x9000a, 0x0 },
+-	{ 0x9000b, 0x0 },
+-	{ 0xd00e7, 0x400 },
+-	{ 0x90017, 0x0 },
+-	{ 0x90026, 0x2b },
+-	{ 0x2000b, 0x4b },
+-	{ 0x2000c, 0x96 },
+-	{ 0x2000d, 0x5dc },
+-	{ 0x2000e, 0x2c },
+-	{ 0x12000b, 0x21 },
+-	{ 0x12000c, 0x42 },
+-	{ 0x12000d, 0x29a },
+-	{ 0x12000e, 0x21 },
+-	{ 0x9000c, 0x0 },
+-	{ 0x9000d, 0x173 },
+-	{ 0x9000e, 0x60 },
+-	{ 0x9000f, 0x6110 },
+-	{ 0x90010, 0x2152 },
+-	{ 0x90011, 0xdfbd },
+-	{ 0x90012, 0xffff },
+-	{ 0x90013, 0x6152 },
+-	{ 0x20089, 0x1 },
+-	{ 0x20088, 0x19 },
+-	{ 0xc0080, 0x0 },
+-	{ 0xd0000, 0x1 },
+-};
+-
+-static struct dram_fsp_msg ddr_dram_fsp_msg[] = {
+-	{
+-		/* P0 2400mts 1D */
+-		.drate = 2400,
+-		.fw_type = FW_1D_IMAGE,
+-		.fsp_cfg = ddr_fsp0_cfg,
+-		.fsp_cfg_num = ARRAY_SIZE(ddr_fsp0_cfg),
+-	},
+-	{
+-		/* P1 1066mts 1D */
+-		.drate = 1066,
+-		.fw_type = FW_1D_IMAGE,
+-		.fsp_cfg = ddr_fsp1_cfg,
+-		.fsp_cfg_num = ARRAY_SIZE(ddr_fsp1_cfg),
+-	},
+-	{
+-		/* P0 2400mts 2D */
+-		.drate = 2400,
+-		.fw_type = FW_2D_IMAGE,
+-		.fsp_cfg = ddr_fsp0_2d_cfg,
+-		.fsp_cfg_num = ARRAY_SIZE(ddr_fsp0_2d_cfg),
+-	},
+-};
+-
+-/* ddr timing config params */
+-struct dram_timing_info dram_timing = {
+-	.ddrc_cfg = ddr_ddrc_cfg,
+-	.ddrc_cfg_num = ARRAY_SIZE(ddr_ddrc_cfg),
+-	.ddrphy_cfg = ddr_ddrphy_cfg,
+-	.ddrphy_cfg_num = ARRAY_SIZE(ddr_ddrphy_cfg),
+-	.fsp_msg = ddr_dram_fsp_msg,
+-	.fsp_msg_num = ARRAY_SIZE(ddr_dram_fsp_msg),
+-	.ddrphy_pie = ddr_phy_pie,
+-	.ddrphy_pie_num = ARRAY_SIZE(ddr_phy_pie),
+-	.fsp_table = { 2400, 1066, },
+-};
+diff --git a/board/variscite/imx8mn_var_som/imx8mn_var_som.c b/board/variscite/imx8mn_var_som/imx8mn_var_som.c
+deleted file mode 100644
+index e274e0e0a4c..00000000000
+--- a/board/variscite/imx8mn_var_som/imx8mn_var_som.c
++++ /dev/null
+@@ -1,30 +0,0 @@
+-// SPDX-License-Identifier: GPL-2.0+
+-/*
+- * Copyright 2021 Collabora Ltd.
+- */
+-
+-#include <common.h>
+-#include <env.h>
+-#include <asm/io.h>
+-
+-static void setup_fec(void)
+-{
+-	struct iomuxc_gpr_base_regs *gpr =
+-		(struct iomuxc_gpr_base_regs *)IOMUXC_GPR_BASE_ADDR;
+-
+-	/* Use 125M anatop REF_CLK1 for ENET1, not from external */
+-	clrsetbits_le32(&gpr->gpr[1], 0x2000, 0);
+-}
+-
+-int board_init(void)
+-{
+-	if (CONFIG_IS_ENABLED(FEC_MXC))
+-		setup_fec();
+-
+-	return 0;
+-}
+-
+-int board_mmc_get_env_dev(int devno)
+-{
+-	return devno;
+-}
+diff --git a/board/variscite/imx8mn_var_som/spl.c b/board/variscite/imx8mn_var_som/spl.c
+deleted file mode 100644
+index 32703c5f0b3..00000000000
+--- a/board/variscite/imx8mn_var_som/spl.c
++++ /dev/null
+@@ -1,93 +0,0 @@
+-// SPDX-License-Identifier: GPL-2.0+
+-/*
+- * Copyright 2021 Collabora Ltd.
+- *
+- */
+-
+-#include <hang.h>
+-#include <init.h>
+-#include <spl.h>
+-#include <asm/arch/clock.h>
+-#include <asm/arch/ddr.h>
+-#include <asm/arch/imx8mn_pins.h>
+-#include <asm/arch/sys_proto.h>
+-#include <asm/mach-imx/boot_mode.h>
+-#include <asm/mach-imx/gpio.h>
+-#include <dm/device.h>
+-#include <dm/uclass.h>
+-
+-int spl_board_boot_device(enum boot_device boot_dev_spl)
+-{
+-	return BOOT_DEVICE_BOOTROM;
+-}
+-
+-void spl_dram_init(void)
+-{
+-	ddr_init(&dram_timing);
+-}
+-
+-void spl_board_init(void)
+-{
+-	struct udevice *dev;
+-	int ret;
+-
+-	debug("Normal Boot\n");
+-
+-	ret = uclass_get_device_by_name(UCLASS_CLK,
+-					"clock-controller@30380000",
+-					&dev);
+-	if (ret < 0)
+-		puts("Failed to find clock node. Check device tree\n");
+-}
+-
+-#define UART_PAD_CTRL	(PAD_CTL_DSE6 | PAD_CTL_FSEL1)
+-#define WDOG_PAD_CTRL	(PAD_CTL_DSE6 | PAD_CTL_ODE | PAD_CTL_PUE | PAD_CTL_PE)
+-
+-static const iomux_v3_cfg_t uart_pads[] = {
+-	IMX8MN_PAD_UART4_RXD__UART4_DCE_RX | MUX_PAD_CTRL(UART_PAD_CTRL),
+-	IMX8MN_PAD_UART4_TXD__UART4_DCE_TX | MUX_PAD_CTRL(UART_PAD_CTRL),
+-};
+-
+-static const iomux_v3_cfg_t wdog_pads[] = {
+-	IMX8MN_PAD_GPIO1_IO02__WDOG1_WDOG_B | MUX_PAD_CTRL(WDOG_PAD_CTRL),
+-};
+-
+-int board_early_init_f(void)
+-{
+-	struct wdog_regs *wdog = (struct wdog_regs *)WDOG1_BASE_ADDR;
+-
+-	imx_iomux_v3_setup_multiple_pads(wdog_pads, ARRAY_SIZE(wdog_pads));
+-	set_wdog_reset(wdog);
+-
+-	imx_iomux_v3_setup_multiple_pads(uart_pads, ARRAY_SIZE(uart_pads));
+-	init_uart_clk(3);
+-
+-	return 0;
+-}
+-
+-void board_init_f(ulong dummy)
+-{
+-	int ret;
+-
+-	/* Clear the BSS. */
+-	memset(__bss_start, 0, __bss_end - __bss_start);
+-
+-	arch_cpu_init();
+-
+-	board_early_init_f();
+-
+-	timer_init();
+-
+-	preloader_console_init();
+-
+-	ret = spl_init();
+-	if (ret) {
+-		debug("spl_init() failed: %d\n", ret);
+-		hang();
+-	}
+-
+-	/* DDR initialization */
+-	spl_dram_init();
+-
+-	board_init_r(NULL, 0);
+-}
+diff --git a/configs/imx8mn_var_som_defconfig b/configs/imx8mn_var_som_defconfig
+deleted file mode 100644
+index 34b31d764b8..00000000000
+--- a/configs/imx8mn_var_som_defconfig
++++ /dev/null
+@@ -1,96 +0,0 @@
+-CONFIG_ARM=y
+-CONFIG_ARCH_IMX8M=y
+-CONFIG_SYS_TEXT_BASE=0x40200000
+-CONFIG_SYS_MALLOC_LEN=0x2000000
+-CONFIG_SYS_MALLOC_F_LEN=0x10000
+-CONFIG_SPL_GPIO=y
+-CONFIG_SPL_LIBCOMMON_SUPPORT=y
+-CONFIG_SPL_LIBGENERIC_SUPPORT=y
+-CONFIG_NR_DRAM_BANKS=1
+-CONFIG_ENV_SIZE=0x2000
+-CONFIG_ENV_OFFSET=0xFFFFDE00
+-CONFIG_DM_GPIO=y
+-CONFIG_DEFAULT_DEVICE_TREE="imx8mn-var-som-symphony"
+-CONFIG_SPL_TEXT_BASE=0x912000
+-CONFIG_TARGET_IMX8MN_VAR_SOM=y
+-CONFIG_SPL_MMC=y
+-CONFIG_SPL_SERIAL=y
+-CONFIG_SPL_DRIVERS_MISC=y
+-CONFIG_SPL_SYS_MALLOC_F_LEN=0x2000
+-CONFIG_SPL=y
+-CONFIG_SPL_IMX_ROMAPI_LOADADDR=0x48000000
+-CONFIG_DISTRO_DEFAULTS=y
+-CONFIG_SYS_LOAD_ADDR=0x40480000
+-CONFIG_FIT=y
+-CONFIG_FIT_EXTERNAL_OFFSET=0x3000
+-CONFIG_SPL_LOAD_FIT=y
+-# CONFIG_USE_SPL_FIT_GENERATOR is not set
+-CONFIG_OF_SYSTEM_SETUP=y
+-CONFIG_DEFAULT_FDT_FILE="freescale/imx8mn-var-som-symphony.dtb"
+-CONFIG_ARCH_MISC_INIT=y
+-CONFIG_SPL_BOARD_INIT=y
+-CONFIG_SPL_BOOTROM_SUPPORT=y
+-CONFIG_SPL_SEPARATE_BSS=y
+-CONFIG_SPL_I2C=y
+-CONFIG_SPL_POWER=y
+-CONFIG_SPL_WATCHDOG=y
+-CONFIG_SYS_PROMPT="> "
+-CONFIG_CMD_FUSE=y
+-CONFIG_CMD_MMC=y
+-CONFIG_CMD_USB=y
+-CONFIG_CMD_USB_MASS_STORAGE=y
+-CONFIG_OF_CONTROL=y
+-CONFIG_SPL_OF_CONTROL=y
+-CONFIG_ENV_IS_IN_MMC=y
+-CONFIG_SYS_RELOC_GD_ENV_ADDR=y
+-CONFIG_SYS_MMC_ENV_DEV=2
+-CONFIG_SYS_MMC_ENV_PART=1
+-CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG=y
+-CONFIG_NET_RANDOM_ETHADDR=y
+-CONFIG_SPL_DM=y
+-CONFIG_REGMAP=y
+-CONFIG_SYSCON=y
+-CONFIG_SPL_CLK_IMX8MN=y
+-CONFIG_CLK_IMX8MN=y
+-CONFIG_USB_FUNCTION_FASTBOOT=y
+-CONFIG_FASTBOOT_BUF_ADDR=0x40480000
+-CONFIG_FASTBOOT_BUF_SIZE=0x20000000
+-CONFIG_FASTBOOT_FLASH=y
+-CONFIG_FASTBOOT_UUU_SUPPORT=y
+-CONFIG_FASTBOOT_FLASH_MMC_DEV=2
+-CONFIG_MXC_GPIO=y
+-CONFIG_DM_I2C=y
+-CONFIG_SUPPORT_EMMC_BOOT=y
+-CONFIG_MMC_IO_VOLTAGE=y
+-CONFIG_MMC_UHS_SUPPORT=y
+-CONFIG_MMC_HS400_ES_SUPPORT=y
+-CONFIG_MMC_HS400_SUPPORT=y
+-CONFIG_FSL_USDHC=y
+-CONFIG_PHYLIB=y
+-CONFIG_PHY_ATHEROS=y
+-CONFIG_DM_ETH=y
+-CONFIG_PHY_GIGE=y
+-CONFIG_FEC_MXC=y
+-CONFIG_MII=y
+-CONFIG_PINCTRL=y
+-CONFIG_SPL_PINCTRL=y
+-CONFIG_PINCTRL_IMX8M=y
+-CONFIG_DM_PMIC=y
+-CONFIG_DM_PMIC_BD71837=y
+-CONFIG_SPL_DM_PMIC_BD71837=y
+-CONFIG_DM_REGULATOR=y
+-CONFIG_DM_REGULATOR_FIXED=y
+-CONFIG_DM_REGULATOR_GPIO=y
+-CONFIG_MXC_UART=y
+-CONFIG_SYSRESET=y
+-CONFIG_SYSRESET_PSCI=y
+-CONFIG_SYSRESET_WATCHDOG=y
+-CONFIG_USB=y
+-CONFIG_USB_EHCI_HCD=y
+-CONFIG_USB_GADGET=y
+-CONFIG_USB_GADGET_MANUFACTURER="FSL"
+-CONFIG_USB_GADGET_VENDOR_NUM=0x0525
+-CONFIG_USB_GADGET_PRODUCT_NUM=0xa4a5
+-CONFIG_CI_UDC=y
+-CONFIG_IMX_WATCHDOG=y
+-CONFIG_OF_LIBFDT_OVERLAY=y
+diff --git a/doc/board/index.rst b/doc/board/index.rst
+index f7bfc441f7c..0e4b3ecf18b 100644
+--- a/doc/board/index.rst
++++ b/doc/board/index.rst
+@@ -38,6 +38,5 @@ Board-specific doc
+    tbs/index
+    ti/index
+    toradex/index
+-   variscite/index
+    xen/index
+    xilinx/index
+diff --git a/doc/board/variscite/imx8mn_var_som.rst b/doc/board/variscite/imx8mn_var_som.rst
+deleted file mode 100644
+index aca881ea314..00000000000
+--- a/doc/board/variscite/imx8mn_var_som.rst
++++ /dev/null
+@@ -1,56 +0,0 @@
+-.. SPDX-License-Identifier: GPL-2.0+
+-
+-imx8mn_var_som
+-==============
+-
+-U-Boot for the Variscite VAR-SOM-MX8MN Symphony evaluation board
+-
+-Quick Start
+------------
+-
+-- Build the ARM Trusted firmware binary
+-- Get firmware-imx package
+-- Build U-Boot
+-- Boot
+-
+-Get and Build the ARM Trusted firmware
+---------------------------------------
+-
+-Note: srctree is U-Boot source directory
+-Get ATF from: https://github.com/ARM-software/arm-trusted-firmware
+-tag: v2.5
+-
+-.. code-block:: bash
+-
+-   $ make PLAT=imx8mn IMX_BOOT_UART_BASE=0x30a60000 bl31
+-   $ cp build/imx8mn/release/bl31.bin $(srctree)
+-
+-Get the ddr firmware
+---------------------
+-
+-.. code-block:: bash
+-
+-   $ wget https://www.nxp.com/lgfiles/NMG/MAD/YOCTO/firmware-imx-8.9.bin
+-   $ chmod +x firmware-imx-8.9.bin
+-   $ ./firmware-imx-8.9
+-   $ cp firmware-imx-8.9/firmware/ddr/synopsys/ddr4*.bin $(srctree)
+-
+-Build U-Boot
+-------------
+-
+-.. code-block:: bash
+-
+-   $ export CROSS_COMPILE=aarch64-linux-gnu-
+-   $ make imx8mn_var_som_defconfig
+-   $ make
+-
+-Burn the flash.bin to MicroSD card offset 32KB:
+-
+-.. code-block:: bash
+-
+-   $ dd if=flash.bin of=/dev/sd[x] bs=1024 seek=32 conv=notrunc
+-
+-Boot
+-----
+-
+-Set Boot switch to SD boot
+diff --git a/doc/board/variscite/index.rst b/doc/board/variscite/index.rst
+deleted file mode 100644
+index 4186896b66d..00000000000
+--- a/doc/board/variscite/index.rst
++++ /dev/null
+@@ -1,9 +0,0 @@
+-.. SPDX-License-Identifier: GPL-2.0+
+-
+-Variscite
+-=========
+-
+-.. toctree::
+-   :maxdepth: 2
+-
+-   imx8mn_var_som
+diff --git a/include/configs/imx8mn_var_som.h b/include/configs/imx8mn_var_som.h
+deleted file mode 100644
+index 1e800f0ecc0..00000000000
+--- a/include/configs/imx8mn_var_som.h
++++ /dev/null
+@@ -1,90 +0,0 @@
+-/* SPDX-License-Identifier: GPL-2.0+ */
+-/*
+- * Copyright 2021 Collabora Ltd.
+- */
+-
+-#ifndef __IMX8MN_VAR_SOM_H
+-#define __IMX8MN_VAR_SOM_H
+-
+-#include <linux/sizes.h>
+-#include <linux/stringify.h>
+-#include <asm/arch/imx-regs.h>
+-
+-#define CONFIG_SYS_BOOTM_LEN		(32 * SZ_1M)
+-
+-#define CONFIG_SPL_MAX_SIZE		(148 * SZ_1K)
+-#define CONFIG_SYS_MONITOR_LEN		SZ_512K
+-#define CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_USE_SECTOR
+-#define CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_SECTOR		0x300
+-#define CONFIG_SYS_UBOOT_BASE	\
+-	(QSPI0_AMBA_BASE + CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_SECTOR * 512)
+-
+-#define CONFIG_SPL_STACK		0x980000
+-#define CONFIG_SPL_BSS_START_ADDR	0x950000
+-#define CONFIG_SPL_BSS_MAX_SIZE		SZ_8K
+-#define CONFIG_SYS_SPL_MALLOC_START	0x42200000
+-#define CONFIG_SYS_SPL_MALLOC_SIZE	SZ_512K
+-
+-#define BOOT_TARGET_DEVICES(func) \
+-	func(MMC, mmc, 1) \
+-	func(MMC, mmc, 2) \
+-	func(MMC, mmc, 0) \
+-	func(PXE, pxe, na) \
+-	func(DHCP, dhcp, na) \
+-
+-#include <config_distro_bootcmd.h>
+-
+-/* ENET */
+-#if defined(CONFIG_FEC_MXC)
+-#define CONFIG_ETHPRIME			"FEC"
+-#define CONFIG_FEC_XCV_TYPE		RGMII
+-#endif /* CONFIG_FEC_MXC */
+-
+-#define MEM_LAYOUT_ENV_SETTINGS \
+-	"scriptaddr=" __stringify(CONFIG_SYS_LOAD_ADDR) "\0" \
+-	"kernel_addr_r=" __stringify(CONFIG_SYS_LOAD_ADDR) "\0" \
+-	"ramdisk_addr_r=0x43800000\0" \
+-	"fdt_addr_r=0x43000000\0" \
+-	"fdtfile=" CONFIG_DEFAULT_FDT_FILE "\0" \
+-	"fastboot_partition_alias_all=" \
+-		__stringify(CONFIG_FASTBOOT_FLASH_MMC_DEV) ".0:0\0" \
+-	"fastboot_partition_alias_bootloader=" \
+-		__stringify(CONFIG_FASTBOOT_FLASH_MMC_DEV) ".1:0\0" \
+-	"emmc_dev=" __stringify(CONFIG_FASTBOOT_FLASH_MMC_DEV) "\0" \
+-	"emmc_ack=1\0" \
+-	"pxefile_addr_r=" __stringify(CONFIG_SYS_LOAD_ADDR) "\0" \
+-
+-/* Initial environment variables */
+-#define CONFIG_EXTRA_ENV_SETTINGS \
+-	MEM_LAYOUT_ENV_SETTINGS \
+-	BOOTENV
+-
+-/* Link Definitions */
+-
+-#define CONFIG_SYS_INIT_RAM_ADDR	0x40000000
+-#define CONFIG_SYS_INIT_RAM_SIZE	SZ_512K
+-#define CONFIG_SYS_INIT_SP_OFFSET \
+-	(CONFIG_SYS_INIT_RAM_SIZE - GENERATED_GBL_DATA_SIZE)
+-#define CONFIG_SYS_INIT_SP_ADDR \
+-	(CONFIG_SYS_INIT_RAM_ADDR + CONFIG_SYS_INIT_SP_OFFSET)
+-
+-#define CONFIG_SYS_SDRAM_BASE		0x40000000
+-#define PHYS_SDRAM			0x40000000
+-#define PHYS_SDRAM_SIZE			SZ_1G /* 1GB DDR */
+-
+-#define CONFIG_MXC_UART_BASE		UART4_BASE_ADDR
+-
+-/* Monitor Command Prompt */
+-#define CONFIG_SYS_CBSIZE		SZ_2K
+-#define CONFIG_SYS_MAXARGS		64
+-#define CONFIG_SYS_BARGSIZE		CONFIG_SYS_CBSIZE
+-#define CONFIG_SYS_PBSIZE		(CONFIG_SYS_CBSIZE + \
+-					 sizeof(CONFIG_SYS_PROMPT) + 16)
+-
+-/* USDHC */
+-#define CONFIG_SYS_FSL_ESDHC_ADDR	0
+-
+-/* I2C */
+-#define CONFIG_SYS_I2C_SPEED		400000
+-
+-#endif /* __IMX8MN_VAR_SOM_H */
+-- 
+2.34.1
+
