@@ -1,0 +1,45 @@
+From 36f41a5f38d21461318cd0254a36cadd2bb4c5b7 Mon Sep 17 00:00:00 2001
+From: Alifer Moraes <alifer.m@variscite.com>
+Date: Wed, 5 Oct 2022 12:01:52 -0300
+Subject: [PATCH 02/15] imx8m: dram: Add an empty entry for OPTEE at MMU table
+
+When OPTEE is enabled, it splits the physical memory, needing an extra
+entry at the MMU table for that. Variscite's boards gets its DRAM size
+dinamically from the EEPROM, not defining the PHYS_SDRAM_2_SIZE macro.
+But the definition of this macro is needed to include the DRAM2 entry
+to the MMU table, and if it is not defined and the board has more than
+3 GB of DRAM, the entry that was supposed to be used for the OPTEE is
+used for the DRAM2, resulting in the board hanging when booting.
+
+The DRAM1 and DRAM2 entries's starting values in the MMU table are
+overwritten according to Variscite EEPROM by the enable_caches()
+function:
+
+https://github.com/varigit/uboot-imx/blob/lf_v2021.04_var03/arch/arm/mach-imx/imx8m/soc.c#L196-#L207
+
+Signed-off-by: Alifer Moraes <alifer.m@variscite.com>
+(cherry picked from commit 3f243bb1fe5a50fe5ad0086495342e58fa3681a0)
+(cherry picked from commit 6914b6f539e45b49f9621da8eb5bfa82b7f74248)
+Signed-off-by: Vanessa Maegima <vanessa.maegima@foundries.io>
+---
+ arch/arm/mach-imx/imx8m/soc.c | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/arch/arm/mach-imx/imx8m/soc.c b/arch/arm/mach-imx/imx8m/soc.c
+index b6661d90ac4..e30402d162c 100644
+--- a/arch/arm/mach-imx/imx8m/soc.c
++++ b/arch/arm/mach-imx/imx8m/soc.c
+@@ -172,6 +172,10 @@ static struct mm_region imx8m_mem_map[] = {
+ #else
+ 			 PTE_BLOCK_OUTER_SHARE
+ #endif
++#else
++	}, {
++		/* empty entry to be filled in enable_caches(void) when SoM has >= 3GB of DRAM as configured by board/variscite/common/imx8_dram.c according to Variscite EEPROM */
++		0,
+ #endif
+ 	}, {
+ 		/* empty entrie to split table entry 5 if needed when TEEs are used */
+-- 
+2.34.1
+

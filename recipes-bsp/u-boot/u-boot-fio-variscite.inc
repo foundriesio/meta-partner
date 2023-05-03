@@ -12,6 +12,9 @@ SRC_URI:append:mx8m-var = " \
     file://0012-variscite-Add-common-DRAM-code.patch \
     file://0014-variscite-imx8-Add-common-dram-code.patch \
     file://0018-usb-gadget-Fix-ethernet-gadget-compilation-failure.patch \
+    file://0019-imx8m-soc.c-fixed-duplicate-definition-of-get_effect.patch \
+    file://0020-imx8m-dram-Add-an-empty-entry-for-OPTEE-at-MMU-table.patch \
+    file://0021-variscite-extcon-ptn5150-add-ptn5150-driver.patch \
 "
 
 SRC_URI:append:imx8mm-var-som-symphony = " \

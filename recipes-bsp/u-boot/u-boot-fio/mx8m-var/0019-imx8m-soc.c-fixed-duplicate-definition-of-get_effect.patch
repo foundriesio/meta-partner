@@ -1,0 +1,41 @@
+From b6b24808dad09813efc322606a3e817a0ff2238d Mon Sep 17 00:00:00 2001
+From: FrancescoFerraro <francesco.f@variscite.com>
+Date: Thu, 18 Nov 2021 10:44:50 +0100
+Subject: [PATCH 01/15] imx8m: soc.c: fixed duplicate definition of
+ get_effective_memsize()
+
+Moved phys_size_t get_effective_memsize(void) under
+      #ifndef CONFIG_IMX8M_BOARD_INIT_DRAM
+This fixes compilation error: multiply definition of get_effective_memsize
+
+Signed-off-by: FrancescoFerraro <francesco.f@variscite.com>
+(cherry picked from commit 41e931344d7c1b63c1eb49a545de28b325a7d2ba)
+(cherry picked from commit 083377231602700a26effe255a17e6c3c22a71ea)
+Signed-off-by: Vanessa Maegima <vanessa.maegima@foundries.io>
+---
+ arch/arm/mach-imx/imx8m/soc.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/arm/mach-imx/imx8m/soc.c b/arch/arm/mach-imx/imx8m/soc.c
+index 54f10677531..b6661d90ac4 100644
+--- a/arch/arm/mach-imx/imx8m/soc.c
++++ b/arch/arm/mach-imx/imx8m/soc.c
+@@ -309,7 +309,6 @@ int dram_init_banksize(void)
+ 
+ 	return 0;
+ }
+-#endif
+ 
+ phys_size_t get_effective_memsize(void)
+ {
+@@ -339,6 +338,7 @@ phys_size_t get_effective_memsize(void)
+ 		return PHYS_SDRAM_SIZE;
+ 	}
+ }
++#endif
+ 
+ static u32 get_cpu_variant_type(u32 type)
+ {
+-- 
+2.34.1
+
