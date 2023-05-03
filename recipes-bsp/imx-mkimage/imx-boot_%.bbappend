@@ -1,10 +1,10 @@
 FILESEXTRAPATHS:prepend := "${THISDIR}/${PN}:"
 
-SRC_URI:append:mx8m = " \
+SRC_URI:append:mx8m-var = " \
     file://0001-imx-mkimage-imx8m-soc.mak-add-variscite-support-for-.patch \
 "
 
-do_compile:prepend:mx8() {
+do_compile:prepend:mx8m-var() {
     for target in ${IMXBOOT_TARGETS}; do
         if [ "${target}" = "flash_evk_spl_var" ]; then
             # copy u-boot-spl-nodtb instead of u-boot-spl.bin as we need to have
