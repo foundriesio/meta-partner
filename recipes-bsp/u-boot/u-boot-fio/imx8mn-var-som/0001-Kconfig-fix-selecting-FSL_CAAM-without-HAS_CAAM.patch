@@ -1,0 +1,41 @@
+From 3b38ac5abe04bfbab9d21bb7f965e9a7a4adfe23 Mon Sep 17 00:00:00 2001
+From: Michael Scott <mike@foundries.io>
+Date: Fri, 5 May 2023 19:15:57 -0700
+Subject: [PATCH] Kconfig: fix selecting FSL_CAAM without HAS_CAAM
+
+This fixes TARGET_IMX8MN_VAR_SOM and TARGET_IMX8MP_VAR_DART
+
+Signed-off-by: Michael Scott <mike@foundries.io>
+---
+ arch/arm/mach-imx/imx8m/Kconfig | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/arch/arm/mach-imx/imx8m/Kconfig b/arch/arm/mach-imx/imx8m/Kconfig
+index 7b28668a754..c1917706185 100644
+--- a/arch/arm/mach-imx/imx8m/Kconfig
++++ b/arch/arm/mach-imx/imx8m/Kconfig
+@@ -227,8 +227,8 @@ config TARGET_IMX8MN_VAR_SOM
+ 	select SUPPORT_SPL
+ 	select IMX8M_DDR4
+ 	select IMX8M_BOARD_INIT_DRAM
+-	select FSL_CAAM
+-	select FSL_BLOB
++	imply FSL_CAAM
++	imply FSL_BLOB
+ 	select MISC
+ 	select SPL_CRYPTO_SUPPORT if SPL
+ 	select IMX_REDUCE_DMEM_PADDING
+@@ -320,8 +320,8 @@ config TARGET_IMX8MP_VAR_DART
+ 	select SUPPORT_SPL
+ 	select IMX8M_LPDDR4
+ 	select IMX8M_BOARD_INIT_DRAM
+-	select FSL_CAAM
+-	select FSL_BLOB
++	imply FSL_CAAM
++	imply FSL_BLOB
+ 	select ARCH_MISC_INIT
+ 	select SPL_CRYPTO if SPL
+ 	select IMX_REDUCE_DMEM_PADDING
+-- 
+2.40.1
+

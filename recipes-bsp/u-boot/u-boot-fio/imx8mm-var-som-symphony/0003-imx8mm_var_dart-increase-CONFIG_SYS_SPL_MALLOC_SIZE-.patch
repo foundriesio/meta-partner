@@ -1,0 +1,36 @@
+From b856eedfefbc708836e16000a44dd3cd281bf9a5 Mon Sep 17 00:00:00 2001
+From: Michael Scott <mike@foundries.io>
+Date: Mon, 8 May 2023 16:37:31 -0700
+Subject: [PATCH 3/3] imx8mm_var_dart: increase CONFIG_SYS_SPL_MALLOC_SIZE to
+ 16MB
+
+commit 03f1f78a9b44 ("spl: fit: Prefer a malloc()'d buffer for loading
+images")' changed the way buffer allocation worked for SPL to a more
+flexible method.
+
+When loading a complex u-boot FIT image (e.g. with TF-A, OP-TEE and
+U-Boot proper) it is required larger buffer, since such FIT can easily
+go over 10MB.
+
+Ported from imx8mm_evk by: Ricardo Salveti <ricardo@foundries.io>
+Signed-off-by: Michael Scott <mike@foundries.io>
+---
+ include/configs/imx8mm_var_dart.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/include/configs/imx8mm_var_dart.h b/include/configs/imx8mm_var_dart.h
+index 440cdb0ee82..f60d069ab0c 100644
+--- a/include/configs/imx8mm_var_dart.h
++++ b/include/configs/imx8mm_var_dart.h
+@@ -33,7 +33,7 @@
+ #define CONFIG_SPL_BSS_START_ADDR	0x910000
+ #define CONFIG_SPL_BSS_MAX_SIZE		SZ_8K	/* 8 KB */
+ #define CONFIG_SYS_SPL_MALLOC_START	0x42200000
+-#define CONFIG_SYS_SPL_MALLOC_SIZE	SZ_512K	/* 512 KB */
++#define CONFIG_SYS_SPL_MALLOC_SIZE	SZ_16M
+ 
+ /* malloc f used before GD_FLG_FULL_MALLOC_INIT set */
+ #define CONFIG_MALLOC_F_ADDR		0x930000
+-- 
+2.40.1
+

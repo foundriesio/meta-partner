@@ -1,41 +1,22 @@
-SRC_URI:append:mx8m-var = " \
-    file://0001-imx8m-drivers-ddr-Add-support-for-specifying-DDR-PHY.patch \
-    file://0003-pmic-bd71837-Produce-less-verbose-output.patch \
-    file://0004-usb-ehci-mx6-Fix-USB-type-detection.patch \
-    file://0005-serial-mxc-Make-mxc_base-modifiable-by-external-code.patch \
-    file://0006-imx8m-dram-Allow-overriding-DRAM-init-routines-in-bo.patch \
-    file://0007-imx8m-dram-Use-maximum-possible-DRAM-bank-sizes.patch \
-    file://0008-variscite-Add-common-MMC-code.patch \
-    file://0009-variscite-Add-common-video-code.patch \
-    file://0010-variscite-Add-common-ethernet-code.patch \
-    file://0011-variscite-Add-common-EEPROM-code.patch \
-    file://0012-variscite-Add-common-DRAM-code.patch \
-    file://0014-variscite-imx8-Add-common-dram-code.patch \
-    file://0018-usb-gadget-Fix-ethernet-gadget-compilation-failure.patch \
-    file://0019-imx8m-soc.c-fixed-duplicate-definition-of-get_effect.patch \
-    file://0020-imx8m-dram-Add-an-empty-entry-for-OPTEE-at-MMU-table.patch \
-    file://0021-variscite-extcon-ptn5150-add-ptn5150-driver.patch \
-"
+UBOOT_REPO = "git://github.com/varigit/uboot-imx.git"
+SRCREV = "e79288da3ae864dd6a05e7ed84f6f600f1d8cd97"
+SRCREV:imx8mm-var-som-symphony = "49ec7c516ad2ad0c8a352cad5de69a5ac26c752c"
+SRCBRANCH = "lf_v2022.04_var02"
+SRCBRANCH:imx8mm-var-som-symphony = "lf_v2022.04_var01"
+LIC_FILES_CHKSUM = "file://Licenses/README;md5=5a7450c57ffe5ae63fd732446b988025"
 
 SRC_URI:append:imx8mm-var-som-symphony = " \
-    file://0001-imx8mm_var_dart-Add-support-for-Variscite-DART-MX8M-.patch \
-    file://0002-imx8mm_var_dart-align-with-the-reference-NXP-EVK.patch \
-    file://0003-imx8mm_var_dart-add-cma_name.patch \
-    file://0004-imx8mm_var_dart-set-CONFIG_SYS_LOAD_ADDR-as-in-lf_v2.patch \
-    file://0005-imx8mm_var_dart-align-with-the-nxp-defconfig-to-fix-.patch \
-    file://0006-imx8mm_var_dart-disable-CONFIG_EFI_MM_COMM_TEE.patch \
-    file://0007-imx8mm_var_dart-disable-EFI-flags.patch \
-    file://0008-imx8mm_var_dart-allow-cma-address-to-be-dynamically-.patch \
-    file://0009-imx8mm_var_dart-reduce-cma-size-for-1GB-SOM.patch \
-    file://0010-imx8mm_var_dart-adjust-ddrc_opp_table-for-DDR4-on-VA.patch \
-    file://0011-imx8mm_var_dart-Drop-redundant-legacy-DT-file.patch \
-    file://0012-imx8mm_var_dart-disable-OPTEE-lib-by-default.patch \
+    file://0001-Kconfig-fix-selecting-FSL_CAAM-without-HAS_CAAM.patch \
+    file://0001-imx8mm_var_dart-runtime-image-offset-detection-for-i.patch \
+    file://0002-imx8mm_var_dart-define-default-dfu_alt_info-for-emmc.patch \
+    file://0003-imx8mm_var_dart-increase-CONFIG_SYS_SPL_MALLOC_SIZE-.patch \
 "
 
 SRC_URI:append:imx8mn-var-som = " \
-    file://0001-Revert-imx8mn_var_som-Add-support-for-Variscite-VAR-.patch \
-    file://0002-Add-support-for-Variscite-s-VAR-SOM-MX8M-NANO.patch \
-    file://0003-imx8mn_var_som-align-with-the-reference-NXP-EVK.patch \
-    file://0004-mach-imx8m-imx8mn_var_som-select-IMX_REDUCE_DMEM_PAD.patch \
-    file://0001-FIO-internal-board-variscite-imx8mn_var_som-fix-comp.patch \
+    file://0001-Kconfig-fix-selecting-FSL_CAAM-without-HAS_CAAM.patch \
+    file://0001-imx8mn_var_som-runtime-image-offset-detection-for-im.patch \
+    file://0002-imx8mn_var_som-define-default-dfu_alt_info-for-emmc-.patch \
+    file://0003-imx8mn_var_som-board-fix-compilation-errors.patch \
+    file://0004-imx8mn_var_som-increase-CONFIG_SYS_SPL_MALLOC_SIZE-t.patch \
+    file://0005-imx8mn_var_som-adjust-SPL-stack-settings-to-match-im.patch \
 "

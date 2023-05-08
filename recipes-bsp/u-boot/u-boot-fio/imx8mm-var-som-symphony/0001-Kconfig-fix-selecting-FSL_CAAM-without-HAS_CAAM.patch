@@ -1,0 +1,67 @@
+From 469e1f5d6a18b77f10257e09716cc23c76e5103d Mon Sep 17 00:00:00 2001
+From: Michael Scott <mike@foundries.io>
+Date: Mon, 8 May 2023 16:20:30 -0700
+Subject: [PATCH] Kconfig: fix selecting FSL_CAAM without HAS_CAAM
+
+This fixes FSL_CAAM dependencies for:
+TARGET_IMX8MQ_VAR_DART
+TARGET_IMX8MM_VAR_DART
+TARGET_IMX8MN_VAR_SOM
+TARGET_IMX8MP_VAR_DART
+
+Signed-off-by: Michael Scott <mike@foundries.io>
+---
+ arch/arm/mach-imx/imx8m/Kconfig | 16 ++++++++--------
+ 1 file changed, 8 insertions(+), 8 deletions(-)
+
+diff --git a/arch/arm/mach-imx/imx8m/Kconfig b/arch/arm/mach-imx/imx8m/Kconfig
+index 2b6a9d2506b..ac121b7dc1f 100644
+--- a/arch/arm/mach-imx/imx8m/Kconfig
++++ b/arch/arm/mach-imx/imx8m/Kconfig
+@@ -91,8 +91,8 @@ config TARGET_IMX8MQ_VAR_DART
+ 	select SUPPORT_SPL
+ 	select IMX8M_LPDDR4
+ 	select IMX8M_BOARD_INIT_DRAM
+-	select FSL_CAAM
+-	select FSL_BLOB
++	imply FSL_CAAM
++	imply FSL_BLOB
+ 	select ARCH_MISC_INIT
+ 	select SPL_CRYPTO_SUPPORT if SPL
+ 
+@@ -167,8 +167,8 @@ config TARGET_IMX8MM_VAR_DART
+ 	select IMX8M_DDR4
+ 	select IMX8M_LPDDR4
+ 	select IMX8M_BOARD_INIT_DRAM
+-	select FSL_CAAM
+-	select FSL_BLOB
++	imply FSL_CAAM
++	imply FSL_BLOB
+ 	select MISC
+ 	select SPL_CRYPTO_SUPPORT if SPL
+ 
+@@ -205,8 +205,8 @@ config TARGET_IMX8MN_VAR_SOM
+ 	select SUPPORT_SPL
+ 	select IMX8M_DDR4
+ 	select IMX8M_BOARD_INIT_DRAM
+-	select FSL_CAAM
+-	select FSL_BLOB
++	imply FSL_CAAM
++	imply FSL_BLOB
+ 	select MISC
+ 	select SPL_CRYPTO_SUPPORT if SPL
+ 
+@@ -297,8 +297,8 @@ config TARGET_IMX8MP_VAR_DART
+ 	select SUPPORT_SPL
+ 	select IMX8M_LPDDR4
+ 	select IMX8M_BOARD_INIT_DRAM
+-	select FSL_CAAM
+-	select FSL_BLOB
++	imply FSL_CAAM
++	imply FSL_BLOB
+ 	select ARCH_MISC_INIT
+ 	select SPL_CRYPTO if SPL
+ 
+-- 
+2.40.1
+
