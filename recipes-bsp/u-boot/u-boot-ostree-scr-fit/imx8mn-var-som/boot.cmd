@@ -1,4 +1,4 @@
-echo "Using variscite_${fdt_file}"
+echo "Using freescale_${fdt_file}"
 
 # Default boot type and device
 setenv bootlimit 3
@@ -8,14 +8,17 @@ setenv bootpart 1
 setenv rootpart 2
 
 # Boot image files
-setenv fdt_file_final variscite_${fdt_file}
+setenv fdt_file_final freescale_${fdt_file}
 setenv fit_addr ${initrd_addr}
 
 # Boot firmware updates
-setenv bootloader 0
-setenv bootloader2 300
-setenv bootloader_s 1042
-setenv bootloader2_s 1300
+
+# Offsets are in blocks (512 bytes each)
+setenv bootloader 0x0
+setenv bootloader2 0x300
+setenv bootloader_s 0x1000
+setenv bootloader2_s 0x1300
+
 setenv bootloader_image "imx-boot"
 setenv bootloader_s_image ${bootloader_image}
 setenv bootloader2_image "u-boot.itb"
