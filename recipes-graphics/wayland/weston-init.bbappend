@@ -1,1 +1,1 @@
-INI_UNCOMMENT_ASSIGNMENTS:remove = "use-g2d=1 "
+INI_UNCOMMENT_ASSIGNMENTS:remove:mx8m-var = "use-g2d=1 "
