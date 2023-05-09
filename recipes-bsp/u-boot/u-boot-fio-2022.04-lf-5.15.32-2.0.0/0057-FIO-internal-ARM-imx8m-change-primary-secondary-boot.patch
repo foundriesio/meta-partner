@@ -1,0 +1,51 @@
+From 7e5a716bea8a40139ee0b8656869f515fca7e698 Mon Sep 17 00:00:00 2001
+From: Igor Opaniuk <igor.opaniuk@foundries.io>
+Date: Thu, 18 Feb 2021 17:41:20 +0200
+Subject: [PATCH 057/233] [FIO internal] ARM: imx8m: change primary/secondary
+ boot modes
+
+Adjust PERSIST_SECONDARY_BOOT bit from GPR10 register so BootROM can
+boot into the right boot path: primary or secondary
+
+Signed-off-by: Igor Opaniuk <igor.opaniuk@foundries.io>
+---
+ arch/arm/include/asm/arch-imx8m/sys_proto.h |  1 +
+ arch/arm/mach-imx/imx8m/soc.c               | 11 +++++++++++
+ 2 files changed, 12 insertions(+)
+
+diff --git a/arch/arm/include/asm/arch-imx8m/sys_proto.h b/arch/arm/include/asm/arch-imx8m/sys_proto.h
+index c005709256b..70f73bb50cb 100644
+--- a/arch/arm/include/asm/arch-imx8m/sys_proto.h
++++ b/arch/arm/include/asm/arch-imx8m/sys_proto.h
+@@ -15,5 +15,6 @@ int imx8m_usb_power(int usb_id, bool on);
+ extern unsigned long rom_pointer[];
+ enum boot_device get_boot_device(void);
+ int boot_mode_getprisec(void);
++void boot_mode_enable_secondary(bool enable);
+ bool is_usb_boot(void);
+ #endif
+diff --git a/arch/arm/mach-imx/imx8m/soc.c b/arch/arm/mach-imx/imx8m/soc.c
+index 2a4f22e3d05..bd5e5e6e644 100644
+--- a/arch/arm/mach-imx/imx8m/soc.c
++++ b/arch/arm/mach-imx/imx8m/soc.c
+@@ -750,6 +750,17 @@ int boot_mode_getprisec(void)
+ 	return !!(readl(&psrc->gpr10) & SRC_GPR10_PERSIST_SECONDARY_BOOT);
+ }
+ 
++void boot_mode_enable_secondary(bool enable)
++{
++	u32 persist_sec = SRC_GPR10_PERSIST_SECONDARY_BOOT;
++	struct src *psrc = (struct src *)SRC_BASE_ADDR;
++
++	if (enable)
++		setbits_le32(&psrc->gpr10, persist_sec);
++	else
++		clrbits_le32(&psrc->gpr10, persist_sec);
++}
++
+ bool is_usb_boot(void)
+ {
+ 	return get_boot_device() == USB_BOOT;
+-- 
+2.40.1
+

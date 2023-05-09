@@ -1,0 +1,31 @@
+From 36006ddee5ffc7452a89985b7669bd7eb2e0c75f Mon Sep 17 00:00:00 2001
+From: Igor Opaniuk <igor.opaniuk@foundries.io>
+Date: Tue, 15 Feb 2022 21:26:23 +0200
+Subject: [PATCH 138/233] [FIO internal] imx8qm-mek: select FSL_CAAM only if
+ HAS_CAAM is y
+
+Select FSL_CAAM and FSL_BLOB only when HAS_CAAM is set.
+
+Signed-off-by: Igor Opaniuk <igor.opaniuk@foundries.io>
+---
+ arch/arm/mach-imx/imx8/Kconfig | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/arch/arm/mach-imx/imx8/Kconfig b/arch/arm/mach-imx/imx8/Kconfig
+index a8b407cd2f1..c02ac957d3b 100644
+--- a/arch/arm/mach-imx/imx8/Kconfig
++++ b/arch/arm/mach-imx/imx8/Kconfig
+@@ -97,8 +97,8 @@ config TARGET_IMX8QM_MEK
+ 	bool "Support i.MX8QM MEK board"
+ 	select BOARD_LATE_INIT
+ 	select IMX8QM
+-	imply FSL_CAAM
+-	imply FSL_BLOB
++	imply FSL_CAAM if HAS_CAAM
++	imply FSL_BLOB if HAS_CAAM
+ 	select ARCH_MISC_INIT
+ 	select SPL_CRYPTO if SPL
+ 
+-- 
+2.40.1
+

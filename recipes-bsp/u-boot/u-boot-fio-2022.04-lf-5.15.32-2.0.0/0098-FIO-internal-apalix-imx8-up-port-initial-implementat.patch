@@ -1,0 +1,773 @@
+From 18992ddcd9b01181336db1f58ab3116b835d5d4e Mon Sep 17 00:00:00 2001
+From: Igor Opaniuk <igor.opaniuk@toradex.com>
+Date: Fri, 31 Jul 2020 23:01:36 +0300
+Subject: [PATCH 098/233] [FIO internal] apalix-imx8: up-port initial
+ implementation
+
+Boot test:
+U-Boot 2020.04-00118-gea539ce4dc-dirty (Jul 31 2020 - 22:57:53 +0300)
+
+CPU:   NXP i.MX8QM RevB A53 at 1200 MHz
+
+DRAM:  4 GiB
+MMC:   FSL_SDHC: 0, FSL_SDHC: 1, FSL_SDHC: 2
+Loading Environment from MMC... OK
+In:    serial@5a070000
+Out:   serial@5a070000
+Err:   serial@5a070000
+Model: Toradex Apalis iMX8 QuadMax 4GB Wi-Fi / BT IT V1.0B, Serial# 06438736
+switch to partitions #0, OK
+-----------------------------------------
+Was tested with:
+imx-mkimage: imx_5.4.24_2.1.0
+imx-scfw: ab182211e("Update .gitignore to ignore our built files...")
+imx-atf: imx_5.4.24_2.1.0
+imx-seco: 3.6.3 [1]
+-----------------------------------------
+
+Set fdt_high to 0xffffffffffffffff in order to avoid copying fdt
+during boot. It fixes allocation error [2].
+
+Note that such solution can't be upstreamed (see [3]).
+
+[1] https://www.nxp.com/lgfiles/NMG/MAD/YOCTO/imx-seco-3.6.3.bin
+[2]
+...
+   Loading fdt from 0x86dd0a38 to 0x83000000
+   Booting using the fdt blob at 0x83000000
+   Uncompressing Kernel Image
+   Loading Ramdisk to fb32c000, end fb67a669 ... OK
+ERROR: Failed to allocate 0x22ff9 bytes below 0xfe000000.
+device tree - allocation error
+FDT creation failed! hanging...### ERROR ### Please RESET the board ###
+...
+[3]
+  https://patchwork.ozlabs.org/project/uboot/patch/20210722154943.127775-2-oleksandr.suvorov@toradex.com/#2723077
+
+Signed-off-by: Igor Opaniuk <igor.opaniuk@toradex.com>
+Co-developed-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+---
+ arch/arm/dts/fsl-imx8qm-apalis-u-boot.dtsi |  75 ++++++++
+ arch/arm/dts/fsl-imx8qm-apalis.dts         |  63 ++++++-
+ board/toradex/apalis-imx8/apalis-imx8.c    | 207 ++++++++++++++++++++-
+ configs/apalis-imx8_defconfig              |  35 +++-
+ include/configs/apalis-imx8.h              |  70 ++++++-
+ 5 files changed, 428 insertions(+), 22 deletions(-)
+
+diff --git a/arch/arm/dts/fsl-imx8qm-apalis-u-boot.dtsi b/arch/arm/dts/fsl-imx8qm-apalis-u-boot.dtsi
+index 956d7249798..e0ee0ec694e 100644
+--- a/arch/arm/dts/fsl-imx8qm-apalis-u-boot.dtsi
++++ b/arch/arm/dts/fsl-imx8qm-apalis-u-boot.dtsi
+@@ -2,6 +2,32 @@
+ /*
+  * Copyright 2019 Toradex AG
+  */
++/ {
++	aliases {
++		usbhost1 = &usbh3;
++		usbgadget0 = &usbg1;
++	};
++
++	usbh3: usbh3 {
++		compatible = "Cadence,usb3-host";
++		dr_mode = "host";
++		cdns3,usb = <&usbotg3>;
++		status = "okay";
++	};
++
++	usbg1: usbg1 {
++		compatible = "fsl,imx27-usb-gadget";
++		dr_mode = "peripheral";
++		chipidea,usb = <&usbotg1>;
++		status = "okay";
++		u-boot,dm-pre-proper;
++	};
++};
++
++&{/imx8qm-pm} {
++
++	u-boot,dm-pre-proper;
++};
+ 
+ &mu {
+ 	u-boot,dm-pre-proper;
+@@ -55,6 +81,10 @@
+ 	u-boot,dm-pre-proper;
+ };
+ 
++&pd_dma_lpuart0 {
++	u-boot,dm-pre-proper;
++};
++
+ &pd_dma_lpuart1 {
+ 	u-boot,dm-pre-proper;
+ };
+@@ -75,6 +105,22 @@
+ 	u-boot,dm-pre-proper;
+ };
+ 
++&pd_conn_usbotg0 {
++	u-boot,dm-pre-proper;
++};
++
++&pd_conn_usbotg0_phy {
++	u-boot,dm-pre-proper;
++};
++
++&pd_conn_usb2 {
++	u-boot,dm-pre-proper;
++};
++
++&pd_conn_usb2_phy {
++	u-boot,dm-pre-proper;
++};
++
+ &gpio0 {
+ 	u-boot,dm-pre-proper;
+ };
+@@ -123,6 +169,31 @@
+ 	u-boot,dm-pre-proper;
+ };
+ 
++/* USB */
++&usbmisc1 {
++	u-boot,dm-pre-proper;
++};
++
++&usbphy1 {
++	u-boot,dm-pre-proper;
++};
++
++&usbotg1 {
++	u-boot,dm-pre-proper;
++};
++
++&usbphynop1 {
++	compatible = "cdns,usb3-phy";
++	reg = <0x0 0x5B160000 0x0 0x40000>;
++	#phy-cells = <0>;
++	u-boot,dm-pre-proper;
++};
++
++&usbotg3 {
++	phys = <&usbphynop1>;
++	u-boot,dm-pre-proper;
++};
++
+ &usdhc1 {
+ 	u-boot,dm-pre-proper;
+ };
+@@ -134,3 +205,7 @@
+ &usdhc3 {
+ 	u-boot,dm-pre-proper;
+ };
++
++&wu {
++	u-boot,dm-pre-proper;
++};
+diff --git a/arch/arm/dts/fsl-imx8qm-apalis.dts b/arch/arm/dts/fsl-imx8qm-apalis.dts
+index e92bfcecbe9..25f99dc2cf8 100644
+--- a/arch/arm/dts/fsl-imx8qm-apalis.dts
++++ b/arch/arm/dts/fsl-imx8qm-apalis.dts
+@@ -18,6 +18,44 @@
+ 		bootargs = "console=ttyLP1,115200 earlycon=lpuart32,0x5a070000,115200";
+ 		stdout-path = &lpuart1;
+ 	};
++
++	regulators {
++		compatible = "simple-bus";
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		reg_usb_otg1_vbus: regulator@0 {
++			compatible = "regulator-fixed";
++			reg = <0>;
++			pinctrl-0 = <&pinctrl_gpio_usbo1_en>;
++			regulator-name = "usb_otg1_vbus";
++			regulator-min-microvolt = <5000000>;
++			regulator-max-microvolt = <5000000>;
++			gpio = <&gpio4 3 GPIO_ACTIVE_HIGH>;
++			enable-active-high;
++		}
++;
++		reg_usb_host_vbus: regulator-usb-host-vbus {
++			compatible = "regulator-fixed";
++			pinctrl-names = "default";
++			pinctrl-0 = <&pinctrl_gpio_usbh_en>;
++			regulator-min-microvolt = <5000000>;
++			regulator-max-microvolt = <5000000>;
++			enable-active-high;
++			/* Apalis USBH_EN */
++			gpio = <&gpio4 4 GPIO_ACTIVE_HIGH>;
++		};
++
++		reg_usdhc2_vmmc: usdhc2_vmmc {
++			compatible = "regulator-fixed";
++			regulator-name = "sw-3p3-sd1";
++			regulator-min-microvolt = <3300000>;
++			regulator-max-microvolt = <3300000>;
++			gpio = <&gpio4 7 GPIO_ACTIVE_HIGH>;
++			enable-active-high;
++		};
++
++	};
+ };
+ 
+ &iomuxc {
+@@ -29,8 +67,6 @@
+ 		    <&pinctrl_gpio_keys>, <&pinctrl_gpio_pwm0>,
+ 		    <&pinctrl_gpio_pwm1>, <&pinctrl_gpio_pwm2>,
+ 		    <&pinctrl_gpio_pwm3>, <&pinctrl_gpio_pwm_bkl>,
+-		    <&pinctrl_gpio_usbh_en>, <&pinctrl_gpio_usbh_oc_n>,
+-		    <&pinctrl_gpio_usbo1_en>, <&pinctrl_gpio_usbo1_oc_n>,
+ 		    <&pinctrl_lpuart1ctrl>, <&pinctrl_lvds0_i2c0_gpio>,
+ 		    <&pinctrl_lvds1_i2c0_gpios>, <&pinctrl_mipi_dsi_0_1_en>,
+ 		    <&pinctrl_mipi_dsi1_gpios>, <&pinctrl_mlb_gpios>,
+@@ -402,28 +438,28 @@
+ 		/* Apalis USBH_EN */
+ 		pinctrl_gpio_usbh_en: gpiousbhen {
+ 			fsl,pins = <
+-				SC_P_USB_SS3_TC1_LSIO_GPIO4_IO04	0x06000060
++				SC_P_USB_SS3_TC1_LSIO_GPIO4_IO04	0x00000021
+ 			>;
+ 		};
+ 
+ 		/* Apalis USBH_OC# */
+ 		pinctrl_gpio_usbh_oc_n: gpiousbhocn {
+ 			fsl,pins = <
+-				SC_P_USB_SS3_TC3_LSIO_GPIO4_IO06	0x06000060
++				SC_P_USB_SS3_TC3_LSIO_GPIO4_IO06	0x04000021
+ 			>;
+ 		};
+ 
+ 		/* Apalis USBO1_EN */
+ 		pinctrl_gpio_usbo1_en: gpiousbo1en {
+ 			fsl,pins = <
+-				SC_P_USB_SS3_TC0_LSIO_GPIO4_IO03	0x06000060
++				SC_P_USB_SS3_TC0_LSIO_GPIO4_IO03	0x00000021
+ 			>;
+ 		};
+ 
+ 		/* Apalis USBO1_OC# */
+ 		pinctrl_gpio_usbo1_oc_n: gpiousbo1ocn {
+ 			fsl,pins = <
+-				SC_P_USB_SS3_TC2_LSIO_GPIO4_IO05	0x06000060
++				SC_P_USB_SS3_TC2_LSIO_GPIO4_IO05	0x04000021
+ 			>;
+ 		};
+ 
+@@ -586,6 +622,20 @@
+ 	status = "okay";
+ };
+ 
++&usbotg1 {
++	vbus-supply = <&reg_usb_otg1_vbus>;
++	srp-disable;
++	hnp-disable;
++	adp-disable;
++	disable-over-current;
++	status = "okay";
++};
++
++&usbotg3 {
++	dr_mode = "host";
++	vbus-supply = <&reg_usb_host_vbus>;
++};
++
+ /* eMMC */
+ &usdhc1 {
+ 	pinctrl-names = "default";
+@@ -601,6 +651,7 @@
+ 	pinctrl-0 = <&pinctrl_usdhc2>, <&pinctrl_mmc1_cd>;
+ 	bus-width = <8>;
+ 	cd-gpios = <&gpio2 9 GPIO_ACTIVE_LOW>; /* Apalis MMC1_CD# */
++	vmmc-supply = <&reg_usdhc2_vmmc>;
+ 	status = "okay";
+ };
+ 
+diff --git a/board/toradex/apalis-imx8/apalis-imx8.c b/board/toradex/apalis-imx8/apalis-imx8.c
+index 04877fcd94a..68701bfe94b 100644
+--- a/board/toradex/apalis-imx8/apalis-imx8.c
++++ b/board/toradex/apalis-imx8/apalis-imx8.c
+@@ -15,9 +15,15 @@
+ #include <asm/arch/sys_proto.h>
+ #include <asm/gpio.h>
+ #include <asm/io.h>
++#include <command.h>
+ #include <env.h>
+ #include <errno.h>
+ #include <linux/libfdt.h>
++#include <mmc.h>
++
++#include <power-domain.h>
++#include <usb.h>
++#include <linux/delay.h>
+ 
+ #include "../common/tdx-cfg-block.h"
+ 
+@@ -28,6 +34,34 @@ DECLARE_GLOBAL_DATA_PTR;
+ 			 (SC_PAD_28FDSOI_DSE_DV_HIGH << PADRING_DSE_SHIFT) | \
+ 			 (SC_PAD_28FDSOI_PS_PU << PADRING_PULL_SHIFT))
+ 
++#define PCB_VERS_DETECT	((SC_PAD_CONFIG_NORMAL << PADRING_CONFIG_SHIFT) | \
++			 (SC_PAD_ISO_OFF << PADRING_LPCONFIG_SHIFT) | \
++			 (SC_PAD_28FDSOI_DSE_DV_HIGH << PADRING_DSE_SHIFT) | \
++			 (SC_PAD_28FDSOI_PS_PU << PADRING_PULL_SHIFT))
++
++#define GPIO_PAD_CTRL	((SC_PAD_CONFIG_NORMAL << PADRING_CONFIG_SHIFT) | (SC_PAD_ISO_OFF << PADRING_LPCONFIG_SHIFT) \
++						| (SC_PAD_28FDSOI_DSE_DV_HIGH << PADRING_DSE_SHIFT) | (SC_PAD_28FDSOI_PS_PU << PADRING_PULL_SHIFT))
++
++#define PCB_VERS_DEFAULT	((SC_PAD_CONFIG_NORMAL << PADRING_CONFIG_SHIFT) | \
++				 (SC_PAD_ISO_OFF << PADRING_LPCONFIG_SHIFT) | \
++				 (SC_PAD_28FDSOI_PS_PD << PADRING_PULL_SHIFT) | \
++				 (SC_PAD_28FDSOI_DSE_DV_HIGH << PADRING_DSE_SHIFT))
++
++typedef enum {
++	PCB_VERSION_1_0,
++	PCB_VERSION_1_1
++} pcb_rev_t;
++
++static iomux_cfg_t pcb_vers_detect[] = {
++	SC_P_MIPI_DSI0_GPIO0_00 | MUX_MODE_ALT(3) | MUX_PAD_CTRL(PCB_VERS_DETECT),
++	SC_P_MIPI_DSI0_GPIO0_01 | MUX_MODE_ALT(3) | MUX_PAD_CTRL(PCB_VERS_DETECT),
++};
++
++static iomux_cfg_t pcb_vers_default[] = {
++	SC_P_MIPI_DSI0_GPIO0_00 | MUX_MODE_ALT(3) | MUX_PAD_CTRL(PCB_VERS_DEFAULT),
++	SC_P_MIPI_DSI0_GPIO0_01 | MUX_MODE_ALT(3) | MUX_PAD_CTRL(PCB_VERS_DEFAULT),
++};
++
+ static iomux_cfg_t uart1_pads[] = {
+ 	SC_P_UART1_RX | MUX_PAD_CTRL(UART_PAD_CTRL),
+ 	SC_P_UART1_TX | MUX_PAD_CTRL(UART_PAD_CTRL),
+@@ -66,23 +100,36 @@ int board_early_init_f(void)
+ 	sc_pm_clock_rate_t rate = SC_80MHZ;
+ 	sc_err_t err = 0;
+ 
++	/* Set UART0 clock root to 80 MHz */
++	err = sc_pm_setup_uart(SC_R_UART_0, rate);
++	if (err)
++		return err;
++
+ 	/* Set UART1 clock root to 80 MHz and enable it */
+ 	err = sc_pm_setup_uart(SC_R_UART_1, rate);
+ 	if (err != SC_ERR_NONE)
+-		return 0;
++		return err;
+ 
+ 	setup_iomux_uart();
+ 
+ 	return 0;
+ }
+ 
+-#if CONFIG_IS_ENABLED(DM_GPIO)
++#ifdef CONFIG_MXC_GPIO
++
++#define BKL1_GPIO   IMX_GPIO_NR(1, 10)
++
++static iomux_cfg_t board_gpios[] = {
++	SC_P_LVDS1_GPIO00 | MUX_MODE_ALT(3) | MUX_PAD_CTRL(GPIO_PAD_CTRL),
++};
++
+ static void board_gpio_init(void)
+ {
+-	/* TODO */
++	imx8_iomux_setup_multiple_pads(board_gpios, ARRAY_SIZE(board_gpios));
++
++	gpio_request(BKL1_GPIO, "BKL1_GPIO");
++	gpio_direction_output(BKL1_GPIO, 1);
+ }
+-#else
+-static inline void board_gpio_init(void) {}
+ #endif
+ 
+ #if IS_ENABLED(CONFIG_FEC_MXC)
+@@ -109,17 +156,30 @@ int checkboard(void)
+ 
+ int board_init(void)
+ {
++#ifdef CONFIG_MXC_GPIO
+ 	board_gpio_init();
++#endif
++
++#ifdef CONFIG_SNVS_SEC_SC_AUTO
++	{
++		int ret = snvs_security_sc_init();
++
++		if (ret)
++			return ret;
++	}
++#endif
+ 
+ 	return 0;
+ }
+ 
++
+ /*
+  * Board specific reset that is system reset.
+  */
+ void reset_cpu(void)
+ {
+-	/* TODO */
++	sc_pm_reboot(-1, SC_PM_RESET_TYPE_COLD);
++	while(1);
+ }
+ 
+ #if defined(CONFIG_OF_LIBFDT) && defined(CONFIG_OF_BOARD_SETUP)
+@@ -129,6 +189,110 @@ int ft_board_setup(void *blob, struct bd_info *bd)
+ }
+ #endif
+ 
++int mmc_map_to_kernel_blk(int dev_no)
++{
++	return dev_no;
++}
++
++static int check_mmc_autodetect(void)
++{
++	char *autodetect_str = env_get("mmcautodetect");
++
++	if ((autodetect_str != NULL) &&
++		(strcmp(autodetect_str, "yes") == 0)) {
++		return 1;
++	}
++
++	return 0;
++}
++
++void board_late_mmc_env_init(void)
++{
++	char cmd[32];
++	char mmcblk[32];
++	u32 dev_no = mmc_get_env_dev();
++
++	if (!check_mmc_autodetect())
++		return;
++
++	env_set_ulong("mmcdev", dev_no);
++
++	/* Set mmcblk env */
++	sprintf(mmcblk, "/dev/mmcblk%dp2 rootwait rw",
++		mmc_map_to_kernel_blk(dev_no));
++	env_set("mmcroot", mmcblk);
++
++	sprintf(cmd, "mmc dev %d", dev_no);
++	run_command(cmd, 0);
++}
++
++static pcb_rev_t get_pcb_revision(void)
++{
++	unsigned int pcb_vers = 0;
++
++	imx8_iomux_setup_multiple_pads(pcb_vers_detect,
++				       ARRAY_SIZE(pcb_vers_detect));
++
++	gpio_request(IMX_GPIO_NR(1, 18), \
++		     "PCB version detection on PAD SC_P_MIPI_DSI0_GPIO0_00");
++	gpio_request(IMX_GPIO_NR(1, 19), \
++		     "PCB version detection on PAD SC_P_MIPI_DSI0_GPIO0_01");
++	gpio_direction_input(IMX_GPIO_NR(1, 18));
++	gpio_direction_input(IMX_GPIO_NR(1, 19));
++
++	udelay(1000);
++
++	pcb_vers = gpio_get_value(IMX_GPIO_NR(1, 18));
++	pcb_vers |= gpio_get_value(IMX_GPIO_NR(1, 19)) << 1;
++
++	/* Set muxing back to default values for saving energy */
++	imx8_iomux_setup_multiple_pads(pcb_vers_default,
++				       ARRAY_SIZE(pcb_vers_default));
++
++	switch(pcb_vers) {
++		case 0b11:
++			return PCB_VERSION_1_0;
++			break;
++		case 0b10:
++			return PCB_VERSION_1_1;
++			break;
++		default:
++			return -ENODEV;
++			break;
++	}
++}
++
++static void select_dt_from_module_version(void)
++{
++	char *fdt_env = env_get("fdtfile");
++
++	switch(get_pcb_revision()) {
++		case PCB_VERSION_1_0:
++			if (strcmp(FDT_FILE_V1_0, fdt_env)) {
++				env_set("fdtfile", FDT_FILE_V1_0);
++				printf("Detected a V1.0 module, setting " \
++					"correct devicetree\n");
++#ifndef CONFIG_ENV_IS_NOWHERE
++				env_save();
++#endif
++			}
++			break;
++		default:
++			break;
++	}
++}
++
++static int do_select_dt_from_module_version(struct cmd_tbl *cmdtp, int flag, int argc,
++		       char * const argv[]) {
++	select_dt_from_module_version();
++	return 0;
++}
++
++U_BOOT_CMD(
++	select_dt_from_module_version, CONFIG_SYS_MAXARGS, 1, do_select_dt_from_module_version,
++	"\n", "    - select devicetree from module version"
++);
++
+ int board_mmc_get_env_dev(int devno)
+ {
+ 	return devno;
+@@ -142,5 +306,36 @@ int board_late_init(void)
+ 	env_set("board_rev", "v1.0");
+ #endif
+ 
++#ifdef CONFIG_AHAB_BOOT
++	env_set("sec_boot", "yes");
++#else
++	env_set("sec_boot", "no");
++#endif
++
++#ifdef CONFIG_ENV_IS_IN_MMC
++	board_late_mmc_env_init();
++#endif
++
++#if defined(CONFIG_IMX_LOAD_HDMI_FIMRWARE_RX) || defined(CONFIG_IMX_LOAD_HDMI_FIMRWARE_TX)
++	char *end_of_uboot;
++	char command[256];
++	end_of_uboot = (char *)(ulong)(CONFIG_SYS_TEXT_BASE + _end_ofs + fdt_totalsize(gd->fdt_blob));
++	end_of_uboot += 9;
++
++	/* load hdmitxfw.bin and hdmirxfw.bin*/
++	memcpy((void *)IMX_HDMI_FIRMWARE_LOAD_ADDR, end_of_uboot,
++			IMX_HDMITX_FIRMWARE_SIZE + IMX_HDMIRX_FIRMWARE_SIZE);
++
++#ifdef CONFIG_IMX_LOAD_HDMI_FIMRWARE_TX
++	sprintf(command, "hdp load 0x%x", IMX_HDMI_FIRMWARE_LOAD_ADDR);
++	run_command(command, 0);
++#endif
++#ifdef CONFIG_IMX_LOAD_HDMI_FIMRWARE_RX
++	sprintf(command, "hdprx load 0x%x",
++			IMX_HDMI_FIRMWARE_LOAD_ADDR + IMX_HDMITX_FIRMWARE_SIZE);
++	run_command(command, 0);
++#endif
++#endif /* CONFIG_IMX_LOAD_HDMI_FIMRWARE_RX || CONFIG_IMX_LOAD_HDMI_FIMRWARE_TX */
++
+ 	return 0;
+ }
+diff --git a/configs/apalis-imx8_defconfig b/configs/apalis-imx8_defconfig
+index 43215faeb93..043962ef4dd 100644
+--- a/configs/apalis-imx8_defconfig
++++ b/configs/apalis-imx8_defconfig
+@@ -2,15 +2,19 @@ CONFIG_ARM=y
+ CONFIG_ARCH_IMX8=y
+ CONFIG_SYS_TEXT_BASE=0x80020000
+ CONFIG_SYS_MALLOC_LEN=0x2800000
+-CONFIG_SYS_MALLOC_F_LEN=0x4000
++CONFIG_SYS_MALLOC_F_LEN=0x8000
+ CONFIG_NR_DRAM_BANKS=3
+ CONFIG_SYS_MEMTEST_START=0x88000000
+ CONFIG_SYS_MEMTEST_END=0x89000000
+ CONFIG_ENV_SIZE=0x2000
+ CONFIG_ENV_OFFSET=0xFFFFDE00
+ CONFIG_DM_GPIO=y
++CONFIG_BOOTAUX_RESERVED_MEM_BASE=0x88000000
++CONFIG_BOOTAUX_RESERVED_MEM_SIZE=0x08000000
+ CONFIG_DEFAULT_DEVICE_TREE="fsl-imx8qm-apalis"
+ CONFIG_TARGET_APALIS_IMX8=y
++CONFIG_IMX_BOOTAUX=y
++CONFIG_AHCI=y
+ CONFIG_DISTRO_DEFAULTS=y
+ CONFIG_REMAKE_ELF=y
+ CONFIG_SYS_LOAD_ADDR=0x80280000
+@@ -30,6 +34,8 @@ CONFIG_CMD_FUSE=y
+ CONFIG_CMD_GPIO=y
+ CONFIG_CMD_I2C=y
+ CONFIG_CMD_MMC=y
++CONFIG_CMD_PCI=y
++CONFIG_CMD_USB=y
+ CONFIG_CMD_CACHE=y
+ CONFIG_CMD_UUID=y
+ CONFIG_CMD_EXT4_WRITE=y
+@@ -42,6 +48,9 @@ CONFIG_VERSION_VARIABLE=y
+ CONFIG_IP_DEFRAG=y
+ CONFIG_TFTP_BLOCKSIZE=4096
+ CONFIG_TFTP_TSIZE=y
++CONFIG_REGMAP=y
++CONFIG_SYSCON=y
++CONFIG_IMX_AHCI=y
+ CONFIG_CLK_IMX8=y
+ CONFIG_CPU=y
+ CONFIG_MXC_GPIO=y
+@@ -49,6 +58,10 @@ CONFIG_DM_I2C=y
+ CONFIG_SYS_I2C_IMX_LPI2C=y
+ CONFIG_MISC=y
+ CONFIG_SUPPORT_EMMC_BOOT=y
++CONFIG_DM_MMC=y
++CONFIG_MMC_IO_VOLTAGE=y
++CONFIG_MMC_UHS_SUPPORT=y
++CONFIG_MMC_HS400_SUPPORT=y
+ CONFIG_FSL_USDHC=y
+ CONFIG_PHYLIB=y
+ CONFIG_PHY_ADDR_ENABLE=y
+@@ -59,6 +72,10 @@ CONFIG_FEC_MXC_SHARE_MDIO=y
+ CONFIG_FEC_MXC_MDIO_BASE=0x5B040000
+ CONFIG_FEC_MXC=y
+ CONFIG_MII=y
++CONFIG_PCI=y
++CONFIG_DM_PCI=y
++CONFIG_PHY=y
++CONFIG_CDNS3_USB_PHY=y
+ CONFIG_PINCTRL=y
+ CONFIG_PINCTRL_IMX8=y
+ CONFIG_POWER_DOMAIN=y
+@@ -66,8 +83,22 @@ CONFIG_IMX8_POWER_DOMAIN=y
+ CONFIG_DM_REGULATOR=y
+ CONFIG_DM_REGULATOR_FIXED=y
+ CONFIG_DM_REGULATOR_GPIO=y
++CONFIG_SCSI=y
++CONFIG_DM_SCSI=y
+ CONFIG_DM_SERIAL=y
+ CONFIG_FSL_LPUART=y
+ CONFIG_DM_THERMAL=y
+ CONFIG_IMX_SCU_THERMAL=y
+-# CONFIG_EFI_LOADER is not set
++CONFIG_USB=y
++CONFIG_DM_USB=y
++CONFIG_USB_XHCI_HCD=y
++CONFIG_USB_CDNS3=y
++CONFIG_USB_CDNS3_GADGET=y
++CONFIG_USB_GADGET=y
++CONFIG_USB_GADGET_MANUFACTURER="FSL"
++CONFIG_USB_GADGET_VENDOR_NUM=0x0525
++CONFIG_USB_GADGET_PRODUCT_NUM=0xa4a5
++CONFIG_CI_UDC=y
++CONFIG_USB_GADGET_DOWNLOAD=y
++CONFIG_USB_PORT_AUTO=y
++CONFIG_WDT=y
+diff --git a/include/configs/apalis-imx8.h b/include/configs/apalis-imx8.h
+index c87bcd475ef..88b5bba3a96 100644
+--- a/include/configs/apalis-imx8.h
++++ b/include/configs/apalis-imx8.h
+@@ -21,30 +21,55 @@
+ #define MEM_LAYOUT_ENV_SETTINGS \
+ 	"fdt_addr_r=0x84000000\0" \
+ 	"kernel_addr_r=0x82000000\0" \
+-	"ramdisk_addr_r=0x94400000\0" \
++	"ramdisk_addr_r=0x86400000\0" \
+ 	"scriptaddr=0x87000000\0"
+ 
++/* Boot M4 */
++#define M4_BOOT_ENV \
++	"m4_0_image=m4_0.bin\0" \
++	"m4_1_image=m4_1.bin\0" \
++	"loadm4image_0=fatload mmc ${mmcdev}:${mmcpart} ${loadaddr} ${m4_0_image}\0" \
++	"loadm4image_1=fatload mmc ${mmcdev}:${mmcpart} ${loadaddr} ${m4_1_image}\0" \
++	"m4boot_0=run loadm4image_0; dcache flush; bootaux ${loadaddr} 0\0" \
++	"m4boot_1=run loadm4image_1; dcache flush; bootaux ${loadaddr} 1\0" \
++
+ #define BOOT_TARGET_DEVICES(func) \
+ 	func(MMC, mmc, 1) \
+ 	func(MMC, mmc, 2) \
+ 	func(MMC, mmc, 0) \
++	func(USB, usb, 0) \
+ 	func(DHCP, dhcp, na)
+ #include <config_distro_bootcmd.h>
+-#undef BOOTENV_RUN_NET_USB_START
+-#define BOOTENV_RUN_NET_USB_START ""
++
++#ifdef CONFIG_AHAB_BOOT
++#define AHAB_ENV "sec_boot=yes\0"
++#else
++#define AHAB_ENV "sec_boot=no\0"
++#endif
++
++#define FDT_FILE			"fsl-imx8qm-apalis-v1.1-eval.dtb"
++#define FDT_FILE_V1_0			"fsl-imx8qm-apalis-eval.dtb"
+ 
+ /* Initial environment variables */
+ #define CONFIG_EXTRA_ENV_SETTINGS \
++	AHAB_ENV \
+ 	BOOTENV \
++	M4_BOOT_ENV \
+ 	MEM_LAYOUT_ENV_SETTINGS \
+ 	"boot_file=Image\0" \
++	"bootcmd_mfg=select_dt_from_module_version && fastboot 0\0" \
++	"script=boot.scr\0" \
+ 	"console=ttyLP1 earlycon\0" \
+ 	"fdt_addr=0x83000000\0"	\
+-	"fdt_file=fsl-imx8qm-apalis-eval.dtb\0" \
+-	"fdtfile=fsl-imx8qm-apalis-eval.dtb\0" \
++	"fdt_high=0xffffffffffffffff\0" \
++	"boot_fdt=try\0" \
++	"fdtfile=" FDT_FILE "\0" \
+ 	"finduuid=part uuid mmc ${mmcdev}:2 uuid\0" \
+ 	"initrd_addr=0x83800000\0" \
+-	"initrd_high=0xffffffffffffffff\0" \
++	"hdp_addr=0x84000000\0" \
++	"hdp_file=hdmitxfw.bin\0" \
++	"loadhdp=fatload mmc ${mmcdev}:${mmcpart} ${hdp_addr} ${hdp_file}\0" \
++	"mmcautodetect=yes\0" \
+ 	"mmcargs=setenv bootargs console=${console},${baudrate} " \
+ 		"root=PARTUUID=${uuid} rootwait " \
+ 	"mmcdev=" __stringify(CONFIG_SYS_MMC_ENV_DEV) "\0" \
+@@ -55,12 +80,14 @@
+ 	"nfsboot=run netargs; dhcp ${loadaddr} ${boot_file}; tftp ${fdt_addr} " \
+ 		"apalis-imx8/${fdt_file}; booti ${loadaddr} - ${fdt_addr}\0" \
+ 	"panel=NULL\0" \
+-	"script=boot.scr\0" \
+ 	"update_uboot=askenv confirm Did you load u-boot-dtb.imx (y/N)?; " \
+ 		"if test \"$confirm\" = \"y\"; then " \
+ 		"setexpr blkcnt ${filesize} + 0x1ff && setexpr blkcnt " \
+ 		"${blkcnt} / 0x200; mmc dev 0 1; mmc write ${loadaddr} 0x0 " \
+-		"${blkcnt}; fi\0"
++		"${blkcnt}; fi\0" \
++	"video=imxdpufb5:off video=imxdpufb6:off video=imxdpufb7:off\0" \
++	"setup=run loadhdp; hdp load ${hdp_addr}; run mmcargs\0" \
++	"defargs=pci=nomsi"
+ 
+ /* Link Definitions */
+ 
+@@ -87,4 +114,31 @@
+ /* Generic Timer Definitions */
+ #define COUNTER_FREQUENCY		8000000	/* 8MHz */
+ 
++/* USB Config */
++#ifndef CONFIG_SPL_BUILD
++#define CONFIG_USBD_HS
++
++#define CONFIG_CMD_USB_MASS_STORAGE
++#define CONFIG_USB_FUNCTION_MASS_STORAGE
++
++#endif
++
++#define CONFIG_USB_MAX_CONTROLLER_COUNT 2
++
++/* USB OTG controller configs */
++#ifdef CONFIG_USB_EHCI_HCD
++#define CONFIG_USB_HOST_ETHER
++#define CONFIG_USB_ETHER_ASIX
++#define CONFIG_MXC_USB_PORTSC		(PORT_PTS_UTMI | PORT_PTS_PTW)
++#endif
++
++#ifdef CONFIG_DM_VIDEO
++#define CONFIG_SPLASH_SCREEN
++#define CONFIG_SPLASH_SCREEN_ALIGN
++#define CONFIG_CMD_BMP
++#define CONFIG_BMP_16BPP
++#define CONFIG_BMP_24BPP
++#define CONFIG_BMP_32BPP
++#endif
++
+ #endif /* __APALIS_IMX8_H */
+-- 
+2.40.1
+

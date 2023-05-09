@@ -1,0 +1,36 @@
+From 2c9ba435a7455008f5c27edd28d6a81bd66c9f4b Mon Sep 17 00:00:00 2001
+From: Igor Opaniuk <igor.opaniuk@foundries.io>
+Date: Tue, 27 Apr 2021 15:53:12 +0300
+Subject: [PATCH 083/233] [FIO internal] imx: add support of secondary boot for
+ MX6
+
+Signed-off-by: Igor Opaniuk <igor.opaniuk@foundries.io>
+---
+ arch/arm/mach-imx/Kconfig | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/arch/arm/mach-imx/Kconfig b/arch/arm/mach-imx/Kconfig
+index 3a7d0ee16c5..8cc75418d16 100644
+--- a/arch/arm/mach-imx/Kconfig
++++ b/arch/arm/mach-imx/Kconfig
+@@ -26,7 +26,7 @@ config GPT_TIMER
+ config SECONDARY_BOOT_RUNTIME_DETECTION
+ 	bool "SD/MMC sector offset runtime detection"
+ 	default n
+-	depends on (IMX8MQ || IMX8MM || MX6ULL || MX6UL) && SPL_MMC_SUPPORT
++	depends on (IMX8MQ || IMX8MM || MX6ULL || MX6UL || MX6) && SPL_MMC_SUPPORT
+ 	help
+ 	  Detect correct sector offset in SPL for the next boot image
+ 	  in runtime.
+@@ -34,7 +34,7 @@ config SECONDARY_BOOT_RUNTIME_DETECTION
+ config SECONDARY_BOOT_SECTOR_OFFSET
+ 	hex "SD/MMC sector offset used for ROM secondary boot"
+ 	default 0x0
+-	depends on IMX8MQ || IMX8MM || MX6ULL || MX6UL
++	depends on IMX8MQ || IMX8MM || MX6ULL || MX6UL || MX6
+ 	help
+ 	  Set the sector offset to non-zero value in SPL used for
+ 	  secondary boot image. This value should be same as the
+-- 
+2.40.1
+

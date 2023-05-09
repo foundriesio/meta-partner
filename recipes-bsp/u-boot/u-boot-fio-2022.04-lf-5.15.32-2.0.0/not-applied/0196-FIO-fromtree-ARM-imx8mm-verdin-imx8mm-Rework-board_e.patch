@@ -1,0 +1,68 @@
+From e0e1007bf3aa5e20fca5f1ede3fc1ac53855b900 Mon Sep 17 00:00:00 2001
+From: Marek Vasut <marex@denx.de>
+Date: Fri, 8 Apr 2022 02:15:00 +0200
+Subject: [PATCH 196/233] [FIO fromtree] ARM: imx8mm: verdin-imx8mm: Rework
+ board_early_init()
+
+Rename board_early_init_f() to board_early_init(), since this function
+has nothing to do with actual board_early_init_f() as used throughout
+U-Boot. The board_early_init() is function local to this board used to
+configure UART and WDT pinmux. Wrap init_uart_clk() into this function
+so that early UART init would be all in one place. Turn the function
+into __weak one, so it could be overridden in case custom carrier board
+uses different UART or needs custom IOMUX settings.
+
+Upstream-Status: Backport [34694f1a3e4db38289936fbef11aba8a2286d0cf]
+
+Signed-off-by: Marek Vasut <marex@denx.de>
+Cc: Fabio Estevam <festevam@denx.de>
+Cc: Marcel Ziswiler <marcel.ziswiler@toradex.com>
+Cc: Max Krummenacher <max.krummenacher@toradex.com>
+Cc: Peng Fan <peng.fan@nxp.com>
+Cc: Stefano Babic <sbabic@denx.de>
+(cherry picked from commit 34694f1a3e4db38289936fbef11aba8a2286d0cf)
+(cherry picked from commit 05b6e8f74123503b0a8c201958b522c3ad0ae6a8)
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+---
+ board/toradex/verdin-imx8mm/spl.c | 10 ++++------
+ 1 file changed, 4 insertions(+), 6 deletions(-)
+
+diff --git a/board/toradex/verdin-imx8mm/spl.c b/board/toradex/verdin-imx8mm/spl.c
+index 97d6a31da15..4e6128c3314 100644
+--- a/board/toradex/verdin-imx8mm/spl.c
++++ b/board/toradex/verdin-imx8mm/spl.c
+@@ -88,17 +88,17 @@ static iomux_v3_cfg_t const wdog_pads[] = {
+ 	IMX8MM_PAD_GPIO1_IO02_WDOG1_WDOG_B  | MUX_PAD_CTRL(WDOG_PAD_CTRL),
+ };
+ 
+-int board_early_init_f(void)
++__weak void board_early_init(void)
+ {
+ 	struct wdog_regs *wdog = (struct wdog_regs *)WDOG1_BASE_ADDR;
+ 
++	init_uart_clk(0);
++
+ 	imx_iomux_v3_setup_multiple_pads(wdog_pads, ARRAY_SIZE(wdog_pads));
+ 
+ 	set_wdog_reset(wdog);
+ 
+ 	imx_iomux_v3_setup_multiple_pads(uart_pads, ARRAY_SIZE(uart_pads));
+-
+-	return 0;
+ }
+ 
+ int power_init_board(void)
+@@ -140,9 +140,7 @@ void board_init_f(ulong dummy)
+ 
+ 	arch_cpu_init();
+ 
+-	init_uart_clk(0);
+-
+-	board_early_init_f();
++	board_early_init();
+ 
+ 	timer_init();
+ 
+-- 
+2.40.1
+

@@ -1,0 +1,32 @@
+From 88e914124a5f3ea04bd95ddf1d82dc200cf8ba04 Mon Sep 17 00:00:00 2001
+From: Vanessa Maegima <vanessa.maegima@foundries.io>
+Date: Thu, 5 Aug 2021 11:27:38 -0300
+Subject: [PATCH 077/233] [FIO internal] drivers: fastboot: increase command
+ buffer
+
+Increase command buffer to 128 to avoid the "too long command"
+error with the mfgtool scripts.
+
+Upstream status: not applicable.
+
+Signed-off-by: Vanessa Maegima <vanessa.maegima@foundries.io>
+---
+ drivers/fastboot/fb_fsl/fb_fsl_command.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/fastboot/fb_fsl/fb_fsl_command.c b/drivers/fastboot/fb_fsl/fb_fsl_command.c
+index 11224728a84..a9c130f615c 100644
+--- a/drivers/fastboot/fb_fsl/fb_fsl_command.c
++++ b/drivers/fastboot/fb_fsl/fb_fsl_command.c
+@@ -968,7 +968,7 @@ static void run_ucmd(char *cmd_parameter, char *response)
+ 	}
+ }
+ 
+-static char g_a_cmd_buff[64];
++static char g_a_cmd_buff[128];
+ 
+ void fastboot_acmd_complete(void)
+ {
+-- 
+2.25.1
+

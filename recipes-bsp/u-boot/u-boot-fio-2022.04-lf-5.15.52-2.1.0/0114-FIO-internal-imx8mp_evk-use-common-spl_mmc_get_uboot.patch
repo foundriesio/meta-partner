@@ -1,0 +1,44 @@
+From d47e703cab7c8b2d616eec7fa8e1361bc1e67e4c Mon Sep 17 00:00:00 2001
+From: Tim Anderson <tim.anderson@foundries.io>
+Date: Tue, 10 Aug 2021 13:56:55 -0700
+Subject: [PATCH 114/233] [FIO internal] imx8mp_evk: use common
+ spl_mmc_get_uboot_raw_sector()
+
+This function moved as part of 8mm to mach-imx/spl.c
+
+Signed-off-by: Tim Anderson <tim.anderson@foundries.io>
+Signed-off-by: Michael Scott <mike@foundries.io>
+(cherry-picked from commit 379dd77761561797420f9478ef13fb4b07d83b91)
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+---
+ board/freescale/imx8mp_evk/imx8mp_evk.c | 14 --------------
+ 1 file changed, 14 deletions(-)
+
+diff --git a/board/freescale/imx8mp_evk/imx8mp_evk.c b/board/freescale/imx8mp_evk/imx8mp_evk.c
+index 6671ee70168..7f933b4e668 100644
+--- a/board/freescale/imx8mp_evk/imx8mp_evk.c
++++ b/board/freescale/imx8mp_evk/imx8mp_evk.c
+@@ -507,20 +507,6 @@ bool is_power_key_pressed(void) {
+ }
+ #endif
+ 
+-#ifdef CONFIG_SPL_MMC
+-#define UBOOT_RAW_SECTOR_OFFSET 0x40
+-unsigned long spl_mmc_get_uboot_raw_sector(struct mmc *mmc)
+-{
+-	u32 boot_dev = spl_boot_device();
+-	switch (boot_dev) {
+-		case BOOT_DEVICE_MMC2:
+-			return CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_SECTOR - UBOOT_RAW_SECTOR_OFFSET;
+-		default:
+-			return CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_SECTOR;
+-	}
+-}
+-#endif
+-
+ #ifdef CONFIG_FSL_FASTBOOT
+ #ifdef CONFIG_ANDROID_RECOVERY
+ int is_recovery_key_pressing(void)
+-- 
+2.25.1
+

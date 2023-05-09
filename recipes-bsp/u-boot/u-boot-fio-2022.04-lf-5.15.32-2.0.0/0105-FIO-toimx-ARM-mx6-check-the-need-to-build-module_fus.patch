@@ -1,0 +1,41 @@
+From 3a09ac967a24bfb86b01ef258d9cee9663fd6b47 Mon Sep 17 00:00:00 2001
+From: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+Date: Fri, 1 Oct 2021 16:42:16 +0300
+Subject: [PATCH 105/233] [FIO toimx] ARM: mx6: check the need to build
+ module_fuse in SPL/TPL
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+This fixes the compiler error [1].
+
+[1]
+arch/arm/mach-imx/mx6/module_fuse.c:253:5: error: redefinition of ‘check_module_fused’
+  253 | u32 check_module_fused(enum fuse_module_type module)
+      |     ^~~~~~~~~~~~~~~~~~
+In file included from ./arch/arm/include/asm/mach-imx/sys_proto.h:13,
+                 from ./arch/arm/include/asm/arch/sys_proto.h:10,
+                 from arch/arm/mach-imx/mx6/module_fuse.c:9:
+./arch/arm/include/asm/mach-imx/module_fuse.h:78:19: note: previous definition of ‘check_module_fused’ was here
+
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+---
+ arch/arm/mach-imx/mx6/Makefile | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/arm/mach-imx/mx6/Makefile b/arch/arm/mach-imx/mx6/Makefile
+index a6e45391db2..96a8b612b0e 100644
+--- a/arch/arm/mach-imx/mx6/Makefile
++++ b/arch/arm/mach-imx/mx6/Makefile
+@@ -8,7 +8,7 @@
+ #
+ 
+ obj-y	:= soc.o clock.o
+-obj-$(CONFIG_IMX_MODULE_FUSE) += module_fuse.o
++obj-$(CONFIG_$(SPL_TPL_)IMX_MODULE_FUSE) += module_fuse.o
+ obj-$(CONFIG_SPL_BUILD)	     += ddr.o
+ obj-$(CONFIG_MP)             += mp.o
+ obj-$(CONFIG_MX6UL_LITESOM)  += litesom.o
+-- 
+2.40.1
+

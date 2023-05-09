@@ -1,0 +1,50 @@
+From 5e7b20148de778e347839b203de2813748106f5c Mon Sep 17 00:00:00 2001
+From: Igor Opaniuk <igor.opaniuk@foundries.io>
+Date: Tue, 13 Apr 2021 19:30:30 +0300
+Subject: [PATCH 065/233] [FIO toup] rsa: force using ras_mod_exp_sw if DM
+ disabled
+
+Using software implementation of Modular Exp allows us to verify
+signatures in FIT images in case the Driver Model is disabled.
+
+Signed-off-by: Igor Opaniuk <igor.opaniuk@foundries.io>
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+---
+ lib/rsa/rsa-verify.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/lib/rsa/rsa-verify.c b/lib/rsa/rsa-verify.c
+index 35879542cfc..622ccad7b4f 100644
+--- a/lib/rsa/rsa-verify.c
++++ b/lib/rsa/rsa-verify.c
+@@ -334,7 +334,9 @@ static int rsa_verify_key(struct image_sign_info *info,
+ {
+ 	int ret;
+ #if !defined(USE_HOSTCC)
++#if CONFIG_IS_ENABLED(DM)
+ 	struct udevice *mod_exp_dev;
++#endif
+ #endif
+ 	struct checksum_algo *checksum = info->checksum;
+ 	struct padding_algo *padding = info->padding;
+@@ -361,6 +363,7 @@ static int rsa_verify_key(struct image_sign_info *info,
+ 	hash_len = checksum->checksum_len;
+ 
+ #if !defined(USE_HOSTCC)
++#if CONFIG_IS_ENABLED(DM)
+ 	ret = uclass_get_device(UCLASS_MOD_EXP, 0, &mod_exp_dev);
+ 	if (ret) {
+ 		printf("RSA: Can't find Modular Exp implementation\n");
+@@ -368,6 +371,9 @@ static int rsa_verify_key(struct image_sign_info *info,
+ 	}
+ 
+ 	ret = rsa_mod_exp(mod_exp_dev, sig, sig_len, prop, buf);
++#else
++	ret = rsa_mod_exp_sw(sig, sig_len, prop, buf);
++#endif
+ #else
+ 	ret = rsa_mod_exp_sw(sig, sig_len, prop, buf);
+ #endif
+-- 
+2.25.1
+

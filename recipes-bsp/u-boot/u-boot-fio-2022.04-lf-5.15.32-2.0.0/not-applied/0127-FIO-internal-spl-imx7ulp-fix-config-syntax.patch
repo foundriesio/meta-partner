@@ -1,0 +1,50 @@
+From ab6385c58344717c8c6f0e84d7a1bae679017657 Mon Sep 17 00:00:00 2001
+From: Vanessa Maegima <vanessa.maegima@foundries.io>
+Date: Tue, 23 Nov 2021 16:46:54 -0300
+Subject: [PATCH 127/233] [FIO internal] spl: imx7ulp: fix config syntax
+
+Previous syntax caused the SPL to hang:
+
+	U-Boot SPL 2021.04+fio+g343f2e372a (Nov 22 2021 - 09:53:34 +0000)
+	Trying to boot from MMC1
+
+Using the current syntax fixes this issue.
+
+Signed-off-by: Vanessa Maegima <vanessa.maegima@foundries.io>
+Co-developed-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+---
+ include/configs/imx7ulp_spl.h | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/include/configs/imx7ulp_spl.h b/include/configs/imx7ulp_spl.h
+index 65e9cad1abf..f17db1a17b4 100644
+--- a/include/configs/imx7ulp_spl.h
++++ b/include/configs/imx7ulp_spl.h
+@@ -8,7 +8,7 @@
+ #ifndef __IMX7ULP_SPL_CONFIG_H
+ #define __IMX7ULP_SPL_CONFIG_H
+ 
+-#if CONFIG_IS_ENABLED(SPL)
++#ifdef CONFIG_SPL
+ /*
+  * see figure 35-5 in i.MX 7ULP Reference manual:
+  *  - IMX7ULP A7 OCRAM free area RAM is from 0x2F010000 to 0x2F03FF00.
+@@ -28,12 +28,12 @@
+ #define CONFIG_SPL_PAD_TO		0x2FC00
+ 
+ /* MMC support */
+-#if CONFIG_IS_ENABLED(SPL_MMC_SUPPORT)
++#if defined(CONFIG_SPL_MMC)
+ #define CONFIG_SYS_MONITOR_LEN			409600	/* 400 KB */
+ #endif
+ 
+ /* Define the payload for FAT/EXT support */
+-#if CONFIG_IS_ENABLED(SPL_FS_FAT) || CONFIG_IS_ENABLED(SPL_FS_EXT4)
++#if defined(CONFIG_SPL_FS_FAT) || defined(CONFIG_SPL_FS_EXT4)
+ #define CONFIG_SPL_FS_LOAD_PAYLOAD_NAME	"u-boot-dtb.img"
+ #endif
+ 
+-- 
+2.40.1
+

@@ -1,0 +1,47 @@
+From a01c6394aff07276ef46ffbd2802e79a6f4ebc30 Mon Sep 17 00:00:00 2001
+From: Marcel Ziswiler <marcel.ziswiler@toradex.com>
+Date: Sun, 13 Dec 2020 22:40:40 +0100
+Subject: [PATCH 212/233] [FIO fromlist] verdin-imx8mm: verdin-imx8mp: drop
+ obsolete net/phy configs
+
+Drop obsolete networking/PHY related configuration defines.
+
+Upstream-Status: Submitted [https://lore.kernel.org/all/20220921113419.1088398-1-marcel@ziswiler.com/]
+
+Signed-off-by: Marcel Ziswiler <marcel.ziswiler@toradex.com>
+(cherry picked from commit 463d65f825c4ba3acb92c46411cc9ed71d5e4bd0)
+---
+ include/configs/verdin-imx8mm.h | 1 -
+ include/configs/verdin-imx8mp.h | 2 --
+ 2 files changed, 3 deletions(-)
+
+diff --git a/include/configs/verdin-imx8mm.h b/include/configs/verdin-imx8mm.h
+index b18a60cc59a..64fa85d0a4d 100644
+--- a/include/configs/verdin-imx8mm.h
++++ b/include/configs/verdin-imx8mm.h
+@@ -108,7 +108,6 @@
+ /* ENET */
+ #define CONFIG_ETHPRIME                 "FEC"
+ #define CONFIG_FEC_XCV_TYPE             RGMII
+-#define CONFIG_FEC_MXC_PHYADDR          7
+ #define FEC_QUIRK_ENET_MAC
+ #define IMX_FEC_BASE			0x30BE0000
+ 
+diff --git a/include/configs/verdin-imx8mp.h b/include/configs/verdin-imx8mp.h
+index d000b7d2788..c2d10fe3a8f 100644
+--- a/include/configs/verdin-imx8mp.h
++++ b/include/configs/verdin-imx8mp.h
+@@ -42,10 +42,8 @@
+ #define CONFIG_ETHPRIME			"eth0" /* eqos is aliased on-module Ethernet interface */
+ 
+ #define CONFIG_FEC_XCV_TYPE		RGMII
+-#define CONFIG_FEC_MXC_PHYADDR		7
+ #define FEC_QUIRK_ENET_MAC
+ 
+-#define PHY_ANEG_TIMEOUT 20000
+ #endif /* CONFIG_CMD_NET */
+ 
+ #define MEM_LAYOUT_ENV_SETTINGS \
+-- 
+2.40.1
+

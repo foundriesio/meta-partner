@@ -1,0 +1,43 @@
+From d7f8c942de5c018df8c70ecd476ce2d75648c368 Mon Sep 17 00:00:00 2001
+From: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+Date: Sun, 24 Jul 2022 13:35:12 +0300
+Subject: [PATCH 095/233] [FIO internal] imx8mm_evk: fix unused variables
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Fix defining unused variables which causes a build warning [1].
+
+[1]
+board/freescale/imx8mm_evk/spl.c: In function ‘power_init_board’:
+board/freescale/imx8mm_evk/spl.c:196:6: warning: unused variable ‘ret’ [-Wunused-variable]
+  196 |  int ret;
+      |      ^~~
+board/freescale/imx8mm_evk/spl.c:195:15: warning: unused variable ‘p’ [-Wunused-variable]
+  195 |  struct pmic *p;
+      |               ^
+
+Fixes: 78c8fbe0a53 ("[FIO internal] imx8mm_evk: Add PMIC support for old board revisions")
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+---
+ board/freescale/imx8mm_evk/spl.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/board/freescale/imx8mm_evk/spl.c b/board/freescale/imx8mm_evk/spl.c
+index 0b667790b28..ad303973f16 100644
+--- a/board/freescale/imx8mm_evk/spl.c
++++ b/board/freescale/imx8mm_evk/spl.c
+@@ -192,8 +192,10 @@ int board_mmc_getcd(struct mmc *mmc)
+ 
+ int power_init_board(void)
+ {
++#if defined(CONFIG_POWER_PCA9450) || defined(CONFIG_POWER_BD71837)
+ 	struct pmic *p;
+ 	int ret;
++#endif
+ 
+ #ifdef CONFIG_POWER_PCA9450
+ #ifdef CONFIG_POWER_BD71837
+-- 
+2.40.1
+

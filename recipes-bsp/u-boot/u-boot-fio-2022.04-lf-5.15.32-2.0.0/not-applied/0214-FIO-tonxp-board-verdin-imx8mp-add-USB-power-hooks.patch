@@ -1,0 +1,57 @@
+From 6442acd283c5698db85958ab51b82e1761311218 Mon Sep 17 00:00:00 2001
+From: Andrejs Cainikovs <andrejs.cainikovs@toradex.com>
+Date: Mon, 29 Aug 2022 12:29:46 +0200
+Subject: [PATCH 214/233] [FIO tonxp] board: verdin-imx8mp: add USB power hooks
+
+This is required to power the USB.
+
+Upstream-Status: Inappropriate [other]
+- NXP downstream specific
+
+Signed-off-by: Andrejs Cainikovs <andrejs.cainikovs@toradex.com>
+(cherry picked from commit e2961d13608ff074033232227a1484f870ad37cc)
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+---
+ board/toradex/verdin-imx8mp/verdin-imx8mp.c | 19 +++++++++++++++++++
+ 1 file changed, 19 insertions(+)
+
+diff --git a/board/toradex/verdin-imx8mp/verdin-imx8mp.c b/board/toradex/verdin-imx8mp/verdin-imx8mp.c
+index 3a2b02c74a3..6a38972f9a6 100644
+--- a/board/toradex/verdin-imx8mp/verdin-imx8mp.c
++++ b/board/toradex/verdin-imx8mp/verdin-imx8mp.c
+@@ -18,6 +18,7 @@
+ #include <micrel.h>
+ #include <miiphy.h>
+ #include <netdev.h>
++#include <usb.h>
+ 
+ #include "../common/tdx-cfg-block.h"
+ 
+@@ -95,6 +96,24 @@ int board_init(void)
+ 	return ret;
+ }
+ 
++int board_usb_init(int index, enum usb_init_type init)
++{
++	debug("%s: %d, type %d\n", __func__, index, init);
++
++	imx8m_usb_power(index, true);
++
++	return 0;
++}
++
++int board_usb_cleanup(int index, enum usb_init_type init)
++{
++	debug("%s: %d, type %d\n", __func__, index, init);
++
++	imx8m_usb_power(index, false);
++
++	return 0;
++}
++
+ static void select_dt_from_module_version(void)
+ {
+ 	char variant[32];
+-- 
+2.40.1
+

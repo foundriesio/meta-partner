@@ -1,0 +1,73 @@
+From fb1450a656749426d2b3eaf35d65eca4f39e8259 Mon Sep 17 00:00:00 2001
+From: Marcel Ziswiler <marcel.ziswiler@toradex.com>
+Date: Tue, 17 May 2022 00:21:45 +0200
+Subject: [PATCH 199/233] [FIO fromtree] ARM: imx8mm: verdin-imx8mm: fix board
+ hang in spl
+
+Move the preloader_console_init() call after spl_early_init() to avoid
+board hang in SPL.
+
+While at it remove explicit in-code console/debug UART pinmuxing (uart1
+and its pinmuxing are already marked as u-boot,dm-spl via device tree).
+
+Upstream-Status: Backport [c898b53755e6267e3eac7c3ce5fdb45b0dcdd10f]
+
+Fixes: 4551e1898769 ("configs: verdin-imx8mm: verdin-imx8mp: enable dm serial")
+Signed-off-by: Marcel Ziswiler <marcel.ziswiler@toradex.com>
+(cherry picked from commit c898b53755e6267e3eac7c3ce5fdb45b0dcdd10f)
+(cherry picked from commit 1052fd8ff722b7a433dce942b596017649f6acce)
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+---
+ board/toradex/verdin-imx8mm/spl.c | 13 ++-----------
+ 1 file changed, 2 insertions(+), 11 deletions(-)
+
+diff --git a/board/toradex/verdin-imx8mm/spl.c b/board/toradex/verdin-imx8mm/spl.c
+index 1f3f38351ef..f0361f93ea9 100644
+--- a/board/toradex/verdin-imx8mm/spl.c
++++ b/board/toradex/verdin-imx8mm/spl.c
+@@ -74,15 +74,8 @@ int board_fit_config_name_match(const char *name)
+ }
+ #endif
+ 
+-#define UART_PAD_CTRL	(PAD_CTL_PUE | PAD_CTL_PE | PAD_CTL_DSE4)
+ #define WDOG_PAD_CTRL	(PAD_CTL_DSE6 | PAD_CTL_ODE | PAD_CTL_PUE | PAD_CTL_PE)
+ 
+-/* Verdin UART_3, Console/Debug UART */
+-static iomux_v3_cfg_t const uart_pads[] = {
+-	IMX8MM_PAD_SAI2_RXFS_UART1_TX | MUX_PAD_CTRL(UART_PAD_CTRL),
+-	IMX8MM_PAD_SAI2_RXC_UART1_RX | MUX_PAD_CTRL(UART_PAD_CTRL),
+-};
+-
+ static iomux_v3_cfg_t const wdog_pads[] = {
+ 	IMX8MM_PAD_GPIO1_IO02_WDOG1_WDOG_B  | MUX_PAD_CTRL(WDOG_PAD_CTRL),
+ };
+@@ -96,8 +89,6 @@ __weak void board_early_init(void)
+ 	imx_iomux_v3_setup_multiple_pads(wdog_pads, ARRAY_SIZE(wdog_pads));
+ 
+ 	set_wdog_reset(wdog);
+-
+-	imx_iomux_v3_setup_multiple_pads(uart_pads, ARRAY_SIZE(uart_pads));
+ }
+ 
+ int power_init_board(void)
+@@ -143,8 +134,6 @@ void board_init_f(ulong dummy)
+ 
+ 	timer_init();
+ 
+-	preloader_console_init();
+-
+ 	/* Clear the BSS. */
+ 	memset(__bss_start, 0, __bss_end - __bss_start);
+ 
+@@ -162,6 +151,8 @@ void board_init_f(ulong dummy)
+ 		hang();
+ 	}
+ 
++	preloader_console_init();
++
+ 	enable_tzc380();
+ 
+ 	power_init_board();
+-- 
+2.40.1
+

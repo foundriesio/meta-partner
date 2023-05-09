@@ -1,0 +1,31 @@
+From 13424e503cd0f1f0f7a1ee1fa81e8c5109143efe Mon Sep 17 00:00:00 2001
+From: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+Date: Thu, 25 Aug 2022 17:40:48 +0300
+Subject: [PATCH 154/233] [FIO toup] ARM: mach-imx: imx8ulp: Fix SPL_CRYPTO
+ name
+
+SPL_CRYPTO_SUPPORT was renamed to SPL_CRYPTO. Fix the option name
+in Kconfig for imx8ulp.
+
+Fixes: 8caf88e72cf ("LFU-277 imx8ulp_evk: Add iMX8ULP 9x9 EVK support")
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+---
+ arch/arm/mach-imx/imx8ulp/Kconfig | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/arm/mach-imx/imx8ulp/Kconfig b/arch/arm/mach-imx/imx8ulp/Kconfig
+index 7809ba70821..7dd844d8803 100644
+--- a/arch/arm/mach-imx/imx8ulp/Kconfig
++++ b/arch/arm/mach-imx/imx8ulp/Kconfig
+@@ -41,7 +41,7 @@ config TARGET_IMX8ULP_9X9_EVK
+ 	imply FSL_CAAM
+ 	imply FSL_BLOB
+ 	select ARCH_MISC_INIT
+-	select SPL_CRYPTO_SUPPORT if SPL
++	select SPL_CRYPTO if SPL
+ 
+ config TARGET_IMX8ULP_WATCH
+ 	bool "imx8ulp_watch"
+-- 
+2.25.1
+

@@ -1,0 +1,33 @@
+From 0a60057627f9a047f75f9c5614ae1cc1f05f7d0b Mon Sep 17 00:00:00 2001
+From: Tim Anderson <tim.anderson@foundries.io>
+Date: Wed, 11 Aug 2021 15:43:11 -0700
+Subject: [PATCH 115/233] [FIO internal] imx8m: set the fuses definitions
+ common for all imx8m parts
+
+The fuse banks parameters are the same for all known imx8m SoC as per
+(S)RM. Use the same fuses definitions for them.
+
+Signed-off-by: Tim Anderson <tim.anderson@foundries.io>
+Signed-off-by: Michael Scott <mike@foundries.io>
+(cherry-picked from commit 557816cb2a9ba71f26e96e5a22038ab6d6313562)
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+---
+ arch/arm/mach-imx/fiohab.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/arm/mach-imx/fiohab.c b/arch/arm/mach-imx/fiohab.c
+index 33bbcc55c9b..28e207156cc 100644
+--- a/arch/arm/mach-imx/fiohab.c
++++ b/arch/arm/mach-imx/fiohab.c
+@@ -102,7 +102,7 @@ static int fiovb_provisioned(void)
+ #define SECURE_FUSE_BANK	(0)
+ #define SECURE_FUSE_WORD	(6)
+ #define SECURE_FUSE_VALUE	(0x00000002)
+-#elif CONFIG_IMX8MM
++#elif CONFIG_IMX8M
+ #define SRK_FUSE_LIST								\
+ { 6, 0 }, { 6, 1 }, { 6, 2 }, { 6, 3 }, { 7, 0 }, { 7, 1 }, { 7, 2 }, { 7 , 3 },
+ #define SECURE_FUSE_BANK	(1)
+-- 
+2.25.1
+

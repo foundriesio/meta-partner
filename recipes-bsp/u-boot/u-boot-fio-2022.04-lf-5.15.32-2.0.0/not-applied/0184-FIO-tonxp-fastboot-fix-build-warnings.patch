@@ -1,0 +1,61 @@
+From bd6722adf89065c17be984cfc6a2bd14b14e3290 Mon Sep 17 00:00:00 2001
+From: Marcel Ziswiler <marcel.ziswiler@toradex.com>
+Date: Thu, 19 Nov 2020 12:12:45 +0100
+Subject: [PATCH 184/233] [FIO tonxp] fastboot: fix build warnings
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Fix the following annoying build warnings:
+
+drivers/fastboot/fb_fsl/fb_fsl_common.c: In function ‘fastboot_setup’:
+drivers/fastboot/fb_fsl/fb_fsl_common.c:359:2: warning: ‘serialnr.high’ is used uninitialized in this function [-Wuninitialized]
+  359 |  sprintf(serial, "%08x%08x", serialnr.high, serialnr.low);
+      |  ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+drivers/fastboot/fb_fsl/fb_fsl_common.c:359:2: warning: ‘serialnr.low’ is used uninitialized in this function [-Wuninitialized]
+drivers/fastboot/fb_fsl/fb_fsl_getvar.c:117:13: warning: ‘serial’ defined but not used [-Wunused-variable]
+  117 | static char serial[IMX_SERIAL_LEN];
+      |             ^~~~~~
+
+Signed-off-by: Marcel Ziswiler <marcel.ziswiler@toradex.com>
+(cherry picked from commit f2c35562c77c0d224417199a44a128d831b027e5)
+(cherry picked from commit c95e406d28d811de32e14e101cf7c13f95ec51fb)
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+---
+ drivers/fastboot/fb_fsl/fb_fsl_common.c | 5 ++++-
+ drivers/fastboot/fb_fsl/fb_fsl_getvar.c | 2 ++
+ 2 files changed, 6 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/fastboot/fb_fsl/fb_fsl_common.c b/drivers/fastboot/fb_fsl/fb_fsl_common.c
+index b17c25a55a5..b6a5a7d62c3 100644
+--- a/drivers/fastboot/fb_fsl/fb_fsl_common.c
++++ b/drivers/fastboot/fb_fsl/fb_fsl_common.c
+@@ -368,7 +368,10 @@ static int _fastboot_setup_dev(int *switched)
+ void fastboot_setup(void)
+ {
+ 	int sw, ret;
+-	struct tag_serialnr serialnr;
++	struct tag_serialnr serialnr = {
++		.high = 0,
++		.low = 0,
++	};
+ 	char serial[17];
+ 
+ 	if (!env_get("serial#")) {
+diff --git a/drivers/fastboot/fb_fsl/fb_fsl_getvar.c b/drivers/fastboot/fb_fsl/fb_fsl_getvar.c
+index 49caf3d7eb9..6970904528b 100644
+--- a/drivers/fastboot/fb_fsl/fb_fsl_getvar.c
++++ b/drivers/fastboot/fb_fsl/fb_fsl_getvar.c
+@@ -118,7 +118,9 @@ static bool is_slotvar(char *cmd)
+ 	return false;
+ }
+ 
++#ifdef CONFIG_SERIAL_TAG
+ static char serial[IMX_SERIAL_LEN];
++#endif
+ 
+ char *get_serial(void)
+ {
+-- 
+2.40.1
+

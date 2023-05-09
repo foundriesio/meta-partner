@@ -1,0 +1,29 @@
+From cf8078cde99b3f127d1cbfdc69e1faa8cad53f2c Mon Sep 17 00:00:00 2001
+From: Ricardo Salveti <ricardo@foundries.io>
+Date: Mon, 27 Sep 2021 21:46:58 -0300
+Subject: [PATCH 069/233] [FIO internal] imx8mm_evk: update SPL DM_I2C
+ definition
+
+SPL DM_I2C flag is now CONFIG_SPL_DM_I2C.
+
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+---
+ include/configs/imx8mm_evk.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/include/configs/imx8mm_evk.h b/include/configs/imx8mm_evk.h
+index 78570df0586..fa5ddaa7b8b 100644
+--- a/include/configs/imx8mm_evk.h
++++ b/include/configs/imx8mm_evk.h
+@@ -44,7 +44,7 @@
+ #else
+ #define CONFIG_POWER_BD71837
+ #endif
+-#undef CONFIG_DM_I2C
++#undef CONFIG_SPL_DM_I2C
+ 
+ #define CONFIG_SPL_NAND_BASE
+ #define CONFIG_SPL_NAND_IDENT
+-- 
+2.40.1
+

@@ -1,0 +1,120 @@
+From 9296e8be5a2ef48068536578781f731cc04b4699 Mon Sep 17 00:00:00 2001
+From: Philippe Schenker <philippe.schenker@toradex.com>
+Date: Wed, 13 Apr 2022 11:33:31 +0200
+Subject: [PATCH 174/233] [FIO fromtree] configs: tdx: Do not overwrite fdtfile
+ if it got set manually
+
+commit dbc5633963d0739682efa6eef9341775b70e3fda upstream.
+
+In case a customer wants to set fdtfile currently preboot overrides it
+always with preboot just before the bootdelay. Use test -n to check
+if fdtfile is already set and only set it if nothing got touched manually
+
+Signed-off-by: Philippe Schenker <philippe.schenker@toradex.com>
+Signed-off-by: Marcel Ziswiler <marcel.ziswiler@toradex.com>
+(cherry picked from commit ed72765b1912968508adc604c79d659229e986cf)
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+---
+ configs/colibri-imx6ull-emmc_defconfig | 2 +-
+ configs/colibri-imx6ull_defconfig      | 2 +-
+ configs/colibri_imx7_defconfig         | 2 +-
+ configs/colibri_imx7_emmc_defconfig    | 2 +-
+ configs/colibri_vf_defconfig           | 2 +-
+ configs/verdin-imx8mm_defconfig        | 2 +-
+ configs/verdin-imx8mp_defconfig        | 2 +-
+ 7 files changed, 7 insertions(+), 7 deletions(-)
+
+diff --git a/configs/colibri-imx6ull-emmc_defconfig b/configs/colibri-imx6ull-emmc_defconfig
+index c8bd4ad432b..e97e08d0cb0 100644
+--- a/configs/colibri-imx6ull-emmc_defconfig
++++ b/configs/colibri-imx6ull-emmc_defconfig
+@@ -16,7 +16,7 @@ CONFIG_FIT=y
+ CONFIG_FIT_VERBOSE=y
+ CONFIG_BOOTDELAY=1
+ CONFIG_USE_PREBOOT=y
+-CONFIG_PREBOOT="setenv fdtfile imx6ull-colibri${variant}-${fdt_board}.dtb"
++CONFIG_PREBOOT="test -n ${fdtfile} || setenv fdtfile imx6ull-colibri${variant}-${fdt_board}.dtb"
+ # CONFIG_CONSOLE_MUX is not set
+ CONFIG_SYS_CONSOLE_IS_IN_ENV=y
+ # CONFIG_DISPLAY_BOARDINFO is not set
+diff --git a/configs/colibri-imx6ull_defconfig b/configs/colibri-imx6ull_defconfig
+index a50c17881e8..1a23c202763 100644
+--- a/configs/colibri-imx6ull_defconfig
++++ b/configs/colibri-imx6ull_defconfig
+@@ -18,7 +18,7 @@ CONFIG_FIT_VERBOSE=y
+ CONFIG_BOOTDELAY=1
+ CONFIG_BOOTCOMMAND="run ubiboot || run distro_bootcmd;"
+ CONFIG_USE_PREBOOT=y
+-CONFIG_PREBOOT="setenv fdtfile imx6ull-colibri${variant}-${fdt_board}.dtb"
++CONFIG_PREBOOT="test -n ${fdtfile} || setenv fdtfile imx6ull-colibri${variant}-${fdt_board}.dtb"
+ # CONFIG_CONSOLE_MUX is not set
+ CONFIG_SYS_CONSOLE_IS_IN_ENV=y
+ # CONFIG_DISPLAY_BOARDINFO is not set
+diff --git a/configs/colibri_imx7_defconfig b/configs/colibri_imx7_defconfig
+index a81f345bad6..84a4b534802 100644
+--- a/configs/colibri_imx7_defconfig
++++ b/configs/colibri_imx7_defconfig
+@@ -18,7 +18,7 @@ CONFIG_FIT_VERBOSE=y
+ CONFIG_BOOTDELAY=1
+ CONFIG_BOOTCOMMAND="run ubiboot ; echo ; echo ubiboot failed ; run distro_bootcmd;"
+ CONFIG_USE_PREBOOT=y
+-CONFIG_PREBOOT="setenv fdtfile ${soc}-colibri-${fdt_board}.dtb "
++CONFIG_PREBOOT="test -n ${fdtfile} || setenv fdtfile ${soc}-colibri-${fdt_board}.dtb "
+ # CONFIG_CONSOLE_MUX is not set
+ CONFIG_SYS_CONSOLE_IS_IN_ENV=y
+ # CONFIG_DISPLAY_BOARDINFO is not set
+diff --git a/configs/colibri_imx7_emmc_defconfig b/configs/colibri_imx7_emmc_defconfig
+index c69be9110c8..1214f952c58 100644
+--- a/configs/colibri_imx7_emmc_defconfig
++++ b/configs/colibri_imx7_emmc_defconfig
+@@ -18,7 +18,7 @@ CONFIG_FIT=y
+ CONFIG_FIT_VERBOSE=y
+ CONFIG_BOOTDELAY=1
+ CONFIG_USE_PREBOOT=y
+-CONFIG_PREBOOT="setenv fdtfile ${soc}-colibri-emmc-${fdt_board}.dtb"
++CONFIG_PREBOOT="test -n ${fdtfile} || setenv fdtfile ${soc}-colibri-emmc-${fdt_board}.dtb"
+ # CONFIG_CONSOLE_MUX is not set
+ CONFIG_SYS_CONSOLE_IS_IN_ENV=y
+ # CONFIG_DISPLAY_BOARDINFO is not set
+diff --git a/configs/colibri_vf_defconfig b/configs/colibri_vf_defconfig
+index 8cf8a31beb0..cebcb53bfb8 100644
+--- a/configs/colibri_vf_defconfig
++++ b/configs/colibri_vf_defconfig
+@@ -19,7 +19,7 @@ CONFIG_BOOTDELAY=1
+ CONFIG_USE_BOOTCOMMAND=y
+ CONFIG_BOOTCOMMAND="run ubiboot || run distro_bootcmd;"
+ CONFIG_USE_PREBOOT=y
+-CONFIG_PREBOOT="setenv fdtfile ${soc}-colibri-${fdt_board}.dtb"
++CONFIG_PREBOOT="test -n ${fdtfile} || setenv fdtfile ${soc}-colibri-${fdt_board}.dtb"
+ CONFIG_LOGLEVEL=3
+ # CONFIG_DISPLAY_BOARDINFO is not set
+ CONFIG_DISPLAY_BOARDINFO_LATE=y
+diff --git a/configs/verdin-imx8mm_defconfig b/configs/verdin-imx8mm_defconfig
+index 731fb3dccb7..f723121ae1c 100644
+--- a/configs/verdin-imx8mm_defconfig
++++ b/configs/verdin-imx8mm_defconfig
+@@ -28,7 +28,7 @@ CONFIG_SPL_LOAD_FIT=y
+ CONFIG_OF_SYSTEM_SETUP=y
+ # CONFIG_USE_BOOTCOMMAND is not set
+ CONFIG_USE_PREBOOT=y
+-CONFIG_PREBOOT="setenv fdtfile imx8mm-verdin-${variant}-${fdt_board}.dtb"
++CONFIG_PREBOOT="test -n ${fdtfile} || setenv fdtfile imx8mm-verdin-${variant}-${fdt_board}.dtb"
+ CONFIG_LOG=y
+ # CONFIG_DISPLAY_BOARDINFO is not set
+ CONFIG_DISPLAY_BOARDINFO_LATE=y
+diff --git a/configs/verdin-imx8mp_defconfig b/configs/verdin-imx8mp_defconfig
+index 4c28f7f55e4..2bcdbc17e3e 100644
+--- a/configs/verdin-imx8mp_defconfig
++++ b/configs/verdin-imx8mp_defconfig
+@@ -34,7 +34,7 @@ CONFIG_SPL_LOAD_FIT=y
+ CONFIG_OF_SYSTEM_SETUP=y
+ CONFIG_BOOTDELAY=1
+ CONFIG_USE_PREBOOT=y
+-CONFIG_PREBOOT="setenv fdtfile imx8mp-verdin-${variant}-${fdt_board}.dtb"
++CONFIG_PREBOOT="test -n ${fdtfile} || setenv fdtfile imx8mp-verdin-${variant}-${fdt_board}.dtb"
+ CONFIG_LOG=y
+ # CONFIG_DISPLAY_BOARDINFO is not set
+ CONFIG_DISPLAY_BOARDINFO_LATE=y
+-- 
+2.25.1
+

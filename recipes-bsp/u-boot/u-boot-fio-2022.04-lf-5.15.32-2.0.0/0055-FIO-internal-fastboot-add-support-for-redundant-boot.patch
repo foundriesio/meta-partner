@@ -1,0 +1,184 @@
+From 7281ff7fd37ac3ba616af658aa93e47a650f1105 Mon Sep 17 00:00:00 2001
+From: Igor Opaniuk <igor.opaniuk@foundries.io>
+Date: Mon, 15 Feb 2021 21:09:44 +0200
+Subject: [PATCH 055/233] [FIO internal] fastboot: add support for redundant
+ boot images
+
+Allow fastboot to flash secondary bootloader images and secondary image
+table to support redundant secondary boot feature.
+For additional details check SRM 6.5.4.5 Redundant boot support for
+expansion device.
+
+Secondary Image Table contains the sector of secondary bootloader image,
+exluding the offset to that image (explained below in the note).
+
+To generate the Secondary Image Table, use e.g.:
+$ printf '\x0\x0\x0\x0\x0\x0\x0\x0\x33\x22\x11\x00\x00\x01\x0\x0\x00\x0\x0\x0'
+  > /tmp/sit.bin
+$ hexdump  -vC /tmp/sit.bin
+  00000000  00 00 00 00
+  00000004  00 00 00 00
+  00000008  33 22 11 00 <--- This is the "tag"
+  0000000c  00 10 00 00 <--- This is the "firstSectorNumber"
+  00000010  00 00 00 00
+
+You can also use NXP script from [1] for SIT generation.
+Note that the firstSectorNumber is NOT the offset of the IVT, but an
+offset of the IVT decremented by Image Vector Table offset (Table 6-25.
+Image Vector Table Offset and Initial Load Region Size for iMX8MM),
+so for secondary SPL copy at offset 0x1042 sectors,
+firstSectorNumber must be 0x1000 (0x42 sectors * 512 = 0x8400 bytes offset).
+
+uuu fastboot additional partition flashing:
+FB: flash bootloader_s ../imx-boot-imx8mmevk.signed
+FB: flash bootloader2_s ../u-boot-imx8mmevk.itb
+FB: flash sit ../sit.bin
+
+In order to test redundant boot board should be closed and
+SD/MMC manufacture mode disabled, as secondary boot is not supported in
+the SD/MMC manufacture mode by blowing DISABLE_SDMMC_MFG:
+> fuse prog -y 2 1 0x00800000
+
+[1] https://source.codeaurora.org/external/imx/imx-mkimage/tree/scripts/gen_sit.sh?h=imx_5.4.70_2.3.0
+Signed-off-by: Igor Opaniuk <igor.opaniuk@foundries.io>
+---
+ drivers/fastboot/Kconfig                    |  6 +++
+ drivers/fastboot/fb_fsl/fb_fsl_partitions.c | 51 +++++++++++++++++++++
+ include/fb_fsl.h                            | 18 +++++++-
+ 3 files changed, 74 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/fastboot/Kconfig b/drivers/fastboot/Kconfig
+index b07ed281ee9..5e64434aca5 100644
+--- a/drivers/fastboot/Kconfig
++++ b/drivers/fastboot/Kconfig
+@@ -100,6 +100,12 @@ config FSL_FASTBOOT
+ 	help
+ 	  This enables FSL implementation for Android fastboot.
+ 
++config FSL_FASTBOOT_BOOTLOADER_SECONDARY
++	bool "Enable FSL fastboot flash support for primary/secondary sets of bootloader images"
++	depends on FASTBOOT_FLASH
++	help
++	  This enables FSL implementation for Android fastboot.
++
+ config FSL_FASTBOOT_BOOTLOADER2
+ 	bool "Enable FSL fastboot flash support for separate SPL/u-boot"
+ 	depends on FASTBOOT_FLASH
+diff --git a/drivers/fastboot/fb_fsl/fb_fsl_partitions.c b/drivers/fastboot/fb_fsl/fb_fsl_partitions.c
+index c248b2de870..c9a491fa756 100644
+--- a/drivers/fastboot/fb_fsl/fb_fsl_partitions.c
++++ b/drivers/fastboot/fb_fsl/fb_fsl_partitions.c
+@@ -46,14 +46,29 @@ enum {
+ #endif
+ 	PTN_ALL_INDEX,
+ 	PTN_BOOTLOADER_INDEX,
++#ifdef CONFIG_FSL_FASTBOOT_BOOTLOADER_SECONDARY
++	PTN_BOOTLOADER_SECONDARY_INDEX,
++	PTN_SIT_INDEX,
++#endif
+ #ifdef CONFIG_FSL_FASTBOOT_BOOTLOADER2
+ 	PTN_BOOTLOADER2_INDEX,
++#ifdef CONFIG_FSL_FASTBOOT_BOOTLOADER_SECONDARY
++	PTN_BOOTLOADER2_SECONDARY_INDEX,
++#endif
+ #endif
+ };
+ 
+ struct fastboot_ptentry g_ptable[MAX_PTN];
+ unsigned int g_pcount;
+ 
++#ifdef CONFIG_FSL_FASTBOOT_BOOTLOADER_SECONDARY
++static ulong secondary_image_table_mmc_offset(void)
++{
++	if (is_imx8mq() || is_imx8mm() || ((is_imx8qm() || is_imx8qxp()) && is_soc_rev(CHIP_REV_A)))
++		return 0x8200;
++}
++#endif
++
+ static ulong bootloader_mmc_offset(void)
+ {
+ 	if (is_imx8mq() || is_imx8mm() || ((is_imx8qm() || is_imx8qxp()) && is_soc_rev(CHIP_REV_A)))
+@@ -263,6 +278,42 @@ static int _fastboot_parts_load_from_ptable(void)
+ 	last_bootloader_partition = PTN_BOOTLOADER2_INDEX;
+ #endif
+ 
++#ifdef CONFIG_FSL_FASTBOOT_BOOTLOADER_SECONDARY
++	/*
++	 * Bootloader images for Secondary rendundant boot
++	 */
++	strcpy(ptable[PTN_BOOTLOADER_SECONDARY_INDEX].name, FASTBOOT_PARTITION_BOOTLOADER_SECONDARY);
++	ptable[PTN_BOOTLOADER_SECONDARY_INDEX].start = CONFIG_SECONDARY_BOOT_SECTOR_OFFSET +
++		ptable[PTN_BOOTLOADER_INDEX].start;
++	ptable[PTN_BOOTLOADER_SECONDARY_INDEX].length = ptable[PTN_BOOTLOADER_INDEX].length;
++	ptable[PTN_BOOTLOADER_SECONDARY_INDEX].partition_id = boot_partition;
++	ptable[PTN_BOOTLOADER_SECONDARY_INDEX].flags = FASTBOOT_PTENTRY_FLAGS_UNERASEABLE;
++	strcpy(ptable[PTN_BOOTLOADER_SECONDARY_INDEX].fstype, "raw");
++
++	/* Secondary Image Table */
++	strcpy(ptable[PTN_SIT_INDEX].name, FASTBOOT_PARTITION_SIT);
++	ptable[PTN_SIT_INDEX].start =
++				secondary_image_table_mmc_offset() / dev_desc->blksz;
++	/* Just one sector, however the table itself is only 20 bytes */
++	ptable[PTN_SIT_INDEX].length = 1;
++	ptable[PTN_SIT_INDEX].partition_id = boot_partition;
++	ptable[PTN_SIT_INDEX].flags = FASTBOOT_PTENTRY_FLAGS_UNERASEABLE;
++	strcpy(ptable[PTN_SIT_INDEX].fstype, "raw");
++	last_bootloader_partition = PTN_SIT_INDEX;
++
++#ifdef CONFIG_FSL_FASTBOOT_BOOTLOADER2
++	/* Bootloader2 (u-boot binary when SPL is separate) */
++	strcpy(ptable[PTN_BOOTLOADER2_SECONDARY_INDEX].name, FASTBOOT_PARTITION_BOOTLOADER2_SECONDARY);
++	ptable[PTN_BOOTLOADER2_SECONDARY_INDEX].start = CONFIG_SECONDARY_BOOT_SECTOR_OFFSET + ptable[PTN_BOOTLOADER2_INDEX].start;
++	ptable[PTN_BOOTLOADER2_SECONDARY_INDEX].length = ptable[PTN_BOOTLOADER2_INDEX].length;
++	ptable[PTN_BOOTLOADER2_SECONDARY_INDEX].partition_id = boot_partition;
++	ptable[PTN_BOOTLOADER2_SECONDARY_INDEX].flags = FASTBOOT_PTENTRY_FLAGS_UNERASEABLE;
++	strcpy(ptable[PTN_BOOTLOADER2_SECONDARY_INDEX].fstype, "raw");
++	last_bootloader_partition = PTN_BOOTLOADER2_SECONDARY_INDEX;
++
++#endif
++#endif /* CONFIG_FSL_FASTBOOT_BOOTLOADER_SECONDARY */
++
+ 	int tbl_idx;
+ 	int part_idx = 1;
+ 	int ret;
+diff --git a/include/fb_fsl.h b/include/fb_fsl.h
+index 12f67c808eb..09fa75712a9 100644
+--- a/include/fb_fsl.h
++++ b/include/fb_fsl.h
+@@ -78,8 +78,15 @@
+ #define FASTBOOT_PARTITION_CACHE "cache"
+ #define FASTBOOT_PARTITION_DEVICE "device"
+ #define FASTBOOT_PARTITION_BOOTLOADER "bootloader"
++#ifdef CONFIG_FSL_FASTBOOT_BOOTLOADER_SECONDARY
++#define FASTBOOT_PARTITION_BOOTLOADER_SECONDARY "bootloader_s"
++#define FASTBOOT_PARTITION_SIT "sit" /* secondary image table */
++#endif
+ #ifdef CONFIG_FSL_FASTBOOT_BOOTLOADER2
+ #define FASTBOOT_PARTITION_BOOTLOADER2 "bootloader2"
++#ifdef CONFIG_FSL_FASTBOOT_BOOTLOADER_SECONDARY
++#define FASTBOOT_PARTITION_BOOTLOADER2_SECONDARY "bootloader2_s"
++#endif
+ #endif
+ #define FASTBOOT_PARTITION_DATA "userdata"
+ #define FASTBOOT_PARTITION_GPT "gpt"
+@@ -133,7 +140,16 @@
+ 
+ #define ANDROID_MBR_OFFSET	    0
+ #define ANDROID_MBR_SIZE	    0x200
+-#define ANDROID_BOOTLOADER_SIZE	    0x400000
++#ifdef CONFIG_FSL_FASTBOOT_BOOTLOADER_SECONDARY
++/*
++ * If we support secondary boot and use boot partition
++ * the manixum size of bootloader is half of boot partition size
++ * excluding MMC bootloader offset
++*/
++#define ANDROID_BOOTLOADER_SIZE    0x200000
++#else
++#define ANDROID_BOOTLOADER_SIZE    0x400000
++#endif
+ 
+ #define ANDROID_GPT_OFFSET         0
+ #define ANDROID_GPT_SIZE           0x100000
+-- 
+2.40.1
+

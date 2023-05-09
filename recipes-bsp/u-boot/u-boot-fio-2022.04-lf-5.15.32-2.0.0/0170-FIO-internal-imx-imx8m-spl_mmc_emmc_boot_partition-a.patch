@@ -1,0 +1,33 @@
+From 92012fed8040d30aa9b5f62500359a4f1ac0972c Mon Sep 17 00:00:00 2001
+From: Igor Opaniuk <igor.opaniuk@foundries.io>
+Date: Thu, 10 Nov 2022 17:15:17 +0200
+Subject: [PATCH 170/233] [FIO internal] imx: imx8m:
+ spl_mmc_emmc_boot_partition adjustment
+
+Don't rely on ROM event log during decision making what partition to
+boot when CONFIG_SECONDARY_BOOT_RUNTIME_DETECTION=y, as in this case
+SPL expects all images to be flashed to boot0.
+
+Fixes: a5ee05cf("ARM: imx: Pick correct eMMC boot partition from ROM log")
+Signed-off-by: Igor Opaniuk <igor.opaniuk@foundries.io>
+---
+ arch/arm/mach-imx/imx8m/soc.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/arch/arm/mach-imx/imx8m/soc.c b/arch/arm/mach-imx/imx8m/soc.c
+index 51b8f313829..4283ecc4296 100644
+--- a/arch/arm/mach-imx/imx8m/soc.c
++++ b/arch/arm/mach-imx/imx8m/soc.c
+@@ -682,7 +682,8 @@ enum boot_device get_boot_device(void)
+ }
+ #endif
+ 
+-#if defined(CONFIG_IMX8M)
++#if !defined(CONFIG_SECONDARY_BOOT_RUNTIME_DETECTION) && \
++    defined(CONFIG_IMX8M)
+ #include <spl.h>
+ int spl_mmc_emmc_boot_partition(struct mmc *mmc)
+ {
+-- 
+2.40.1
+

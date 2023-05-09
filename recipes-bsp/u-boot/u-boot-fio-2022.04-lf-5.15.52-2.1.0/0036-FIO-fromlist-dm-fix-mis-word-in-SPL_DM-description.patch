@@ -1,0 +1,29 @@
+From 015e3042ad752fd668061275dafbf0a5394dd2be Mon Sep 17 00:00:00 2001
+From: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+Date: Wed, 13 Jul 2022 19:39:42 +0300
+Subject: [PATCH 036/233] [FIO fromlist] dm: fix mis-word in SPL_DM description
+
+Replace logically correct word in the description.
+
+Fixes: 91a91ff804d ("dm: Add Kconfig options for driver model SPL support")
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+---
+ drivers/core/Kconfig | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/core/Kconfig b/drivers/core/Kconfig
+index 8f7703c8b58..886cb7bb2ac 100644
+--- a/drivers/core/Kconfig
++++ b/drivers/core/Kconfig
+@@ -18,7 +18,7 @@ config SPL_DM
+ 	  consider using CONFIG_SYS_MALLOC_SIMPLE. In that case you
+ 	  must provide CONFIG_SPL_SYS_MALLOC_F_LEN to set the size.
+ 	  In most cases driver model will only allocate a few uclasses
+-	  and devices in SPL, so 1KB should be enable. See
++	  and devices in SPL, so 1KB should be enough. See
+ 	  CONFIG_SPL_SYS_MALLOC_F_LEN for more details on how to enable it.
+ 
+ config TPL_DM
+-- 
+2.25.1
+

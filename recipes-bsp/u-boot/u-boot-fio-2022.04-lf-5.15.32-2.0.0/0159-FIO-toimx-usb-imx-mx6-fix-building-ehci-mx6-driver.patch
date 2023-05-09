@@ -1,0 +1,58 @@
+From fe46986b84e4502391da1727c04f38b18fa1fac1 Mon Sep 17 00:00:00 2001
+From: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+Date: Sun, 9 Oct 2022 18:59:52 +0300
+Subject: [PATCH 159/233] [FIO toimx] usb: imx: mx6: fix building ehci-mx6
+ driver
+
+The phy_bases structure is used in multiple files. Also it is used
+in macros ARRAY_SIZE which doesn't allow input incomplete types.
+Move definition of the structure to the header file.
+
+Fixes: 52ec75add16 ("MLK-23110-1 usb: Decouple the CI_UDC DM gadget driver with EHCI MX6 driver")
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+---
+ drivers/usb/imx/usb-mx6-common.c | 7 -------
+ include/usb/usb_mx6_common.h     | 9 +++++++++
+ 2 files changed, 9 insertions(+), 7 deletions(-)
+
+diff --git a/drivers/usb/imx/usb-mx6-common.c b/drivers/usb/imx/usb-mx6-common.c
+index 8a2b4e5353e..89c5f40bedf 100644
+--- a/drivers/usb/imx/usb-mx6-common.c
++++ b/drivers/usb/imx/usb-mx6-common.c
+@@ -67,13 +67,6 @@ struct usbnc_regs {
+ };
+ 
+ #if defined(CONFIG_MX6) || defined(CONFIG_MX7ULP) || defined(CONFIG_IMXRT) || defined(CONFIG_IMX8) || defined(CONFIG_IMX8ULP)
+-static const ulong phy_bases[] = {
+-	USB_PHY0_BASE_ADDR,
+-#if defined(USB_PHY1_BASE_ADDR)
+-	USB_PHY1_BASE_ADDR,
+-#endif
+-};
+-
+ int usb_phy_mode(int port)
+ {
+ 	void __iomem *phy_reg;
+diff --git a/include/usb/usb_mx6_common.h b/include/usb/usb_mx6_common.h
+index 1d8029ab95f..aa0a2e2d609 100644
+--- a/include/usb/usb_mx6_common.h
++++ b/include/usb/usb_mx6_common.h
+@@ -8,6 +8,15 @@
+ #define __USB_MX6_COMMON_H__
+ #include <usb/ehci-ci.h>
+ 
++#if defined(CONFIG_MX6) || defined(CONFIG_MX7ULP) || defined(CONFIG_IMXRT) || defined(CONFIG_IMX8) || defined(CONFIG_IMX8ULP)
++static const ulong phy_bases[] = {
++	USB_PHY0_BASE_ADDR,
++#if defined(USB_PHY1_BASE_ADDR)
++	USB_PHY1_BASE_ADDR,
++#endif
++};
++#endif
++
+ struct ehci_mx6_phy_data {
+ 	void __iomem *phy_addr;
+ 	void __iomem *misc_addr;
+-- 
+2.40.1
+

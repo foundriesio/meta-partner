@@ -1,0 +1,99 @@
+From e37a489ccccbef71c34a81653660a6c088f9a06f Mon Sep 17 00:00:00 2001
+From: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+Date: Tue, 19 Jul 2022 16:17:37 +0300
+Subject: [PATCH 079/233] [FIO internal] hash: disable crc16-ccitt if
+ FIT_SIGNATURE_STRICT
+
+FIT_SIGNATURE_STRICT requires to use high-secure hash algorithms for
+signing FIT images. Disable the weakest algorithm CRC16 to avoid a
+possible attach vector.
+
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+---
+ common/hash.c |  8 +++++---
+ lib/Kconfig   | 15 +++++++++++++++
+ 2 files changed, 20 insertions(+), 3 deletions(-)
+
+diff --git a/common/hash.c b/common/hash.c
+index 9e53545dbde..b0366e76a59 100644
+--- a/common/hash.c
++++ b/common/hash.c
+@@ -151,7 +151,7 @@ static int __maybe_unused hash_finish_sha512(struct hash_algo *algo, void *ctx,
+ 	return 0;
+ }
+ 
+-static int hash_init_crc16_ccitt(struct hash_algo *algo, void **ctxp)
++static int __maybe_unused hash_init_crc16_ccitt(struct hash_algo *algo, void **ctxp)
+ {
+ 	uint16_t *ctx = malloc(sizeof(uint16_t));
+ 	*ctx = 0;
+@@ -159,7 +159,7 @@ static int hash_init_crc16_ccitt(struct hash_algo *algo, void **ctxp)
+ 	return 0;
+ }
+ 
+-static int hash_update_crc16_ccitt(struct hash_algo *algo, void *ctx,
++static int __maybe_unused hash_update_crc16_ccitt(struct hash_algo *algo, void *ctx,
+ 				   const void *buf, unsigned int size,
+ 				   int is_last)
+ {
+@@ -167,7 +167,7 @@ static int hash_update_crc16_ccitt(struct hash_algo *algo, void *ctx,
+ 	return 0;
+ }
+ 
+-static int hash_finish_crc16_ccitt(struct hash_algo *algo, void *ctx,
++static int __maybe_unused hash_finish_crc16_ccitt(struct hash_algo *algo, void *ctx,
+ 				   void *dest_buf, int size)
+ {
+ 	if (size < algo->digest_size)
+@@ -303,6 +303,7 @@ static struct hash_algo hash_algo[] = {
+ #endif
+ 	},
+ #endif
++#if CONFIG_IS_ENABLED(CRC16)
+ 	{
+ 		.name		= "crc16-ccitt",
+ 		.digest_size	= 2,
+@@ -312,6 +313,7 @@ static struct hash_algo hash_algo[] = {
+ 		.hash_update	= hash_update_crc16_ccitt,
+ 		.hash_finish	= hash_finish_crc16_ccitt,
+ 	},
++#endif
+ #if CONFIG_IS_ENABLED(CRC32)
+ 	{
+ 		.name		= "crc32",
+diff --git a/lib/Kconfig b/lib/Kconfig
+index 88ab9f62ecc..bb6f7b09a34 100644
+--- a/lib/Kconfig
++++ b/lib/Kconfig
+@@ -471,6 +471,16 @@ config SHA_HW_ACCEL
+ 
+ if SPL
+ 
++config SPL_CRC16
++	bool "Enable CRC16 support in SPL"
++	default y if !SPL_FIT_SIGNATURE_STRICT
++	help
++	  This option enables support of hashing using CRC16 algorithm.
++	  The CRC16 algorithm produces 16-bit checksum value. For FIT
++	  images, this is the least secure type of checksum, suitable for
++	  detected accidental image corruption. For secure applications you
++	  should consider SHA256 or SHA384.
++
+ config SPL_CRC32
+ 	bool "Enable CRC32 support in SPL"
+ 	default y if SPL_LEGACY_IMAGE_SUPPORT || SPL_EFI_PARTITION
+@@ -578,6 +588,11 @@ config SPL_MD5
+ 	  security applications, but it can be useful for providing a quick
+ 	  checksum of a block of data.
+ 
++config CRC16
++	def_bool y
++	help
++	  Enables CRC16 support in U-Boot.
++
+ config CRC32
+ 	def_bool y
+ 	help
+-- 
+2.40.1
+

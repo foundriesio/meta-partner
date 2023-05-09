@@ -1,0 +1,59 @@
+From 5111d38361c5c5f23c497698037924526d91fe88 Mon Sep 17 00:00:00 2001
+From: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+Date: Mon, 22 Aug 2022 15:56:59 +0300
+Subject: [PATCH 147/233] [FIO internal] ARM: mach-imx: spl: add support of
+ imx8mn_evk in spl_mmc_get_uboot_raw_sector()
+
+iMX8MN can have 2 mmc drives. Add support of booting from 2nd drive
+to spl_mmc_get_uboot_raw_sector().
+Remove an incomplete version of that function from imx8mn_evk/spl.c.
+
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+---
+ arch/arm/mach-imx/spl.c          |  6 +++++-
+ board/freescale/imx8mn_evk/spl.c | 15 ---------------
+ 2 files changed, 5 insertions(+), 16 deletions(-)
+
+diff --git a/arch/arm/mach-imx/spl.c b/arch/arm/mach-imx/spl.c
+index 69816a33b88..acf85d466d9 100644
+--- a/arch/arm/mach-imx/spl.c
++++ b/arch/arm/mach-imx/spl.c
+@@ -501,7 +501,11 @@ unsigned long spl_mmc_get_uboot_raw_sector(struct mmc *mmc,
+ {
+ 	int boot_secondary = boot_mode_getprisec();
+ 	unsigned long offset = CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_SECTOR;
+-
++#if defined(CONFIG_iMX8MN)
++	#define UBOOT_MMC2_RAW_SECTOR_OFFSET 0x40
++	if (spl_boot_device() == BOOT_DEVICE_MMC2)
++			offset -= UBOOT_MMC2_RAW_SECTOR_OFFSET;
++#endif
+ 	if (boot_secondary) {
+ 		offset += CONFIG_SECONDARY_BOOT_SECTOR_OFFSET;
+ 		printf("SPL: Booting secondary boot path: using 0x%lx offset "
+diff --git a/board/freescale/imx8mn_evk/spl.c b/board/freescale/imx8mn_evk/spl.c
+index fee5db8cf0f..2295a810036 100644
+--- a/board/freescale/imx8mn_evk/spl.c
++++ b/board/freescale/imx8mn_evk/spl.c
+@@ -224,18 +224,3 @@ void board_init_f(ulong dummy)
+ 
+ 	board_init_r(NULL, 0);
+ }
+-
+-#ifdef CONFIG_SPL_MMC
+-#define UBOOT_RAW_SECTOR_OFFSET 0x40
+-unsigned long spl_mmc_get_uboot_raw_sector(struct mmc *mmc)
+-{
+-	u32 boot_dev = spl_boot_device();
+-	switch (boot_dev) {
+-		case BOOT_DEVICE_MMC1:
+-			return CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_SECTOR;
+-		case BOOT_DEVICE_MMC2:
+-			return CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_SECTOR - UBOOT_RAW_SECTOR_OFFSET;
+-	}
+-	return CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_SECTOR;
+-}
+-#endif
+-- 
+2.25.1
+

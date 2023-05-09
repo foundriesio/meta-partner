@@ -1,0 +1,84 @@
+From 0722759dc400a283626cf623785f6773756e60e8 Mon Sep 17 00:00:00 2001
+From: Vanessa Maegima <vanessa.maegima@foundries.io>
+Date: Tue, 29 Mar 2022 13:47:09 -0300
+Subject: [PATCH 141/233] [FIO internal] board: imx8mp_evk: spl: enable i2c5
+ bus
+
+The board supports flexcan1 by default which conflicts with the I2C5 pins.
+To enable the I2C5 bus, we first need to set a pin in the PCA6416
+IO expander (sitting on I2C3).
+
+This is needed to enable SE050 support in I2C5.
+
+Signed-off-by: Vanessa Maegima <vanessa.maegima@foundries.io>
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+---
+ board/freescale/imx8mp_evk/spl.c | 39 ++++++++++++++++++++++++++++++++
+ 1 file changed, 39 insertions(+)
+
+diff --git a/board/freescale/imx8mp_evk/spl.c b/board/freescale/imx8mp_evk/spl.c
+index 913e2868b98..1b48ae23bc3 100644
+--- a/board/freescale/imx8mp_evk/spl.c
++++ b/board/freescale/imx8mp_evk/spl.c
+@@ -28,6 +28,8 @@
+ #include <mmc.h>
+ #include <asm/arch/ddr.h>
+ 
++#include <pca953x.h>
++
+ DECLARE_GLOBAL_DATA_PTR;
+ 
+ int spl_board_boot_device(enum boot_device boot_dev_spl)
+@@ -137,6 +139,41 @@ int power_init_board(void)
+ }
+ #endif
+ 
++static int setup_i2c5_bus(void)
++{
++	struct udevice *bus;
++	struct udevice *dev;
++	int ret;
++
++	/* set I2C3 bus to control the PCA6416 IO expander */
++	ret = uclass_get_device_by_name(UCLASS_I2C, "i2c@30a40000", &bus);
++	if (ret) {
++		printf("I2C3: failed to probe: %d\n", ret);
++		return ret;
++	}
++	ret = dm_i2c_probe(bus, 0x20, 0, &dev);
++	if (ret) {
++		printf("PCA6416: failed probe: %d\n", ret);
++		return ret;
++	}
++	puts("PCA6416: probe\n");
++
++	/* set P0_2 to enable I2C5 */
++	// set dir = output
++	dm_i2c_reg_write(dev, 0x6, 0x80);
++	// set val = high
++	dm_i2c_reg_write(dev, 0x2, 0x4);
++
++	/* set I2C5 bus */
++	ret = uclass_get_device_by_name(UCLASS_I2C, "i2c@30ad0000", &bus);
++	if (ret) {
++		printf("I2C5: failed to probe: %d\n", ret);
++		return ret;
++	}
++
++	return 0;
++}
++
+ #ifdef CONFIG_SPL_LOAD_FIT
+ int board_fit_config_name_match(const char *name)
+ {
+@@ -184,5 +221,7 @@ void board_init_f(ulong dummy)
+ 	/* DDR initialization */
+ 	spl_dram_init();
+ 
++	setup_i2c5_bus();
++
+ 	board_init_r(NULL, 0);
+ }
+-- 
+2.40.1
+

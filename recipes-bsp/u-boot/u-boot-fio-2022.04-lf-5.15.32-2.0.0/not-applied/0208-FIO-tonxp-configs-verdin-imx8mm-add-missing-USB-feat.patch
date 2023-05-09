@@ -1,0 +1,96 @@
+From 3921fca5f611eff53bd573bacd5a990c74d04125 Mon Sep 17 00:00:00 2001
+From: Andrejs Cainikovs <andrejs.cainikovs@toradex.com>
+Date: Wed, 31 Aug 2022 14:47:36 +0200
+Subject: [PATCH 208/233] [FIO tonxp] configs: verdin-imx8mm: add missing USB
+ features vs BSP5
+
+This commit adds few USB related features:
+- USB Gadget devices
+- USB Mass Storage (aka UMS)
+- Fastboot
+
+Upstream-Status: Inappropriate [other]
+- NXP downstream specific
+
+Signed-off-by: Andrejs Cainikovs <andrejs.cainikovs@toradex.com>
+(cherry picked from commit 19dae08a946c9c439af28c5fb5056afe2ae56074)
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+---
+ arch/arm/dts/imx8mm-verdin-u-boot.dtsi | 11 +++++++++++
+ configs/verdin-imx8mm_defconfig        | 14 +++++++++++++-
+ 2 files changed, 24 insertions(+), 1 deletion(-)
+
+diff --git a/arch/arm/dts/imx8mm-verdin-u-boot.dtsi b/arch/arm/dts/imx8mm-verdin-u-boot.dtsi
+index 976399ad602..25bddb46103 100644
+--- a/arch/arm/dts/imx8mm-verdin-u-boot.dtsi
++++ b/arch/arm/dts/imx8mm-verdin-u-boot.dtsi
+@@ -6,6 +6,17 @@
+ #include "imx8mm-u-boot.dtsi"
+ 
+ / {
++	aliases {
++		usbgadget0 = &usbg1;
++	};
++
++	usbg1: usbg1 {
++		compatible = "fsl,imx27-usb-gadget";
++		dr_mode = "peripheral";
++		chipidea,usb = <&usbotg1>;
++		status = "okay";
++	};
++
+ 	firmware {
+ 		optee {
+ 			compatible = "linaro,optee-tz";
+diff --git a/configs/verdin-imx8mm_defconfig b/configs/verdin-imx8mm_defconfig
+index 38388773143..36296f726f4 100644
+--- a/configs/verdin-imx8mm_defconfig
++++ b/configs/verdin-imx8mm_defconfig
+@@ -59,6 +59,7 @@ CONFIG_CMD_I2C=y
+ CONFIG_CMD_MMC=y
+ CONFIG_CMD_READ=y
+ CONFIG_CMD_USB=y
++CONFIG_CMD_USB_MASS_STORAGE=y
+ CONFIG_CMD_BOOTCOUNT=y
+ CONFIG_CMD_CACHE=y
+ CONFIG_CMD_TIME=y
+@@ -74,7 +75,6 @@ CONFIG_ENV_OVERWRITE=y
+ CONFIG_ENV_IS_IN_MMC=y
+ CONFIG_SYS_RELOC_GD_ENV_ADDR=y
+ CONFIG_SYS_MMC_ENV_PART=1
+-CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG=y
+ CONFIG_USE_ETHPRIME=y
+ CONFIG_ETHPRIME="eth0"
+ CONFIG_VERSION_VARIABLE=y
+@@ -87,6 +87,10 @@ CONFIG_SPL_CLK_COMPOSITE_CCF=y
+ CONFIG_CLK_COMPOSITE_CCF=y
+ CONFIG_SPL_CLK_IMX8MM=y
+ CONFIG_CLK_IMX8MM=y
++CONFIG_USB_FUNCTION_FASTBOOT=y
++CONFIG_FASTBOOT_BUF_ADDR=0x42800000
++CONFIG_FASTBOOT_BUF_SIZE=0x40000000
++CONFIG_FASTBOOT_FLASH=y
+ CONFIG_GPIO_HOG=y
+ CONFIG_MXC_GPIO=y
+ CONFIG_DM_I2C=y
+@@ -129,9 +133,17 @@ CONFIG_SYSRESET_WATCHDOG=y
+ CONFIG_DM_THERMAL=y
+ CONFIG_IMX_TMU=y
+ CONFIG_USB=y
++CONFIG_DM_USB=y
+ CONFIG_USB_EHCI_HCD=y
+ CONFIG_USB_KEYBOARD=y
+ CONFIG_USB_HOST_ETHER=y
++CONFIG_USB_GADGET=y
++CONFIG_USB_GADGET_MANUFACTURER="FSL"
++CONFIG_USB_GADGET_VENDOR_NUM=0x0525
++CONFIG_USB_GADGET_PRODUCT_NUM=0xa4a5
++CONFIG_CI_UDC=y
++CONFIG_SDP_LOADADDR=0x40400000
++CONFIG_USB_GADGET_DOWNLOAD=y
+ CONFIG_IMX_WATCHDOG=y
+ CONFIG_HEXDUMP=y
+ CONFIG_OF_LIBFDT_OVERLAY=y
+-- 
+2.40.1
+

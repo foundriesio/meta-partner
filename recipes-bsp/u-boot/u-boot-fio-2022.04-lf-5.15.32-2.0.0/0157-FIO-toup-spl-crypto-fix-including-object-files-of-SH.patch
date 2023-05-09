@@ -1,0 +1,35 @@
+From 90e2d47930a98ac52b370f25facb28db9b3cb53f Mon Sep 17 00:00:00 2001
+From: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+Date: Mon, 12 Sep 2022 17:14:06 +0300
+Subject: [PATCH 157/233] [FIO toup] spl: crypto: fix including object files of
+ SHA* in SPL
+
+If one of SHA algorithms is disabled in u-boot, its code is not
+included in SPL even if it enabled there. Fix selecting object files.
+
+Fixes: 603d15a572d ("spl: cypto: Bring back SPL_ versions of SHA")
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+---
+ lib/Makefile | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/lib/Makefile b/lib/Makefile
+index 632dcba8695..f7c9e19c33b 100644
+--- a/lib/Makefile
++++ b/lib/Makefile
+@@ -71,9 +71,9 @@ obj-$(CONFIG_ECDSA) += ecdsa/
+ obj-$(CONFIG_$(SPL_)RSA) += rsa/
+ obj-$(CONFIG_HASH) += hash-checksum.o
+ obj-$(CONFIG_BLAKE2) += blake2/blake2b.o
+-obj-$(CONFIG_SHA1) += sha1.o
+-obj-$(CONFIG_SHA256) += sha256.o
+-obj-$(CONFIG_SHA512) += sha512.o
++obj-$(CONFIG_$(SPL_)SHA1) += sha1.o
++obj-$(CONFIG_$(SPL_)SHA256) += sha256.o
++obj-$(CONFIG_$(SPL_)SHA512) += sha512.o
+ obj-$(CONFIG_CRYPT_PW) += crypt/
+ 
+ obj-$(CONFIG_$(SPL_)ZLIB) += zlib/
+-- 
+2.40.1
+

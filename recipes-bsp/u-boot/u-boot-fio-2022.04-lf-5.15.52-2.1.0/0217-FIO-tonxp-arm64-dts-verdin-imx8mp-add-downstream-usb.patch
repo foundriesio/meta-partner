@@ -1,0 +1,129 @@
+From f65af30dfc9d3dd407c7fd39e601999660525a99 Mon Sep 17 00:00:00 2001
+From: Marcel Ziswiler <marcel.ziswiler@toradex.com>
+Date: Fri, 9 Sep 2022 00:01:15 +0200
+Subject: [PATCH 217/233] [FIO tonxp] arm64: dts: verdin-imx8mp: add downstream
+ usb properties
+
+Add downstream-specific USB properties.
+
+Upstream-Status: Inappropriate [other]
+- NXP downstream specific
+
+Signed-off-by: Marcel Ziswiler <marcel.ziswiler@toradex.com>
+(cherry picked from commit 6386a5ea8c055532cfb4b457bc9e12ff9b4eb822)
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+---
+ arch/arm/dts/imx8mp-verdin-u-boot.dtsi | 22 +++++++++++++++
+ arch/arm/dts/imx8mp-verdin.dts         | 37 +++++++++++++-------------
+ 2 files changed, 41 insertions(+), 18 deletions(-)
+
+diff --git a/arch/arm/dts/imx8mp-verdin-u-boot.dtsi b/arch/arm/dts/imx8mp-verdin-u-boot.dtsi
+index b56deded32a..8aec33a463d 100644
+--- a/arch/arm/dts/imx8mp-verdin-u-boot.dtsi
++++ b/arch/arm/dts/imx8mp-verdin-u-boot.dtsi
+@@ -154,6 +154,28 @@
+ 	u-boot,dm-spl;
+ };
+ 
++&usb3_0 {
++	/delete-property/ power-domains;
++};
++
++&usb3_1 {
++	/delete-property/ power-domains;
++};
++
++&usb_dwc3_0 {
++	compatible = "fsl,imx8mq-dwc3", "snps,dwc3";
++	assigned-clocks = <&clk IMX8MP_CLK_HSIO_AXI>;
++	assigned-clock-parents = <&clk IMX8MP_SYS_PLL1_800M>;
++	assigned-clock-rates = <400000000>;
++};
++
++&usb_dwc3_1 {
++	compatible = "fsl,imx8mq-dwc3", "snps,dwc3";
++	assigned-clocks = <&clk IMX8MP_CLK_HSIO_AXI>;
++	assigned-clock-parents = <&clk IMX8MP_SYS_PLL1_800M>;
++	assigned-clock-rates = <400000000>;
++};
++
+ &usdhc2 {
+ 	assigned-clock-parents = <&clk IMX8MP_SYS_PLL1_400M>;
+ 	assigned-clock-rates = <400000000>;
+diff --git a/arch/arm/dts/imx8mp-verdin.dts b/arch/arm/dts/imx8mp-verdin.dts
+index bc8bf4dad56..a50f42f4ce4 100644
+--- a/arch/arm/dts/imx8mp-verdin.dts
++++ b/arch/arm/dts/imx8mp-verdin.dts
+@@ -26,18 +26,6 @@
+ 		stdout-path = &uart3;
+ 	};
+ 
+-	reg_usb1_host_vbus: regulator-usb1-vbus {
+-		compatible = "regulator-fixed";
+-		enable-active-high;
+-		gpio = <&gpio1 14 GPIO_ACTIVE_HIGH>; /* USB_2_EN */
+-		pinctrl-names = "default";
+-		pinctrl-0 = <&pinctrl_usb1_vbus>;
+-		regulator-always-on;
+-		regulator-max-microvolt = <5000000>;
+-		regulator-min-microvolt = <5000000>;
+-		regulator-name = "usb1_host_vbus";
+-	};
+-
+ 	reg_usdhc2_vmmc: regulator-usdhc2 {
+ 		compatible = "regulator-fixed";
+ 		enable-active-high;
+@@ -305,7 +293,18 @@
+ 	status = "okay";
+ };
+ 
++/* Verdin USB_1 */
++&usb3_0 {
++	status = "okay";
++};
++
+ &usb3_phy0 {
++	fsl,phy-tx-vref-tune = <0xe>;
++	fsl,phy-tx-preemp-amp-tune = <3>;
++	fsl,phy-tx-vboost-level = <5>;
++	fsl,phy-comp-dis-tune = <7>;
++	fsl,pcs-tx-deemph-3p5db = <0x21>;
++	fsl,phy-pcs-tx-swing-full = <0x7f>;
+ 	status = "okay";
+ };
+ 
+@@ -315,10 +314,18 @@
+ 	hnp-disable;
+ 	srp-disable;
+ 	usb-role-switch;
++	role-switch-default-mode = "none";
++	status = "okay";
++};
++
++/* Verdin USB_2 */
++&usb3_1 {
+ 	status = "okay";
+ };
+ 
+ &usb3_phy1 {
++	fsl,phy-tx-preemp-amp-tune = <3>;
++	fsl,phy-tx-vref-tune = <0xb>;
+ 	status = "okay";
+ };
+ 
+@@ -532,12 +539,6 @@
+ 		>;
+ 	};
+ 
+-	pinctrl_usb1_vbus: usb1grp {
+-		fsl,pins = <
+-			MX8MP_IOMUXC_GPIO1_IO14__GPIO1_IO14	0x19
+-		>;
+-	};
+-
+ 	pinctrl_usdhc2: usdhc2grp {
+ 		fsl,pins = <
+ 			MX8MP_IOMUXC_GPIO1_IO04__USDHC2_VSELECT	0xc1
+-- 
+2.25.1
+

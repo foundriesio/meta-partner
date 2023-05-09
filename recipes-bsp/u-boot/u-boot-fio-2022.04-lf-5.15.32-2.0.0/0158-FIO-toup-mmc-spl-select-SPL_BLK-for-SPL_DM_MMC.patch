@@ -1,0 +1,29 @@
+From 67265c926645ecfed1d99ee97f984042b86ddb6d Mon Sep 17 00:00:00 2001
+From: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+Date: Tue, 13 Sep 2022 12:52:07 +0300
+Subject: [PATCH 158/233] [FIO toup] mmc: spl: select SPL_BLK for SPL_DM_MMC
+
+mmc_bind() in mmc-uclass.c calls blk_create_devicef() which is
+defined in blk-uclass.c, so SPL_BLK is required by SPL_DM_MMC.
+Implicitly select SPL_BLK for SPL_DM_MMC.
+
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+---
+ drivers/mmc/Kconfig | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/drivers/mmc/Kconfig b/drivers/mmc/Kconfig
+index 5aca78f25b1..77ce8167418 100644
+--- a/drivers/mmc/Kconfig
++++ b/drivers/mmc/Kconfig
+@@ -45,6 +45,7 @@ config DM_MMC
+ config SPL_DM_MMC
+ 	bool "Enable MMC controllers using Driver Model in SPL"
+ 	depends on SPL_DM && DM_MMC
++	select SPL_BLK
+ 	default y
+ 	help
+ 	  This enables the MultiMediaCard (MMC) uclass which supports MMC and
+-- 
+2.40.1
+

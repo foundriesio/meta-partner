@@ -1,0 +1,30 @@
+From 4efe68e20c5f2ee630cc5c50779668db50337552 Mon Sep 17 00:00:00 2001
+From: Ricardo Salveti <ricardo@foundries.io>
+Date: Tue, 23 Feb 2021 17:56:02 -0300
+Subject: [PATCH 050/233] [FIO toup] arm: dts: imx6ull-14x14-evk-u-boot add
+ rngb
+
+Add rngb node so it can be made available to optee-os.
+
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+---
+ arch/arm/dts/imx6ull-14x14-evk-u-boot.dtsi | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/arch/arm/dts/imx6ull-14x14-evk-u-boot.dtsi b/arch/arm/dts/imx6ull-14x14-evk-u-boot.dtsi
+index e1407c59bba..8d7d82ec944 100644
+--- a/arch/arm/dts/imx6ull-14x14-evk-u-boot.dtsi
++++ b/arch/arm/dts/imx6ull-14x14-evk-u-boot.dtsi
+@@ -12,3 +12,8 @@
+ 	u-boot,dm-pre-reloc;
+ 	u-boot,dm-spl;
+ };
++
++&rngb {
++        u-boot,dm-pre-reloc;
++        u-boot,dm-spl;
++};
+-- 
+2.40.1
+

@@ -1,0 +1,40 @@
+From 5e2cf2921f968d003a33141dbde1f00473cd821b Mon Sep 17 00:00:00 2001
+From: Michael Scott <mike@foundries.io>
+Date: Thu, 16 Dec 2021 17:17:03 -0800
+Subject: [PATCH 133/233] [FIO extras] imx: mx6ul_14x14_evk: add
+ board_fit_config_name_match for SPL
+
+When CONFIG_SPL_LOAD_FIT is enabled, the board must support the following
+function:
+int board_fit_config_name_match(const char *name)
+
+Signed-off-by: Michael Scott <mike@foundries.io>
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+---
+ board/freescale/mx6ul_14x14_evk/mx6ul_14x14_evk.c | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
+
+diff --git a/board/freescale/mx6ul_14x14_evk/mx6ul_14x14_evk.c b/board/freescale/mx6ul_14x14_evk/mx6ul_14x14_evk.c
+index 1101eeea78e..11afecfee52 100644
+--- a/board/freescale/mx6ul_14x14_evk/mx6ul_14x14_evk.c
++++ b/board/freescale/mx6ul_14x14_evk/mx6ul_14x14_evk.c
+@@ -65,6 +65,16 @@ DECLARE_GLOBAL_DATA_PTR;
+ 	PAD_CTL_PUS_47K_UP  | PAD_CTL_SPEED_LOW |		\
+ 	PAD_CTL_DSE_80ohm   | PAD_CTL_SRE_FAST  | PAD_CTL_HYS)
+ 
++#ifdef CONFIG_SPL_LOAD_FIT
++int board_fit_config_name_match(const char *name)
++{
++	if (!strcmp(name, "imx6ul-14x14-evk"))
++		return 0;
++
++	return -1;
++}
++#endif
++
+ #ifdef CONFIG_DM_PMIC
+ int power_init_board(void)
+ {
+-- 
+2.40.1
+

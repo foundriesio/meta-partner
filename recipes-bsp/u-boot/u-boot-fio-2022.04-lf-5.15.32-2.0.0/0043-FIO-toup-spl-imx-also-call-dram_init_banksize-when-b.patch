@@ -1,0 +1,31 @@
+From e858a5baa18ebaef5d88eac566d72773f49ec6cb Mon Sep 17 00:00:00 2001
+From: Ricardo Salveti <ricardo@foundries.io>
+Date: Thu, 14 Jan 2021 21:24:34 -0300
+Subject: [PATCH 043/233] [FIO toup] spl: imx: also call dram_init_banksize
+ when booting ATF or OPTEE
+
+Fixed memory node is also required when booting ATF or OPTEE directly
+from SPL.
+
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+---
+ arch/arm/mach-imx/spl.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/arch/arm/mach-imx/spl.c b/arch/arm/mach-imx/spl.c
+index 9ad366c687b..53631bf684c 100644
+--- a/arch/arm/mach-imx/spl.c
++++ b/arch/arm/mach-imx/spl.c
+@@ -351,7 +351,8 @@ void *board_spl_fit_buffer_addr(ulong fit_size, int sectors, int bl_len)
+ }
+ #endif
+ 
+-#if defined(CONFIG_MX6) && defined(CONFIG_SPL_OS_BOOT)
++#if defined(CONFIG_MX6) && (defined(CONFIG_SPL_OS_BOOT) || \
++		defined(CONFIG_SPL_ATF) || defined(CONFIG_SPL_OPTEE))
+ int dram_init_banksize(void)
+ {
+ 	gd->bd->bi_dram[0].start = CONFIG_SYS_SDRAM_BASE;
+-- 
+2.40.1
+

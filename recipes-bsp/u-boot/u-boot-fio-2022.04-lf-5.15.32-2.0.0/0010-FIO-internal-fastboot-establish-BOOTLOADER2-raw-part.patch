@@ -1,0 +1,140 @@
+From 7f8ee9a2e06d2f8c03286ae1a54ddc246a3b4f1d Mon Sep 17 00:00:00 2001
+From: Michael Scott <mike@foundries.io>
+Date: Fri, 19 Jun 2020 15:16:09 -0700
+Subject: [PATCH 010/233] [FIO internal] fastboot: establish BOOTLOADER2 raw
+ partition for fastboot
+
+Allow fastboot to flash a secondary bootloader at an offset of
+the primary bootloader location.
+
+Signed-off-by: Michael Scott <mike@foundries.io>
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+---
+ drivers/fastboot/Kconfig                    | 22 ++++++++++++++
+ drivers/fastboot/fb_fsl/fb_fsl_partitions.c | 32 +++++++++++++++++++--
+ include/fb_fsl.h                            |  3 ++
+ 3 files changed, 55 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/fastboot/Kconfig b/drivers/fastboot/Kconfig
+index f38f847d4b0..900cb9ec2fe 100644
+--- a/drivers/fastboot/Kconfig
++++ b/drivers/fastboot/Kconfig
+@@ -102,6 +102,28 @@ config FSL_FASTBOOT
+ 	help
+ 	  This enables FSL implementation for Android fastboot.
+ 
++config FSL_FASTBOOT_BOOTLOADER2
++	bool "Enable FSL fastboot flash support for separate SPL/u-boot"
++	depends on FASTBOOT_FLASH
++	help
++	  This enables FSL implementation for Android fastboot.
++
++config FSL_FASTBOOT_BOOTLOADER2_OFFSET
++	hex "2nd bootloader offset in 1k blocks"
++	depends on FSL_FASTBOOT_BOOTLOADER2
++	default 0x50 if ARCH_SUNXI
++	default 0x75 if ARCH_DAVINCI
++	default 0x8a if ARCH_MX6 || ARCH_MX7
++	default 0x100 if ARCH_UNIPHIER
++	default 0x140 if ARCH_MVEBU
++	default 0x200 if ARCH_SOCFPGA || ARCH_AT91
++	default 0x300 if ARCH_ZYNQ || ARCH_KEYSTONE || OMAP34XX || OMAP44XX || \
++		         OMAP54XX || AM33XX || AM43XX || ARCH_K3
++	default 0x4000 if ARCH_ROCKCHIP
++	help
++	  Offset on the MMC to load the second bootloader from
++	  in raw mode. Units: MMC sectors (1 sector = 512 bytes).
++
+ config ANDROID_RECOVERY
+ 	bool "Enable the recovery boot function"
+ 	depends on FSL_FASTBOOT
+diff --git a/drivers/fastboot/fb_fsl/fb_fsl_partitions.c b/drivers/fastboot/fb_fsl/fb_fsl_partitions.c
+index 237ae875ab8..c248b2de870 100644
+--- a/drivers/fastboot/fb_fsl/fb_fsl_partitions.c
++++ b/drivers/fastboot/fb_fsl/fb_fsl_partitions.c
+@@ -46,6 +46,9 @@ enum {
+ #endif
+ 	PTN_ALL_INDEX,
+ 	PTN_BOOTLOADER_INDEX,
++#ifdef CONFIG_FSL_FASTBOOT_BOOTLOADER2
++	PTN_BOOTLOADER2_INDEX,
++#endif
+ };
+ 
+ struct fastboot_ptentry g_ptable[MAX_PTN];
+@@ -141,6 +144,7 @@ static int _fastboot_parts_load_from_ptable(void)
+ 	 * default is no partition, for emmc default user part, except emmc*/
+ 	int boot_partition = FASTBOOT_MMC_NONE_PARTITION_ID;
+ 	int user_partition = FASTBOOT_MMC_NONE_PARTITION_ID;
++	int last_bootloader_partition = PTN_BOOTLOADER_INDEX;
+ 
+ 	unsigned long boot_loader_psize = ANDROID_BOOTLOADER_SIZE;
+ 
+@@ -233,17 +237,36 @@ static int _fastboot_parts_load_from_ptable(void)
+ 	strcpy(ptable[PTN_BOOTLOADER_INDEX].name, FASTBOOT_PARTITION_BOOTLOADER);
+ 	ptable[PTN_BOOTLOADER_INDEX].start =
+ 				bootloader_mmc_offset() / dev_desc->blksz;
++#ifdef CONFIG_FSL_FASTBOOT_BOOTLOADER2
++	ptable[PTN_BOOTLOADER_INDEX].length =
++				(CONFIG_FSL_FASTBOOT_BOOTLOADER2_OFFSET * dev_desc->blksz - bootloader_mmc_offset())
++				/ dev_desc->blksz;
++#else
+ 	ptable[PTN_BOOTLOADER_INDEX].length =
+ 				 boot_loader_psize / dev_desc->blksz;
+-
++#endif
+ 	ptable[PTN_BOOTLOADER_INDEX].partition_id = boot_partition;
+ 	ptable[PTN_BOOTLOADER_INDEX].flags = FASTBOOT_PTENTRY_FLAGS_UNERASEABLE;
+ 	strcpy(ptable[PTN_BOOTLOADER_INDEX].fstype, "raw");
+ 
++#ifdef CONFIG_FSL_FASTBOOT_BOOTLOADER2
++	/* Bootloader2 (u-boot binary when SPL is separate) */
++	strcpy(ptable[PTN_BOOTLOADER2_INDEX].name, FASTBOOT_PARTITION_BOOTLOADER2);
++	ptable[PTN_BOOTLOADER2_INDEX].start =
++				(CONFIG_FSL_FASTBOOT_BOOTLOADER2_OFFSET * dev_desc->blksz) / dev_desc->blksz;
++	ptable[PTN_BOOTLOADER2_INDEX].length =
++				(ANDROID_BOOTLOADER_SIZE - (CONFIG_FSL_FASTBOOT_BOOTLOADER2_OFFSET * dev_desc->blksz))
++				/ dev_desc->blksz;
++	ptable[PTN_BOOTLOADER2_INDEX].partition_id = boot_partition;
++	ptable[PTN_BOOTLOADER2_INDEX].flags = FASTBOOT_PTENTRY_FLAGS_UNERASEABLE;
++	strcpy(ptable[PTN_BOOTLOADER2_INDEX].fstype, "raw");
++	last_bootloader_partition = PTN_BOOTLOADER2_INDEX;
++#endif
++
+ 	int tbl_idx;
+ 	int part_idx = 1;
+ 	int ret;
+-	for (tbl_idx = PTN_BOOTLOADER_INDEX + 1; tbl_idx < MAX_PTN; tbl_idx++) {
++	for (tbl_idx = last_bootloader_partition + 1; tbl_idx < MAX_PTN; tbl_idx++) {
+ 		ret = _fastboot_parts_add_ptable_entry(tbl_idx,
+ 				part_idx++,
+ 				user_partition,
+@@ -331,6 +354,11 @@ bool fastboot_parts_is_raw(struct fastboot_ptentry *ptn)
+ 		if (!strncmp(ptn->name, FASTBOOT_PARTITION_BOOTLOADER,
+ 			strlen(FASTBOOT_PARTITION_BOOTLOADER)))
+ 			return true;
++#ifdef CONFIG_FSL_FASTBOOT_BOOTLOADER2
++		if (!strncmp(ptn->name, FASTBOOT_PARTITION_BOOTLOADER2,
++			strlen(FASTBOOT_PARTITION_BOOTLOADER2)))
++			return true;
++#endif
+ #ifdef CONFIG_ANDROID_AB_SUPPORT
+ 		else if (!strncmp(ptn->name, FASTBOOT_PARTITION_GPT,
+ 			strlen(FASTBOOT_PARTITION_GPT)) ||
+diff --git a/include/fb_fsl.h b/include/fb_fsl.h
+index 7c2d6fbc89e..12f67c808eb 100644
+--- a/include/fb_fsl.h
++++ b/include/fb_fsl.h
+@@ -78,6 +78,9 @@
+ #define FASTBOOT_PARTITION_CACHE "cache"
+ #define FASTBOOT_PARTITION_DEVICE "device"
+ #define FASTBOOT_PARTITION_BOOTLOADER "bootloader"
++#ifdef CONFIG_FSL_FASTBOOT_BOOTLOADER2
++#define FASTBOOT_PARTITION_BOOTLOADER2 "bootloader2"
++#endif
+ #define FASTBOOT_PARTITION_DATA "userdata"
+ #define FASTBOOT_PARTITION_GPT "gpt"
+ #define FASTBOOT_PARTITION_MISC "misc"
+-- 
+2.40.1
+

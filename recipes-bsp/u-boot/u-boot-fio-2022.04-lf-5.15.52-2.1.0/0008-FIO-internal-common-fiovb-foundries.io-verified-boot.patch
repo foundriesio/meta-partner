@@ -1,0 +1,718 @@
+From ceb5f629940136dbb6ec4b89da6bbe7d3f6fcc50 Mon Sep 17 00:00:00 2001
+From: Jorge Ramirez-Ortiz <jorge@foundries.io>
+Date: Mon, 11 Nov 2019 11:07:12 +0100
+Subject: [PATCH 008/233] [FIO internal] common: fiovb: foundries.io verified
+ boot utility
+
+fiovb can:
+- be enabled/disabled separately for u-boot/SPL
+- read/write/delete persistent values
+- get/set the upgrade_available variable
+
+Signed-off-by: Jorge Ramirez-Ortiz <jorge@foundries.io>
+Co-developed-by: Michael Scott <mike@foundries.io>
+Signed-off-by: Michael Scott <mike@foundries.io>
+Co-developed-by: Ricardo Salveti <ricardo@foundries.io>
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+Co-developed-by: Tim Anderson <tim.anderson@foundries.io>
+Signed-off-by: Tim Anderson <tim.anderson@foundries.io>
+Co-developed-by: Vanessa Maegima <vanessa.maegima@foundries.io>
+Signed-off-by: Vanessa Maegima <vanessa.maegima@foundries.io>
+Co-developed-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+---
+ cmd/Kconfig                  |  13 +-
+ cmd/Makefile                 |   3 +
+ cmd/fiovb.c                  | 181 ++++++++++++++++++++++++
+ common/Kconfig               |  16 +++
+ common/Makefile              |   1 +
+ common/fiovb.c               | 262 +++++++++++++++++++++++++++++++++++
+ include/fiovb.h              |  78 +++++++++++
+ include/tee.h                |   1 +
+ include/tee/optee_ta_fiovb.h |  37 +++++
+ 9 files changed, 591 insertions(+), 1 deletion(-)
+ create mode 100644 cmd/fiovb.c
+ create mode 100644 common/fiovb.c
+ create mode 100644 include/fiovb.h
+ create mode 100644 include/tee/optee_ta_fiovb.h
+
+diff --git a/cmd/Kconfig b/cmd/Kconfig
+index f6bd71451bc..5ae3816cadc 100644
+--- a/cmd/Kconfig
++++ b/cmd/Kconfig
+@@ -2404,6 +2404,18 @@ config CMD_AVB
+ 	    avb write_part - write data to partition
+ 	    avb verify - run full verification chain
+ 
++config CMD_FIOVB
++	bool "fiovb - Foundries.IO Verified Boot operations"
++	depends on FIOVB
++	default n
++	help
++	  Enables a "fiovb" command
++	    fiovb init - initialize avb2 subsystem
++	    fiovb read_rb - read rollback index
++	    fiovb write_rb - write rollback index
++	    fiovb write_pvalue - write to RPMB
++	    fiovb read_pvalue - read from RPMB
++
+ config CMD_STACKPROTECTOR_TEST
+ 	bool "Test command for stack protector"
+ 	depends on STACKPROTECTOR
+@@ -2411,7 +2423,6 @@ config CMD_STACKPROTECTOR_TEST
+ 	  Enable stackprot_test command
+ 	  The stackprot_test command will force a stack overrun to test
+ 	  the stack smashing detection mechanisms.
+-
+ endmenu
+ 
+ config CMD_UBI
+diff --git a/cmd/Makefile b/cmd/Makefile
+index 166c652d982..0d27e4f3b22 100644
+--- a/cmd/Makefile
++++ b/cmd/Makefile
+@@ -200,6 +200,9 @@ obj-$(CONFIG_CMD_AVB) += avb.o
+ # Foundries.IO SCP03
+ obj-$(CONFIG_CMD_SCP03) += scp03.o
+ 
++# Foundries.IO Verified Boot
++obj-$(CONFIG_CMD_FIOVB) += fiovb.o
++
+ obj-$(CONFIG_ARM) += arm/
+ obj-$(CONFIG_RISCV) += riscv/
+ obj-$(CONFIG_SANDBOX) += sandbox/
+diff --git a/cmd/fiovb.c b/cmd/fiovb.c
+new file mode 100644
+index 00000000000..44036dd92e1
+--- /dev/null
++++ b/cmd/fiovb.c
+@@ -0,0 +1,181 @@
++/*
++ * (C) Copyright 2019, Foundries.IO
++ *
++ * SPDX-License-Identifier:	GPL-2.0+
++ */
++#include <common.h>
++#include <command.h>
++#include <env.h>
++#include <image.h>
++#include <malloc.h>
++#include <mmc.h>
++#include <fiovb.h>
++#include <asm/arch/sys_proto.h>
++
++#define FIOVB_NAME_LEN	40
++
++static struct fiovb_ops *fiovb_ops;
++
++int do_fiovb_init(struct cmd_tbl *cmdtp, int flag, int argc, char * const argv[])
++{
++	unsigned long mmc_dev;
++
++	if (argc != 2)
++		return CMD_RET_USAGE;
++
++	mmc_dev = simple_strtoul(argv[1], NULL, 16);
++
++	if (fiovb_ops)
++		fiovb_ops_free(fiovb_ops);
++
++	fiovb_ops = fiovb_ops_alloc(mmc_dev);
++	if (fiovb_ops)
++		return CMD_RET_SUCCESS;
++
++	printf("Failed to initialize fiovb\n");
++
++	return CMD_RET_FAILURE;
++}
++
++int do_fiovb_read_pvalue(struct cmd_tbl *cmdtp, int flag, int argc,
++		         char * const argv[])
++{
++	const char *name;
++	size_t bytes;
++	size_t bytes_read;
++	void *buffer;
++	char *endp;
++	char fiovb_name[FIOVB_NAME_LEN] = { 0 }; /* fiovb.name */
++	char fiovb_val[32] = { 0 };
++
++	if (!fiovb_ops) {
++		printf("Foundries.IO Verified Boot is not initialized, run 'fiovb init' first\n");
++		return CMD_RET_FAILURE;
++	}
++
++	if (argc != 3)
++		return CMD_RET_USAGE;
++
++	name = argv[1];
++	bytes = simple_strtoul(argv[2], &endp, 10);
++	if (*endp && *endp != '\n')
++		return CMD_RET_USAGE;
++
++	buffer = malloc(bytes);
++	if (!buffer)
++		return CMD_RET_FAILURE;
++
++	if (fiovb_ops->read_persistent_value(fiovb_ops, name, bytes, buffer,
++					   &bytes_read) == FIOVB_IO_RESULT_OK) {
++		printf("Read %zu bytes, value = %s\n", bytes_read,
++		       (char *)buffer);
++		/* Mirror fiovb variables into the environment */
++		snprintf(fiovb_name, sizeof(fiovb_name), "fiovb.%s", name);
++		snprintf(fiovb_val, sizeof(fiovb_val), "%s", (char *)buffer);
++		env_set(fiovb_name, fiovb_val);
++		free(buffer);
++		return CMD_RET_SUCCESS;
++	}
++
++	printf("Failed to read persistent value\n");
++
++	free(buffer);
++
++	return CMD_RET_FAILURE;
++}
++
++int do_fiovb_write_pvalue(struct cmd_tbl *cmdtp, int flag, int argc,
++			  char * const argv[])
++{
++	const char *name;
++	const char *value;
++	char fiovb_name[FIOVB_NAME_LEN] = { 0 }; /* fiovb.name */
++
++	if (!fiovb_ops) {
++		printf("Foundries.IO Verified Boot is not initialized, run 'fiovb init' first\n");
++		return CMD_RET_FAILURE;
++	}
++
++	if (argc != 3)
++		return CMD_RET_USAGE;
++
++	name = argv[1];
++	value = argv[2];
++
++	if (fiovb_ops->write_persistent_value(fiovb_ops, name, strlen(value) + 1,
++					    (const uint8_t *)value) ==
++	    FIOVB_IO_RESULT_OK) {
++		printf("Wrote %zu bytes\n", strlen(value) + 1);
++		snprintf(fiovb_name, sizeof(fiovb_name), "fiovb.%s", name);
++		env_set(fiovb_name, value);
++		return CMD_RET_SUCCESS;
++	}
++
++	printf("Failed to write persistent value\n");
++
++	return CMD_RET_FAILURE;
++}
++
++int do_fiovb_delete_pvalue(struct cmd_tbl *cmdtp, int flag, int argc,
++			   char * const argv[])
++{
++	const char *name;
++	char fiovb_name[FIOVB_NAME_LEN] = { 0 }; /* fiovb.name */
++
++	if (!fiovb_ops) {
++		printf("Foundries.IO Verified Boot is not initialized, run 'fiovb init' first\n");
++		return CMD_RET_FAILURE;
++	}
++
++	if (argc != 2)
++		return CMD_RET_USAGE;
++
++	name = argv[1];
++
++	if (fiovb_ops->delete_persistent_value(fiovb_ops, name) ==
++	    FIOVB_IO_RESULT_OK) {
++		printf("Deleted persistent value %s\n", name);
++		snprintf(fiovb_name, sizeof(fiovb_name), "fiovb.%s", name);
++		env_set(fiovb_name, NULL);
++		return CMD_RET_SUCCESS;
++	}
++
++	printf("Failed to delete persistent value\n");
++
++	return CMD_RET_FAILURE;
++}
++
++static struct cmd_tbl cmd_fiovb[] = {
++	U_BOOT_CMD_MKENT(init, 2, 0, do_fiovb_init, "", ""),
++	U_BOOT_CMD_MKENT(read_pvalue, 3, 0, do_fiovb_read_pvalue, "", ""),
++	U_BOOT_CMD_MKENT(write_pvalue, 3, 0, do_fiovb_write_pvalue, "", ""),
++	U_BOOT_CMD_MKENT(delete_pvalue, 2, 0, do_fiovb_delete_pvalue, "", ""),
++};
++
++static int do_fiovb(struct cmd_tbl *cmdtp, int flag, int argc, char * const argv[])
++{
++	struct cmd_tbl *cp;
++
++	cp = find_cmd_tbl(argv[1], cmd_fiovb, ARRAY_SIZE(cmd_fiovb));
++
++	argc--;
++	argv++;
++
++	if (!cp || argc > cp->maxargs)
++		return CMD_RET_USAGE;
++
++	if (flag == CMD_FLAG_REPEAT)
++		return CMD_RET_FAILURE;
++
++	return cp->cmd(cmdtp, flag, argc, argv);
++}
++
++U_BOOT_CMD(
++	fiovb, 29, 0, do_fiovb,
++	"Provides commands for testing Foundries.IO verified boot functionality"
++	" - supported value names: m4hash, bootcount, upgrade_available and rollback",
++	"init <dev> - initialize fiovb for <dev>\n"
++	"read_pvalue <name> <bytes> - read a persistent value <name>\n"
++	"write_pvalue <name> <value> - write a persistent value <name>\n"
++	"delete_pvalue <name> - delete a persistent value <name>\n"
++	);
+diff --git a/common/Kconfig b/common/Kconfig
+index 82cd864baf9..65e75f20a8c 100644
+--- a/common/Kconfig
++++ b/common/Kconfig
+@@ -632,6 +632,22 @@ config SCP03
+ 	  This option allows U-Boot to enable and or provision SCP03 on an OPTEE
+ 	  controlled Secured Element.
+ 
++config FIOVB
++	bool "Build Foundries.IO Verified Boot operations"
++	depends on PARTITION_UUIDS
++	depends on OPTEE
++	help
++	 This option enables compilation of Foundries.IO verified boot
++	 operations
++
++config SPL_FIOVB
++	bool "Build Foundries.IO Verified Boot operations"
++	depends on PARTITION_UUIDS
++	depends on OPTEE
++	help
++	 This option enables compilation of Foundries.IO verified boot
++	 operations
++
+ config SPL_HASH
+ 	bool # "Support hashing API (SHA1, SHA256, etc.)"
+ 	help
+diff --git a/common/Makefile b/common/Makefile
+index 3eff7196016..a59e08aad0f 100644
+--- a/common/Makefile
++++ b/common/Makefile
+@@ -113,5 +113,6 @@ obj-$(CONFIG_$(SPL_TPL_)YMODEM_SUPPORT) += xyzModem.o
+ obj-$(CONFIG_AVB_VERIFY) += avb_verify.o
+ obj-$(CONFIG_$(SPL_TPL_)STACKPROTECTOR) += stackprot.o
+ obj-$(CONFIG_SCP03) += scp03.o
++obj-$(CONFIG_$(SPL_)FIOVB) += fiovb.o
+ 
+ obj-$(CONFIG_QFW) += qfw.o
+diff --git a/common/fiovb.c b/common/fiovb.c
+new file mode 100644
+index 00000000000..72b737ff238
+--- /dev/null
++++ b/common/fiovb.c
+@@ -0,0 +1,262 @@
++/*
++ * (C) Copyright 2019, Foundries.IO
++ *
++ * SPDX-License-Identifier:	GPL-2.0+
++ */
++#include <fiovb.h>
++#include <blk.h>
++#include <fastboot.h>
++#include <image.h>
++#include <malloc.h>
++#include <part.h>
++#include <tee.h>
++#include <tee/optee_ta_fiovb.h>
++
++static int get_open_session(struct fiovb_ops_data *ops_data)
++{
++	struct udevice *tee = NULL;
++
++	while (!ops_data->tee) {
++		const struct tee_optee_ta_uuid uuid = TA_FIOVB_UUID;
++		struct tee_open_session_arg arg;
++		int rc;
++
++		tee = tee_find_device(tee, NULL, NULL, NULL);
++		if (!tee)
++			return -ENODEV;
++
++		memset(&arg, 0, sizeof(arg));
++		tee_optee_ta_uuid_to_octets(arg.uuid, &uuid);
++		rc = tee_open_session(tee, &arg, 0, NULL);
++		if (!rc) {
++			ops_data->tee = tee;
++			ops_data->session = arg.session;
++		}
++	}
++
++	return 0;
++}
++
++static fiovb_io_result invoke_func(struct fiovb_ops_data *ops_data, u32 func,
++			           ulong num_param, struct tee_param *param)
++{
++	struct tee_invoke_arg arg;
++
++	if (get_open_session(ops_data))
++		return FIOVB_IO_RESULT_ERROR_IO;
++
++	memset(&arg, 0, sizeof(arg));
++	arg.func = func;
++	arg.session = ops_data->session;
++
++	if (tee_invoke_func(ops_data->tee, &arg, num_param, param))
++		return FIOVB_IO_RESULT_ERROR_IO;
++	switch (arg.ret) {
++	case TEE_SUCCESS:
++		return FIOVB_IO_RESULT_OK;
++	case TEE_ERROR_OUT_OF_MEMORY:
++		return FIOVB_IO_RESULT_ERROR_OOM;
++	case TEE_ERROR_STORAGE_NO_SPACE:
++		return FIOVB_IO_RESULT_ERROR_INSUFFICIENT_SPACE;
++	case TEE_ERROR_ITEM_NOT_FOUND:
++		return FIOVB_IO_RESULT_ERROR_NO_SUCH_VALUE;
++	case TEE_ERROR_ACCESS_CONFLICT:
++		return FIOVB_IO_RESULT_ERROR_ACCESS_CONFLICT;
++	case TEE_ERROR_TARGET_DEAD:
++		/*
++		 * The TA has paniced, close the session to reload the TA
++		 * for the next request.
++		 */
++		tee_close_session(ops_data->tee, ops_data->session);
++		ops_data->tee = NULL;
++		return FIOVB_IO_RESULT_ERROR_IO;
++	default:
++		return FIOVB_IO_RESULT_ERROR_IO;
++	}
++}
++
++static fiovb_io_result read_persistent_value(struct fiovb_ops *ops,
++					     const char *name,
++					     size_t buffer_size,
++					     u8 *out_buffer,
++					     size_t *out_num_bytes_read)
++{
++	fiovb_io_result rc;
++	struct tee_shm *shm_name;
++	struct tee_shm *shm_buf;
++	struct tee_param param[2];
++	struct udevice *tee;
++	size_t name_size = strlen(name) + 1;
++
++	if (get_open_session(ops->user_data))
++		return FIOVB_IO_RESULT_ERROR_IO;
++
++	tee = ((struct fiovb_ops_data *)ops->user_data)->tee;
++
++	rc = tee_shm_alloc(tee, name_size,
++			   TEE_SHM_ALLOC, &shm_name);
++	if (rc)
++		return FIOVB_IO_RESULT_ERROR_OOM;
++
++	rc = tee_shm_alloc(tee, buffer_size,
++			   TEE_SHM_ALLOC, &shm_buf);
++	if (rc) {
++		rc = FIOVB_IO_RESULT_ERROR_OOM;
++		goto free_name;
++	}
++
++	memcpy(shm_name->addr, name, name_size);
++
++	memset(param, 0, sizeof(param));
++	param[0].attr = TEE_PARAM_ATTR_TYPE_MEMREF_INPUT;
++	param[0].u.memref.shm = shm_name;
++	param[0].u.memref.size = name_size;
++	param[1].attr = TEE_PARAM_ATTR_TYPE_MEMREF_INOUT;
++	param[1].u.memref.shm = shm_buf;
++	param[1].u.memref.size = buffer_size;
++
++	rc = invoke_func(ops->user_data, TA_FIOVB_CMD_READ_PERSIST_VALUE,
++			 2, param);
++	if (rc)
++		goto out;
++
++	if (param[1].u.memref.size > buffer_size) {
++		rc = FIOVB_IO_RESULT_ERROR_NO_SUCH_VALUE;
++		goto out;
++	}
++
++	*out_num_bytes_read = param[1].u.memref.size;
++
++	memcpy(out_buffer, shm_buf->addr, *out_num_bytes_read);
++
++out:
++	tee_shm_free(shm_buf);
++free_name:
++	tee_shm_free(shm_name);
++
++	return rc;
++}
++
++static fiovb_io_result write_persistent_value(struct fiovb_ops *ops,
++					      const char *name,
++					      size_t value_size,
++					      const u8 *value)
++{
++	fiovb_io_result rc;
++	struct tee_shm *shm_name;
++	struct tee_shm *shm_buf;
++	struct tee_param param[2];
++	struct udevice *tee;
++	size_t name_size = strlen(name) + 1;
++
++	if (get_open_session(ops->user_data))
++		return FIOVB_IO_RESULT_ERROR_IO;
++
++	tee = ((struct fiovb_ops_data *)ops->user_data)->tee;
++
++	if (!value_size)
++		return FIOVB_IO_RESULT_ERROR_NO_SUCH_VALUE;
++
++	rc = tee_shm_alloc(tee, name_size,
++			   TEE_SHM_ALLOC, &shm_name);
++	if (rc)
++		return FIOVB_IO_RESULT_ERROR_OOM;
++
++	rc = tee_shm_alloc(tee, value_size,
++			   TEE_SHM_ALLOC, &shm_buf);
++	if (rc) {
++		rc = FIOVB_IO_RESULT_ERROR_OOM;
++		goto free_name;
++	}
++
++	memcpy(shm_name->addr, name, name_size);
++	memcpy(shm_buf->addr, value, value_size);
++
++	memset(param, 0, sizeof(param));
++	param[0].attr = TEE_PARAM_ATTR_TYPE_MEMREF_INPUT;
++	param[0].u.memref.shm = shm_name;
++	param[0].u.memref.size = name_size;
++	param[1].attr = TEE_PARAM_ATTR_TYPE_MEMREF_INPUT;
++	param[1].u.memref.shm = shm_buf;
++	param[1].u.memref.size = value_size;
++
++	rc = invoke_func(ops->user_data, TA_FIOVB_CMD_WRITE_PERSIST_VALUE,
++			 2, param);
++	if (rc)
++		goto out;
++
++out:
++	tee_shm_free(shm_buf);
++free_name:
++	tee_shm_free(shm_name);
++
++	return rc;
++}
++
++static fiovb_io_result delete_persistent_value(struct fiovb_ops *ops,
++					       const char *name)
++{
++	fiovb_io_result rc;
++	struct tee_shm *shm_name;
++	struct tee_param param[1];
++	struct udevice *tee;
++	size_t name_size = strlen(name) + 1;
++
++	if (get_open_session(ops->user_data))
++		return FIOVB_IO_RESULT_ERROR_IO;
++
++	tee = ((struct fiovb_ops_data *)ops->user_data)->tee;
++
++	rc = tee_shm_alloc(tee, name_size,
++			   TEE_SHM_ALLOC, &shm_name);
++	if (rc)
++		return FIOVB_IO_RESULT_ERROR_OOM;
++
++	memcpy(shm_name->addr, name, name_size);
++
++	memset(param, 0, sizeof(param));
++	param[0].attr = TEE_PARAM_ATTR_TYPE_MEMREF_INPUT;
++	param[0].u.memref.shm = shm_name;
++	param[0].u.memref.size = name_size;
++
++	rc = invoke_func(ops->user_data, TA_FIOVB_CMD_DELETE_PERSIST_VALUE,
++			 1, param);
++
++	tee_shm_free(shm_name);
++
++	return rc;
++}
++
++struct fiovb_ops *fiovb_ops_alloc(int boot_device)
++{
++	struct fiovb_ops_data *ops_data;
++
++	ops_data = calloc(1, sizeof(struct fiovb_ops_data));
++	if (!ops_data)
++		return NULL;
++
++	ops_data->ops.user_data = ops_data;
++
++	ops_data->ops.delete_persistent_value = delete_persistent_value;
++	ops_data->ops.write_persistent_value = write_persistent_value;
++	ops_data->ops.read_persistent_value = read_persistent_value;
++	ops_data->mmc_dev = boot_device;
++
++	return &ops_data->ops;
++}
++
++void fiovb_ops_free(struct fiovb_ops *ops)
++{
++	struct fiovb_ops_data *ops_data;
++
++	if (!ops)
++		return;
++
++	ops_data = ops->user_data;
++
++	if (ops_data) {
++		if (ops_data->tee)
++			tee_close_session(ops_data->tee, ops_data->session);
++		free(ops_data);
++	}
++}
+diff --git a/include/fiovb.h b/include/fiovb.h
+new file mode 100644
+index 00000000000..5733cd1a156
+--- /dev/null
++++ b/include/fiovb.h
+@@ -0,0 +1,78 @@
++/*
++ * (C) Copyright 2019, Foundries.IO
++ *
++ * SPDX-License-Identifier:	GPL-2.0+
++ */
++#ifndef	_FIOVB_H
++#define _FIOVB_H
++
++#include <common.h>
++#include <linux/types.h>
++/*
++ * FIOVB_IO_RESULT_OK
++ * FIOVB_IO_RESULT_ERROR_IO: hardware I/O error.
++ * FIOVB_IO_RESULT_ERROR_OOM:  unable to allocate memory.
++ * FIOVB_IO_RESULT_ERROR_NO_SUCH_VALUE: persistent value does not exist.
++ * FIOVB_IO_RESULT_ERROR_INVALID_VALUE_SIZE: named persistent value size is
++ *					     not supported or does not match the
++ *      				     expected size.
++ * FIOVB_IO_RESULT_ERROR_INSUFFICIENT_SPACE: buffer too small for the requested
++ *					     operation.
++ * FIOVB_IO_RESULT_ERROR_ACCESS_CONFLICT: persistent object already exists and
++ *					  no permission to overwrite.
++ */
++typedef enum {
++	FIOVB_IO_RESULT_OK,
++	FIOVB_IO_RESULT_ERROR_OOM,
++	FIOVB_IO_RESULT_ERROR_IO,
++	FIOVB_IO_RESULT_ERROR_NO_SUCH_VALUE,
++	FIOVB_IO_RESULT_ERROR_INVALID_VALUE_SIZE,
++	FIOVB_IO_RESULT_ERROR_INSUFFICIENT_SPACE,
++	FIOVB_IO_RESULT_ERROR_ACCESS_CONFLICT,
++} fiovb_io_result;
++
++struct fiovb_ops;
++
++struct fiovb_ops {
++
++  void* user_data;
++
++  fiovb_io_result (*read_persistent_value)(struct fiovb_ops* ops,
++                                           const char* name,
++                                           size_t buffer_size,
++                                           uint8_t* out_buffer,
++                                           size_t* out_num_bytes_read);
++
++  fiovb_io_result (*write_persistent_value)(struct fiovb_ops* ops,
++                                            const char* name,
++                                            size_t value_size,
++                                            const uint8_t* value);
++
++  fiovb_io_result (*delete_persistent_value)(struct fiovb_ops* ops,
++                                             const char* name);
++};
++
++struct fiovb_ops_data {
++	struct fiovb_ops ops;
++	int mmc_dev;
++	struct udevice *tee;
++	u32 session;
++};
++
++struct fiovb_ops *fiovb_ops_alloc(int boot_device);
++void fiovb_ops_free(struct fiovb_ops *ops);
++
++static inline int fiovb_get_boot_device(struct fiovb_ops *ops)
++{
++	struct fiovb_ops_data *data;
++
++	if (ops) {
++		data = ops->user_data;
++		if (data)
++			return data->mmc_dev;
++	}
++
++	return -1;
++}
++
++#endif /* _FIOVB_H */
+diff --git a/include/tee.h b/include/tee.h
+index 13f6096b9a6..2d25933b279 100644
+--- a/include/tee.h
++++ b/include/tee.h
+@@ -58,6 +58,7 @@
+ #define TEE_SUCCESS			0x00000000
+ #define TEE_ERROR_STORAGE_NOT_AVAILABLE	0xf0100003
+ #define TEE_ERROR_GENERIC		0xffff0000
++#define TEE_ERROR_ACCESS_CONFLICT	0xffff0003
+ #define TEE_ERROR_EXCESS_DATA		0xffff0004
+ #define TEE_ERROR_BAD_PARAMETERS	0xffff0006
+ #define TEE_ERROR_ITEM_NOT_FOUND	0xffff0008
+diff --git a/include/tee/optee_ta_fiovb.h b/include/tee/optee_ta_fiovb.h
+new file mode 100644
+index 00000000000..8d39e8dd091
+--- /dev/null
++++ b/include/tee/optee_ta_fiovb.h
+@@ -0,0 +1,37 @@
++/* SPDX-License-Identifier: BSD-2-Clause */
++/* Copyright (c) 2018, Linaro Limited */
++/* Copyright (c) 2019, Foundries.IO */
++
++#ifndef __TA_FIOVB_H
++#define __TA_FIOVB_H
++
++#define TA_FIOVB_UUID {0x22250a54, 0x0bf1, 0x48fe, \
++		      { 0x80, 0x02, 0x7b, 0x20, 0xf1, 0xc9, 0xc9, 0xb1 } }
++
++#define PERSIST_VALUE_LIST {"bootcount", "upgrade_available", "rollback", \
++			    "m4hash", "m4size"}
++
++/*
++ * Reads a persistent value corresponding to the given name.
++ *
++ * in	params[0].memref:	persistent value name
++ * out	params[1].memref:	read persistent value buffer
++ */
++#define TA_FIOVB_CMD_READ_PERSIST_VALUE		0
++
++/*
++ * Writes a persistent value corresponding to the given name.
++ *
++ * in	params[0].memref:	persistent value name
++ * in	params[1].memref:	persistent value buffer to write
++ */
++#define TA_FIOVB_CMD_WRITE_PERSIST_VALUE	1
++
++/*
++ * Delete a persistent object corresponding to the given name.
++ *
++ * in	params[0].memref:	persistent value name
++ */
++#define TA_FIOVB_CMD_DELETE_PERSIST_VALUE	2
++
++#endif /*__TA_FIOVB_H*/
+-- 
+2.25.1
+

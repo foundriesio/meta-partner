@@ -1,0 +1,29 @@
+From 9d8a0ac2e51ab8b3250e1443a2fd7a872561ebe3 Mon Sep 17 00:00:00 2001
+From: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+Date: Mon, 4 Apr 2022 17:12:24 +0300
+Subject: [PATCH 227/233] [FIO tonxp] arm: dts: imx6qdl: remove stub for memory
+ layout
+
+Stub with reg 0x0 causes OP-TEE to crash when iterating over the defined
+memory regions.
+
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+---
+ arch/arm/dts/imx6qdl.dtsi | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/arch/arm/dts/imx6qdl.dtsi b/arch/arm/dts/imx6qdl.dtsi
+index c8a5c76ef0b..02185d92168 100644
+--- a/arch/arm/dts/imx6qdl.dtsi
++++ b/arch/arm/dts/imx6qdl.dtsi
+@@ -16,7 +16,6 @@
+ 	 * Also for U-Boot there must be a pre-existing /memory node.
+ 	 */
+ 	chosen {};
+-	memory { device_type = "memory"; reg = <0 0>; };
+ 
+ 	aliases {
+ 		ethernet0 = &fec;
+-- 
+2.25.1
+

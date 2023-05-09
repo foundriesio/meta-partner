@@ -1,0 +1,43 @@
+From fc1e84e2c1d43bc92f8e644f90675f09dff74bb8 Mon Sep 17 00:00:00 2001
+From: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+Date: Mon, 4 Apr 2022 17:12:24 +0300
+Subject: [PATCH 142/233] [FIO toup] ARM: dts: imx6-apalis: remove stub for
+ memory layout
+
+This node is updated instead of being replaced in
+fdt_fixup_memory_banks(). It causes a crash in OP-TEE 3.15 by
+claiming non-sec memory in sec area [1].
+Remove the node "memory@10000000", it is still created and filled up
+in a bootloader properly.
+
+[1]
+I/TC: Non-secure external DT found
+E/TC:0 0 check_phys_mem_is_outside:345 Non-sec mem (0x10000000:0) overlaps map (type 2 0x4e000000:0x9b000)
+E/TC:0 0 Panic at core/arch/arm/mm/core_mmu.c:349 <check_phys_mem_is_outside>
+...
+
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+---
+ arch/arm/dts/imx6-apalis.dts | 6 ------
+ 1 file changed, 6 deletions(-)
+
+diff --git a/arch/arm/dts/imx6-apalis.dts b/arch/arm/dts/imx6-apalis.dts
+index 72f7439aed2..676767d6a26 100644
+--- a/arch/arm/dts/imx6-apalis.dts
++++ b/arch/arm/dts/imx6-apalis.dts
+@@ -11,12 +11,6 @@
+ 	model = "Toradex Apalis iMX6Q/D";
+ 	compatible = "toradex,apalis_imx6q", "fsl,imx6q";
+ 
+-	/* Will be filled by the bootloader */
+-	memory@10000000 {
+-		device_type = "memory";
+-		reg = <0x10000000 0>;
+-	};
+-
+ 	aliases {
+ 		mmc0 = &usdhc3;
+ 		mmc1 = &usdhc1;
+-- 
+2.25.1
+

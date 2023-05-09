@@ -1,0 +1,48 @@
+From 44959eacdbd2ac3137266c07ab1a79ec72d6fd96 Mon Sep 17 00:00:00 2001
+From: Andrejs Cainikovs <andrejs.cainikovs@toradex.com>
+Date: Mon, 3 Oct 2022 14:40:20 +0200
+Subject: [PATCH 222/233] [FIO fromlist] verdin-imx8mp: spl: initialize caam
+
+This change initializes Cryptographic Accelerator and Assurance Module.
+
+Upstream-Status: Submitted [https://lore.kernel.org/all/20221004110632.21045-3-andrejs.cainikovs@toradex.com/]
+
+Signed-off-by: Andrejs Cainikovs <andrejs.cainikovs@toradex.com>
+(cherry picked from commit 65b29c0773911c6ddd5cfa41247a26ba9396edd7)
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+---
+ board/toradex/verdin-imx8mp/spl.c | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
+
+diff --git a/board/toradex/verdin-imx8mp/spl.c b/board/toradex/verdin-imx8mp/spl.c
+index 6f1931ffaca..1838b464a0d 100644
+--- a/board/toradex/verdin-imx8mp/spl.c
++++ b/board/toradex/verdin-imx8mp/spl.c
+@@ -17,6 +17,8 @@
+ #include <asm/mach-imx/iomux-v3.h>
+ #include <asm/mach-imx/mxc_i2c.h>
+ #include <asm/arch/ddr.h>
++#include <dm/device.h>
++#include <dm/uclass.h>
+ #include <power/pmic.h>
+ #include <power/pca9450.h>
+ 
+@@ -43,6 +45,15 @@ void spl_dram_init(void)
+ 
+ void spl_board_init(void)
+ {
++	if (IS_ENABLED(CONFIG_FSL_CAAM)) {
++		struct udevice *dev;
++		int ret;
++
++		ret = uclass_get_device_by_driver(UCLASS_MISC, DM_DRIVER_GET(caam_jr), &dev);
++		if (ret)
++			printf("Failed to initialize caam_jr: %d\n", ret);
++	}
++
+ 	/*
+ 	 * Set GIC clock to 500Mhz for OD VDD_SOC. Kernel driver does
+ 	 * not allow to change it. Should set the clock after PMIC
+-- 
+2.40.1
+

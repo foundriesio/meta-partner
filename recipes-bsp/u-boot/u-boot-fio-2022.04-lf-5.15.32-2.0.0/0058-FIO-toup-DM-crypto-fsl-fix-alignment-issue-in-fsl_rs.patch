@@ -1,0 +1,56 @@
+From 2bbeedd1221a34f6c1e2a101dca1946a10c267f0 Mon Sep 17 00:00:00 2001
+From: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+Date: Sun, 26 Sep 2021 12:41:05 +0300
+Subject: [PATCH 058/233] [FIO toup] DM: crypto/fsl: fix alignment issue in
+ fsl_rsa driver
+
+fdt_getprop() may allocate and return an unaligned property value.
+Using it on other PU may cause crash [1].
+
+Align the public_exponent property to fix the issue.
+
+[1]
+---
+Trying to boot from MMC2
+    sha256,rsa2048:dev"Synchronous Abort" handler, esr 0x96000021
+    elr: 00000000007e737c lr : 00000000007e6e78
+    x 0: 00000000007fd1e4 x 1: 0000000000000100
+    x 2: 0000000000000800 x 3: 000000000091d420
+    x 4: 000000000091d420 x 5: 000000000091d588
+    x 6: 00000000401ff9b8 x 7: 0000000000000003
+    x 8: 000000000091d49c x 9: 0000000000000002
+...
+    Code: f94008a0 2a0103f4 aa0303f5 b40005c0 (f9400003)
+    Resetting CPU ...
+---
+
+Fixes: 34276478f7 ("DM: crypto/fsl - Add Freescale rsa DM driver")
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+---
+ drivers/crypto/fsl/fsl_rsa.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/crypto/fsl/fsl_rsa.c b/drivers/crypto/fsl/fsl_rsa.c
+index cfe6332e88b..d709a687b3e 100644
+--- a/drivers/crypto/fsl/fsl_rsa.c
++++ b/drivers/crypto/fsl/fsl_rsa.c
+@@ -24,6 +24,7 @@ int fsl_mod_exp(struct udevice *dev, const uint8_t *sig, uint32_t sig_len,
+ 	struct pk_in_params pkin;
+ 	uint32_t desc[MAX_CAAM_DESCSIZE];
+ 	int ret;
++	fdt64_t exp = fdt64_to_cpu(prop->public_exponent);
+ 
+ 	/* Length in bytes */
+ 	keylen = prop->num_bits / 8;
+@@ -32,7 +33,7 @@ int fsl_mod_exp(struct udevice *dev, const uint8_t *sig, uint32_t sig_len,
+ 	pkin.a_siz = sig_len;
+ 	pkin.n = prop->modulus;
+ 	pkin.n_siz = keylen;
+-	pkin.e = prop->public_exponent;
++	pkin.e = (void *)&exp;
+ 	pkin.e_siz = prop->exp_len;
+ 
+ 	inline_cnstr_jobdesc_pkha_rsaexp(desc, &pkin, out, sig_len);
+-- 
+2.40.1
+

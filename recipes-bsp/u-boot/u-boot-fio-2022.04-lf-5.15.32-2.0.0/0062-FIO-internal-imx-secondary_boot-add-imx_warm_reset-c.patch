@@ -1,0 +1,51 @@
+From fc3303b5890c797d8bd71365070374178437c10b Mon Sep 17 00:00:00 2001
+From: Igor Opaniuk <igor.opaniuk@foundries.io>
+Date: Thu, 18 Mar 2021 20:16:55 +0200
+Subject: [PATCH 062/233] [FIO internal] imx: secondary_boot: add
+ imx_warm_reset cmd
+
+Use new generic wrappers for doing SMC calls.
+
+Signed-off-by: Igor Opaniuk <igor.opaniuk@foundries.io>
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+---
+ arch/arm/mach-imx/imx_secondary_boot.c | 14 ++++++++++++++
+ include/imx_sip.h                      |  2 ++
+ 2 files changed, 16 insertions(+)
+
+diff --git a/arch/arm/mach-imx/imx_secondary_boot.c b/arch/arm/mach-imx/imx_secondary_boot.c
+index 7ec71e3fc74..1443c234216 100644
+--- a/arch/arm/mach-imx/imx_secondary_boot.c
++++ b/arch/arm/mach-imx/imx_secondary_boot.c
+@@ -59,3 +59,17 @@ U_BOOT_CMD(
+ 	"   0 - set primary image\n"
+ 	"   1 - set secondary image\n"
+ );
++
++static int do_warm_reset(cmd_tbl_t *cmdtp, int flag,
++			 int argc, char * const argv[])
++{
++	arm_smccc_smc(IMX_SIP_WARM_RESET, 0, 0, 0, 0, 0, 0, 0, NULL);
++
++	return CMD_RET_SUCCESS;
++}
++
++U_BOOT_CMD(
++	imx_warm_reset, CONFIG_SYS_MAXARGS, 1, do_warm_reset,
++	"Assert WDOG Software Reset Signal (internal reset) via TF-A",
++	"\n"
++);
+diff --git a/include/imx_sip.h b/include/imx_sip.h
+index 37ac01665f5..9cd1a9eefc2 100644
+--- a/include/imx_sip.h
++++ b/include/imx_sip.h
+@@ -22,4 +22,6 @@
+ #define IMX_SIP_FIPS_CONFIG		0xC200000D
+ #define IMX_SIP_FIPS_CONFIG_SET		0x1
+ 
++#define IMX_SIP_WARM_RESET	0xC2000010
++
+ #endif
+-- 
+2.40.1
+

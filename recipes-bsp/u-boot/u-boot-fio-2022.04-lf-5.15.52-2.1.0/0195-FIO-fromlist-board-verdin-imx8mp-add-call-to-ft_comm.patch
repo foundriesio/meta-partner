@@ -1,0 +1,37 @@
+From 3f02ef4a61d14ab55b546dc2dc9efed719025880 Mon Sep 17 00:00:00 2001
+From: Philippe Schenker <philippe.schenker@toradex.com>
+Date: Fri, 26 Aug 2022 15:05:38 +0200
+Subject: [PATCH 195/233] [FIO fromlist] board: verdin-imx8mp: add call to
+ ft_common_board_setup
+
+With this call the following attributes get set to the device-tree
+and are then accessible from linux in /proc/device-tree/
+
+serial-number: The serial number that is stored in config-block
+toradex,board-rev: The version of the module (e.g. V1.1A)
+toradex,product-id: The SKU number of the module runnin
+
+Fixes: commit 2bc2f817cea7 ("board: toradex: add verdin imx8m plus support")
+Signed-off-by: Philippe Schenker <philippe.schenker@toradex.com>
+Upstream-Status: Submitted [https://lore.kernel.org/u-boot/20220829175953.249441-2-dev@pschenker.ch/]
+(cherry picked from commit 74abe35dfc1376ca09ba7e468048993856e2a05b)
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+---
+ board/toradex/verdin-imx8mp/verdin-imx8mp.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/board/toradex/verdin-imx8mp/verdin-imx8mp.c b/board/toradex/verdin-imx8mp/verdin-imx8mp.c
+index 8334c9bb376..bbbddb85961 100644
+--- a/board/toradex/verdin-imx8mp/verdin-imx8mp.c
++++ b/board/toradex/verdin-imx8mp/verdin-imx8mp.c
+@@ -135,6 +135,6 @@ int board_late_init(void)
+ #if IS_ENABLED(CONFIG_OF_LIBFDT) && IS_ENABLED(CONFIG_OF_BOARD_SETUP)
+ int ft_board_setup(void *blob, struct bd_info *bd)
+ {
+-	return 0;
++	return ft_common_board_setup(blob, bd);
+ }
+ #endif
+-- 
+2.25.1
+

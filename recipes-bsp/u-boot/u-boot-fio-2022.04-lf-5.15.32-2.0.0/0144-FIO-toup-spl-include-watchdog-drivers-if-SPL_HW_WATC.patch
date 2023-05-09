@@ -1,0 +1,30 @@
+From 163f8e398aa140b7dd29cc32932f97403c478e75 Mon Sep 17 00:00:00 2001
+From: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+Date: Wed, 10 Aug 2022 21:15:43 +0300
+Subject: [PATCH 144/233] [FIO toup] spl: include watchdog drivers if
+ SPL_HW_WATCHDOG
+
+drivers/watchdog includes software and hardware watchdog drivers.
+Proceed this directory in both case of WATCHDOG options as well.
+
+Fixes: 078111b9c04 ("Rename SPL_WATCHDOG_SUPPORT to SPL_WATCHDOG")
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+---
+ drivers/Makefile | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/drivers/Makefile b/drivers/Makefile
+index d886187e18c..cd75822bde0 100644
+--- a/drivers/Makefile
++++ b/drivers/Makefile
+@@ -55,6 +55,7 @@ obj-$(CONFIG_SPL_USB_GADGET) += usb/gadget/
+ obj-$(CONFIG_SPL_USB_GADGET) += usb/common/
+ obj-$(CONFIG_SPL_USB_GADGET) += usb/gadget/udc/
+ obj-$(CONFIG_SPL_WATCHDOG) += watchdog/
++obj-$(CONFIG_SPL_HW_WATCHDOG) += watchdog/
+ obj-$(CONFIG_SPL_USB_HOST) += usb/host/
+ obj-$(CONFIG_OMAP_USB_PHY) += usb/phy/
+ obj-$(CONFIG_SPL_SATA) += ata/ scsi/
+-- 
+2.40.1
+

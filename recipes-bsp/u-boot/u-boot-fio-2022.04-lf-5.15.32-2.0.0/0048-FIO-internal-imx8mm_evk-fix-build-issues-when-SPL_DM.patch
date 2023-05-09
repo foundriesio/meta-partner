@@ -1,0 +1,59 @@
+From 90e6db72331fa06a05be1ddf4596a7a3623e7ee6 Mon Sep 17 00:00:00 2001
+From: Igor Opaniuk <igor.opaniuk@foundries.io>
+Date: Fri, 29 Jan 2021 22:37:35 +0200
+Subject: [PATCH 048/233] [FIO internal] imx8mm_evk: fix build issues when
+ SPL_DM=y
+
+1. Force disable DM_I2C for the SPL build (workaround)
+2. Disable usage of TCPC from the board file for the SPL build, as
+from board/freescale/common/Makefile:
+
+ifndef CONFIG_SPL_BUILD
+obj-$(CONFIG_USB_TCPC) += tcpc.o
+endif
+
+Signed-off-by: Igor Opaniuk <igor.opaniuk@foundries.io>
+Co-depeloped-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+---
+ board/freescale/imx8mm_evk/imx8mm_evk.c | 4 ++--
+ include/configs/imx8mm_evk.h            | 1 +
+ 2 files changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/board/freescale/imx8mm_evk/imx8mm_evk.c b/board/freescale/imx8mm_evk/imx8mm_evk.c
+index 39f6d6281c5..e0bfe8b9295 100644
+--- a/board/freescale/imx8mm_evk/imx8mm_evk.c
++++ b/board/freescale/imx8mm_evk/imx8mm_evk.c
+@@ -139,7 +139,7 @@ int board_phy_config(struct phy_device *phydev)
+ }
+ #endif
+ 
+-#ifdef CONFIG_USB_TCPC
++#if defined(CONFIG_USB_TCPC) && !defined(CONFIG_SPL_BUILD)
+ struct tcpc_port port1;
+ struct tcpc_port port2;
+ 
+@@ -320,7 +320,7 @@ int board_init(void)
+ {
+ 	struct arm_smccc_res res;
+ 
+-#ifdef CONFIG_USB_TCPC
++#if defined(CONFIG_USB_TCPC) && !defined(CONFIG_SPL_BUILD)
+ 	setup_typec();
+ #endif
+ 
+diff --git a/include/configs/imx8mm_evk.h b/include/configs/imx8mm_evk.h
+index 3d992ffa134..d89727d5615 100644
+--- a/include/configs/imx8mm_evk.h
++++ b/include/configs/imx8mm_evk.h
+@@ -34,6 +34,7 @@
+ #else
+ #define CONFIG_POWER_BD71837
+ #endif
++#undef CONFIG_DM_I2C
+ 
+ #define CONFIG_SPL_NAND_BASE
+ #define CONFIG_SPL_NAND_IDENT
+-- 
+2.40.1
+

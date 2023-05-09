@@ -3,7 +3,11 @@ SRCREV = "e79288da3ae864dd6a05e7ed84f6f600f1d8cd97"
 SRCREV:imx8mm-var-som-symphony = "49ec7c516ad2ad0c8a352cad5de69a5ac26c752c"
 SRCBRANCH = "lf_v2022.04_var02"
 SRCBRANCH:imx8mm-var-som-symphony = "lf_v2022.04_var01"
+UBOOT_IMX_VER = "2022.04-lf-5.15.52-2.1.0"
+UBOOT_IMX_VER:imx8mm-var-som-symphony = "2022.04-lf-5.15.32-2.0.0"
 LIC_FILES_CHKSUM = "file://Licenses/README;md5=5a7450c57ffe5ae63fd732446b988025"
+
+require u-boot-fio-${UBOOT_IMX_VER}.inc
 
 SRC_URI:append:imx8mm-var-som-symphony = " \
     file://0001-Kconfig-fix-selecting-FSL_CAAM-without-HAS_CAAM.patch \

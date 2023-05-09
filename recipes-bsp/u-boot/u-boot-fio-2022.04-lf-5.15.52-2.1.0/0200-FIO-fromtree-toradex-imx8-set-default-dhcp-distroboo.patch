@@ -1,0 +1,58 @@
+From 1a7a70d2a68f1bddb51bf161423000463472d5b6 Mon Sep 17 00:00:00 2001
+From: Igor Opaniuk <igor.opaniuk@toradex.com>
+Date: Wed, 28 Oct 2020 18:21:33 +0200
+Subject: [PATCH 200/233] [FIO fromtree] toradex: imx8: set default dhcp
+ distroboot scriptname
+
+Use the same name of DHCP Distroboot script as in regular eMMC case
+
+Upstream-Status: Backport [1377a776c3f9c8580462f42a5d078976e5eec3ee]
+
+Signed-off-by: Igor Opaniuk <igor.opaniuk@toradex.com>
+(cherry picked from commit 8aa931d8f78e8cf5b2c84421314ef47971384778)
+(cherry picked from commit f6dcc619e37ddf03bfa63efd943ce1a97e7ffba3)
+---
+ include/configs/apalis-imx8.h   | 1 +
+ include/configs/colibri-imx8x.h | 1 +
+ include/configs/verdin-imx8mm.h | 1 +
+ 3 files changed, 3 insertions(+)
+
+diff --git a/include/configs/apalis-imx8.h b/include/configs/apalis-imx8.h
+index db17149e251..7fc6a761d31 100644
+--- a/include/configs/apalis-imx8.h
++++ b/include/configs/apalis-imx8.h
+@@ -88,6 +88,7 @@
+ 	"boot_file=Image\0" \
+ 	"bootcmd_mfg=select_dt_from_module_version && fastboot 0\0" \
+ 	"script=boot.scr\0" \
++	"boot_script_dhcp=boot.scr\0" \
+ 	"console=ttyLP1 earlycon\0" \
+ 	"fdt_addr=0x83000000\0"	\
+ 	"fdt_high=0xffffffffffffffff\0" \
+diff --git a/include/configs/colibri-imx8x.h b/include/configs/colibri-imx8x.h
+index 008fa6ef076..ee070408d41 100644
+--- a/include/configs/colibri-imx8x.h
++++ b/include/configs/colibri-imx8x.h
+@@ -67,6 +67,7 @@
+ 	M4_BOOT_ENV \
+ 	MEM_LAYOUT_ENV_SETTINGS \
+ 	"boot_file=Image\0" \
++	"boot_script_dhcp=boot.scr\0" \
+ 	"consoleargs=console=ttyLP3,${baudrate} earlycon\0" \
+ 	"fdt_addr=0x83000000\0"	\
+ 	"fdt_file=fsl-imx8qxp-colibri-dsihdmi-eval-v3.dtb\0" \
+diff --git a/include/configs/verdin-imx8mm.h b/include/configs/verdin-imx8mm.h
+index 7ed1f13b716..0425e7ba90a 100644
+--- a/include/configs/verdin-imx8mm.h
++++ b/include/configs/verdin-imx8mm.h
+@@ -53,6 +53,7 @@
+ 	MEM_LAYOUT_ENV_SETTINGS \
+ 	"bootcmd_mfg=fastboot 0\0" \
+ 	"boot_file=Image\0" \
++	"boot_script_dhcp=boot.scr\0" \
+ 	"console=ttymxc0\0" \
+ 	"fdt_addr=0x43000000\0" \
+ 	"fdt_board=dev\0" \
+-- 
+2.25.1
+

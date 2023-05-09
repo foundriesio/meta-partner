@@ -1,0 +1,751 @@
+From a80dafb6adf55109bdec1645f52686a2e65ec3c8 Mon Sep 17 00:00:00 2001
+From: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+Date: Thu, 3 Nov 2022 15:52:11 +0200
+Subject: [PATCH 168/233] Revert "[FIO internal] fiovb: simplify code"
+
+This reverts commit a654ad35d218718e431ac168eb584f4a7bb7a9cd.
+
+Some methods of fiovb are used by other components of u-boot:
+fiovb_ops_alloc(), write_persistent_value(), etc.
+
+Revert the commit until these dependencies are resolved.
+---
+ cmd/fiovb.c     | 197 ++++++++++++++++++++------------------
+ common/fiovb.c  | 249 +++++++++++++++++++++++++++++-------------------
+ include/fiovb.h |  75 +++++++++++----
+ 3 files changed, 313 insertions(+), 208 deletions(-)
+
+diff --git a/cmd/fiovb.c b/cmd/fiovb.c
+index 03796e4119e..44036dd92e1 100644
+--- a/cmd/fiovb.c
++++ b/cmd/fiovb.c
+@@ -1,148 +1,158 @@
+-//SPDX - License - Identifier:	GPL-2.0+
+ /*
+  * (C) Copyright 2019, Foundries.IO
+- * Jorge Ramirez-Ortiz <jorge@foundries.io>
+  *
++ * SPDX-License-Identifier:	GPL-2.0+
+  */
+-
+ #include <common.h>
+ #include <command.h>
+ #include <env.h>
+-#include <fiovb.h>
+ #include <image.h>
+-#include <linux/types.h>
+ #include <malloc.h>
+ #include <mmc.h>
++#include <fiovb.h>
+ #include <asm/arch/sys_proto.h>
+ 
+-enum fiovb_op { fiovb_rd, fiovb_wr, fiovb_del };
++#define FIOVB_NAME_LEN	40
+ 
+-static int update_environment(enum fiovb_op op, const char *name,
+-			      const char *val, size_t len)
++static struct fiovb_ops *fiovb_ops;
++
++int do_fiovb_init(struct cmd_tbl *cmdtp, int flag, int argc, char * const argv[])
+ {
+-	char fiovb_name[40] = { };
+-	char fiovb_val[32] = { };
++	unsigned long mmc_dev;
+ 
+-	switch (op) {
+-	case fiovb_rd:
+-		printf("Read %zu bytes [%s]\n", len, val);
+-		snprintf(fiovb_name, sizeof(fiovb_name), "fiovb.%s", name);
+-		snprintf(fiovb_val, sizeof(fiovb_val), "%s", val);
+-		env_set(fiovb_name, fiovb_val);
+-		break;
+-	case fiovb_wr:
+-		printf("Wrote %zu bytes\n", strlen(val) + 1);
+-		snprintf(fiovb_name, sizeof(fiovb_name), "fiovb.%s", name);
+-		env_set(fiovb_name, val);
+-		break;
+-	case fiovb_del:
+-		printf("Deleted %s\n", name);
+-		snprintf(fiovb_name, sizeof(fiovb_name), "fiovb.%s", name);
+-		env_set(fiovb_name, NULL);
+-		break;
+-	default:
+-		printf("Invalid operation");
+-		return CMD_RET_FAILURE;
+-	}
++	if (argc != 2)
++		return CMD_RET_USAGE;
++
++	mmc_dev = simple_strtoul(argv[1], NULL, 16);
++
++	if (fiovb_ops)
++		fiovb_ops_free(fiovb_ops);
+ 
+-	return CMD_RET_SUCCESS;
++	fiovb_ops = fiovb_ops_alloc(mmc_dev);
++	if (fiovb_ops)
++		return CMD_RET_SUCCESS;
++
++	printf("Failed to initialize fiovb\n");
++
++	return CMD_RET_FAILURE;
+ }
+ 
+-int do_fiovb_read(struct cmd_tbl *c, int flag, int argc, char *const argv[])
++int do_fiovb_read_pvalue(struct cmd_tbl *cmdtp, int flag, int argc,
++		         char * const argv[])
+ {
+-	enum fiovb_ret err = FIOVB_OK;
+-	const char *name = NULL;
+-	char *val = NULL;
+-	char *p = NULL;
+-	size_t bytes = 0;
+-	size_t olen = 0;
+-	int ret = 0;
++	const char *name;
++	size_t bytes;
++	size_t bytes_read;
++	void *buffer;
++	char *endp;
++	char fiovb_name[FIOVB_NAME_LEN] = { 0 }; /* fiovb.name */
++	char fiovb_val[32] = { 0 };
++
++	if (!fiovb_ops) {
++		printf("Foundries.IO Verified Boot is not initialized, run 'fiovb init' first\n");
++		return CMD_RET_FAILURE;
++	}
+ 
+ 	if (argc != 3)
+ 		return CMD_RET_USAGE;
+ 
+-	bytes = simple_strtoul(argv[2], &p, 10);
+-	if (*p && *p != '\n')
++	name = argv[1];
++	bytes = simple_strtoul(argv[2], &endp, 10);
++	if (*endp && *endp != '\n')
+ 		return CMD_RET_USAGE;
+ 
+-	name = argv[1];
+-	val = malloc(bytes);
+-	if (!val)
++	buffer = malloc(bytes);
++	if (!buffer)
+ 		return CMD_RET_FAILURE;
+ 
+-	err = fiovb_read(name, bytes, val, &olen);
+-	if (err) {
+-		printf("fiovb read failed (err = %d)\n", err);
+-		free(val);
+-		return CMD_RET_FAILURE;
++	if (fiovb_ops->read_persistent_value(fiovb_ops, name, bytes, buffer,
++					   &bytes_read) == FIOVB_IO_RESULT_OK) {
++		printf("Read %zu bytes, value = %s\n", bytes_read,
++		       (char *)buffer);
++		/* Mirror fiovb variables into the environment */
++		snprintf(fiovb_name, sizeof(fiovb_name), "fiovb.%s", name);
++		snprintf(fiovb_val, sizeof(fiovb_val), "%s", (char *)buffer);
++		env_set(fiovb_name, fiovb_val);
++		free(buffer);
++		return CMD_RET_SUCCESS;
+ 	}
+ 
+-	ret = update_environment(fiovb_rd, name, val, olen);
+-	free(val);
++	printf("Failed to read persistent value\n");
++
++	free(buffer);
+ 
+-	return ret;
++	return CMD_RET_FAILURE;
+ }
+ 
+-int do_fiovb_write(struct cmd_tbl *c, int flag, int argc, char *const argv[])
++int do_fiovb_write_pvalue(struct cmd_tbl *cmdtp, int flag, int argc,
++			  char * const argv[])
+ {
+-	enum fiovb_ret err = FIOVB_OK;
+-	const char *name = NULL;
+-	const char *val = NULL;
++	const char *name;
++	const char *value;
++	char fiovb_name[FIOVB_NAME_LEN] = { 0 }; /* fiovb.name */
++
++	if (!fiovb_ops) {
++		printf("Foundries.IO Verified Boot is not initialized, run 'fiovb init' first\n");
++		return CMD_RET_FAILURE;
++	}
+ 
+ 	if (argc != 3)
+ 		return CMD_RET_USAGE;
+ 
+ 	name = argv[1];
+-	val = argv[2];
++	value = argv[2];
+ 
+-	err = fiovb_write(name, strlen(val) + 1, val);
+-	if (err) {
+-		printf("fiovb write failed (err = %d)\n", err);
+-		return CMD_RET_FAILURE;
++	if (fiovb_ops->write_persistent_value(fiovb_ops, name, strlen(value) + 1,
++					    (const uint8_t *)value) ==
++	    FIOVB_IO_RESULT_OK) {
++		printf("Wrote %zu bytes\n", strlen(value) + 1);
++		snprintf(fiovb_name, sizeof(fiovb_name), "fiovb.%s", name);
++		env_set(fiovb_name, value);
++		return CMD_RET_SUCCESS;
+ 	}
+ 
+-	return update_environment(fiovb_wr, name, val, 0);
++	printf("Failed to write persistent value\n");
++
++	return CMD_RET_FAILURE;
+ }
+ 
+-int do_fiovb_delete(struct cmd_tbl *c, int flag, int argc, char *const argv[])
++int do_fiovb_delete_pvalue(struct cmd_tbl *cmdtp, int flag, int argc,
++			   char * const argv[])
+ {
+-	enum fiovb_ret err = FIOVB_OK;
+-	const char *name = NULL;
++	const char *name;
++	char fiovb_name[FIOVB_NAME_LEN] = { 0 }; /* fiovb.name */
++
++	if (!fiovb_ops) {
++		printf("Foundries.IO Verified Boot is not initialized, run 'fiovb init' first\n");
++		return CMD_RET_FAILURE;
++	}
+ 
+ 	if (argc != 2)
+ 		return CMD_RET_USAGE;
+ 
+ 	name = argv[1];
+ 
+-	err = fiovb_delete(name);
+-	if (err) {
+-		printf("fiovb delete failed (err = %d)\n", err);
+-		return CMD_RET_FAILURE;
++	if (fiovb_ops->delete_persistent_value(fiovb_ops, name) ==
++	    FIOVB_IO_RESULT_OK) {
++		printf("Deleted persistent value %s\n", name);
++		snprintf(fiovb_name, sizeof(fiovb_name), "fiovb.%s", name);
++		env_set(fiovb_name, NULL);
++		return CMD_RET_SUCCESS;
+ 	}
+ 
+-	return update_environment(fiovb_del, name, NULL, 0);
+-}
++	printf("Failed to delete persistent value\n");
+ 
+-int do_fiovb_init(struct cmd_tbl *cmdtp, int flag, int argc, char *const argv[])
+-{
+-	return CMD_RET_SUCCESS;
++	return CMD_RET_FAILURE;
+ }
+ 
+-#define LEGACY_OPS \
+-	U_BOOT_CMD_MKENT(delete_pvalue, 2, 0, do_fiovb_delete, "", ""), \
+-	U_BOOT_CMD_MKENT(write_pvalue, 3, 0, do_fiovb_write, "", ""),\
+-	U_BOOT_CMD_MKENT(read_pvalue, 3, 0, do_fiovb_read, "", ""),\
+-	U_BOOT_CMD_MKENT(init, 2, 0, do_fiovb_init, "", "")
+-
+ static struct cmd_tbl cmd_fiovb[] = {
+-	U_BOOT_CMD_MKENT(delete, 2, 0, do_fiovb_delete, "", ""),
+-	U_BOOT_CMD_MKENT(write, 3, 0, do_fiovb_write, "", ""),
+-	U_BOOT_CMD_MKENT(read, 3, 0, do_fiovb_read, "", ""),
+-	LEGACY_OPS,
++	U_BOOT_CMD_MKENT(init, 2, 0, do_fiovb_init, "", ""),
++	U_BOOT_CMD_MKENT(read_pvalue, 3, 0, do_fiovb_read_pvalue, "", ""),
++	U_BOOT_CMD_MKENT(write_pvalue, 3, 0, do_fiovb_write_pvalue, "", ""),
++	U_BOOT_CMD_MKENT(delete_pvalue, 2, 0, do_fiovb_delete_pvalue, "", ""),
+ };
+ 
+-static int do_fiovb(struct cmd_tbl *cmdtp, int flag, int argc,
+-		    char * const argv[])
++static int do_fiovb(struct cmd_tbl *cmdtp, int flag, int argc, char * const argv[])
+ {
+ 	struct cmd_tbl *cp;
+ 
+@@ -162,9 +172,10 @@ static int do_fiovb(struct cmd_tbl *cmdtp, int flag, int argc,
+ 
+ U_BOOT_CMD(
+ 	fiovb, 29, 0, do_fiovb,
+-	"Foundries.io Verified Boot\n"
+-	" - valid names: m4hash, bootcount, upgrade_available, rollback",
+-	"\n\tread   <name> <bytes>  - reads   persistent value <name>\n"
+-	"\twrite  <name> <value>  - writes  persistent value <name>\n"
+-	"\tdelete <name>          - delete  persistent value <name>\n"
+-);
++	"Provides commands for testing Foundries.IO verified boot functionality"
++	" - supported value names: m4hash, bootcount, upgrade_available and rollback",
++	"init <dev> - initialize fiovb for <dev>\n"
++	"read_pvalue <name> <bytes> - read a persistent value <name>\n"
++	"write_pvalue <name> <value> - write a persistent value <name>\n"
++	"delete_pvalue <name> - delete a persistent value <name>\n"
++	);
+diff --git a/common/fiovb.c b/common/fiovb.c
+index ae2eeacd2eb..72b737ff238 100644
+--- a/common/fiovb.c
++++ b/common/fiovb.c
+@@ -1,131 +1,134 @@
+-//SPDX - License - Identifier:	GPL-2.0+
+ /*
+  * (C) Copyright 2019, Foundries.IO
+- * Jorge Ramirez-Ortiz <jorge@foundries.io>
+  *
++ * SPDX-License-Identifier:	GPL-2.0+
+  */
+-
++#include <fiovb.h>
+ #include <blk.h>
+ #include <fastboot.h>
+-#include <fiovb.h>
+ #include <image.h>
+ #include <malloc.h>
+ #include <part.h>
+-#include <tee/optee_ta_fiovb.h>
+ #include <tee.h>
++#include <tee/optee_ta_fiovb.h>
+ 
+-static struct udevice *tee;
+-static uint32_t session;
+-
+-static int get_open_session(void)
++static int get_open_session(struct fiovb_ops_data *ops_data)
+ {
+-	const struct tee_optee_ta_uuid uuid = TA_FIOVB_UUID;
+-	struct tee_open_session_arg arg = { };
++	struct udevice *tee = NULL;
++
++	while (!ops_data->tee) {
++		const struct tee_optee_ta_uuid uuid = TA_FIOVB_UUID;
++		struct tee_open_session_arg arg;
++		int rc;
+ 
+-	if (!tee) {
+ 		tee = tee_find_device(tee, NULL, NULL, NULL);
+ 		if (!tee)
+ 			return -ENODEV;
+-	}
+ 
+-	if (!session) {
++		memset(&arg, 0, sizeof(arg));
+ 		tee_optee_ta_uuid_to_octets(arg.uuid, &uuid);
+-		if (tee_open_session(tee, &arg, 0, NULL))
+-			return -ENODEV;
+-
+-		session = arg.session;
++		rc = tee_open_session(tee, &arg, 0, NULL);
++		if (!rc) {
++			ops_data->tee = tee;
++			ops_data->session = arg.session;
++		}
+ 	}
+ 
+ 	return 0;
+ }
+ 
+-static enum fiovb_ret invoke_func(u32 func, ulong num_param,
+-				  struct tee_param *param)
++static fiovb_io_result invoke_func(struct fiovb_ops_data *ops_data, u32 func,
++			           ulong num_param, struct tee_param *param)
+ {
+-	struct tee_invoke_arg arg = { };
++	struct tee_invoke_arg arg;
+ 
+-	if (get_open_session())
+-		return FIOVB_ERROR_IO;
++	if (get_open_session(ops_data))
++		return FIOVB_IO_RESULT_ERROR_IO;
+ 
+ 	memset(&arg, 0, sizeof(arg));
+-	arg.session = session;
+ 	arg.func = func;
++	arg.session = ops_data->session;
+ 
+-	if (tee_invoke_func(tee, &arg, num_param, param))
+-		return FIOVB_ERROR_IO;
+-
++	if (tee_invoke_func(ops_data->tee, &arg, num_param, param))
++		return FIOVB_IO_RESULT_ERROR_IO;
+ 	switch (arg.ret) {
+ 	case TEE_SUCCESS:
+-		return FIOVB_OK;
+-
++		return FIOVB_IO_RESULT_OK;
+ 	case TEE_ERROR_OUT_OF_MEMORY:
+-		return FIOVB_ERROR_OOM;
+-
++		return FIOVB_IO_RESULT_ERROR_OOM;
+ 	case TEE_ERROR_STORAGE_NO_SPACE:
+-		return FIOVB_ERROR_INSUFFICIENT_SPACE;
+-
++		return FIOVB_IO_RESULT_ERROR_INSUFFICIENT_SPACE;
+ 	case TEE_ERROR_ITEM_NOT_FOUND:
+-		return FIOVB_ERROR_NO_SUCH_VALUE;
+-
++		return FIOVB_IO_RESULT_ERROR_NO_SUCH_VALUE;
+ 	case TEE_ERROR_ACCESS_CONFLICT:
+-		return FIOVB_ERROR_ACCESS_CONFLICT;
+-
++		return FIOVB_IO_RESULT_ERROR_ACCESS_CONFLICT;
+ 	case TEE_ERROR_TARGET_DEAD:
+ 		/*
+ 		 * The TA has paniced, close the session to reload the TA
+ 		 * for the next request.
+ 		 */
+-		tee_close_session(tee, session);
+-		session = 0;
+-		tee = NULL;
+-
+-		return FIOVB_ERROR_IO;
++		tee_close_session(ops_data->tee, ops_data->session);
++		ops_data->tee = NULL;
++		return FIOVB_IO_RESULT_ERROR_IO;
+ 	default:
+-		return FIOVB_ERROR_IO;
++		return FIOVB_IO_RESULT_ERROR_IO;
+ 	}
+ }
+ 
+-enum fiovb_ret fiovb_read(const char *name, size_t blen, u8 *out, size_t *olen)
++static fiovb_io_result read_persistent_value(struct fiovb_ops *ops,
++					     const char *name,
++					     size_t buffer_size,
++					     u8 *out_buffer,
++					     size_t *out_num_bytes_read)
+ {
++	fiovb_io_result rc;
++	struct tee_shm *shm_name;
++	struct tee_shm *shm_buf;
++	struct tee_param param[2];
++	struct udevice *tee;
+ 	size_t name_size = strlen(name) + 1;
+-	struct tee_param param[2] = { };
+-	struct tee_shm *shm_name = NULL;
+-	struct tee_shm *shm_buf = NULL;
+-	enum fiovb_ret rc = 0;
+ 
+-	if (get_open_session())
+-		return FIOVB_ERROR_IO;
++	if (get_open_session(ops->user_data))
++		return FIOVB_IO_RESULT_ERROR_IO;
+ 
+-	if (tee_shm_alloc(tee, name_size, TEE_SHM_ALLOC, &shm_name))
+-		return FIOVB_ERROR_OOM;
++	tee = ((struct fiovb_ops_data *)ops->user_data)->tee;
+ 
+-	if (tee_shm_alloc(tee, blen, TEE_SHM_ALLOC, &shm_buf)) {
+-		rc = FIOVB_ERROR_OOM;
++	rc = tee_shm_alloc(tee, name_size,
++			   TEE_SHM_ALLOC, &shm_name);
++	if (rc)
++		return FIOVB_IO_RESULT_ERROR_OOM;
++
++	rc = tee_shm_alloc(tee, buffer_size,
++			   TEE_SHM_ALLOC, &shm_buf);
++	if (rc) {
++		rc = FIOVB_IO_RESULT_ERROR_OOM;
+ 		goto free_name;
+ 	}
+ 
+ 	memcpy(shm_name->addr, name, name_size);
+-	memset(param, 0, sizeof(param));
+ 
++	memset(param, 0, sizeof(param));
+ 	param[0].attr = TEE_PARAM_ATTR_TYPE_MEMREF_INPUT;
+ 	param[0].u.memref.shm = shm_name;
+ 	param[0].u.memref.size = name_size;
+-
+ 	param[1].attr = TEE_PARAM_ATTR_TYPE_MEMREF_INOUT;
+ 	param[1].u.memref.shm = shm_buf;
+-	param[1].u.memref.size = blen;
++	param[1].u.memref.size = buffer_size;
+ 
+-	rc = invoke_func(TA_FIOVB_CMD_READ_PERSIST_VALUE, 2, param);
++	rc = invoke_func(ops->user_data, TA_FIOVB_CMD_READ_PERSIST_VALUE,
++			 2, param);
+ 	if (rc)
+ 		goto out;
+ 
+-	if (param[1].u.memref.size > blen) {
+-		rc = FIOVB_ERROR_NO_SUCH_VALUE;
++	if (param[1].u.memref.size > buffer_size) {
++		rc = FIOVB_IO_RESULT_ERROR_NO_SUCH_VALUE;
+ 		goto out;
+ 	}
+ 
+-	*olen = param[1].u.memref.size;
+-	memcpy(out, shm_buf->addr, *olen);
++	*out_num_bytes_read = param[1].u.memref.size;
++
++	memcpy(out_buffer, shm_buf->addr, *out_num_bytes_read);
++
+ out:
+ 	tee_shm_free(shm_buf);
+ free_name:
+@@ -134,74 +137,126 @@ free_name:
+ 	return rc;
+ }
+ 
+-enum fiovb_ret fiovb_write(const char *name, size_t len, const u8 *value)
++static fiovb_io_result write_persistent_value(struct fiovb_ops *ops,
++					      const char *name,
++					      size_t value_size,
++					      const u8 *value)
+ {
+-	size_t nlen = strlen(name) + 1;
+-	struct tee_param param[2] = { };
+-	struct tee_shm *shm_name = NULL;
+-	struct tee_shm *shm_buf = NULL;
+-	enum fiovb_ret rc = 0;
++	fiovb_io_result rc;
++	struct tee_shm *shm_name;
++	struct tee_shm *shm_buf;
++	struct tee_param param[2];
++	struct udevice *tee;
++	size_t name_size = strlen(name) + 1;
+ 
+-	if (!len)
+-		return FIOVB_ERROR_NO_SUCH_VALUE;
++	if (get_open_session(ops->user_data))
++		return FIOVB_IO_RESULT_ERROR_IO;
+ 
+-	if (get_open_session())
+-		return FIOVB_ERROR_IO;
++	tee = ((struct fiovb_ops_data *)ops->user_data)->tee;
+ 
+-	if (tee_shm_alloc(tee, nlen, TEE_SHM_ALLOC, &shm_name))
+-		return FIOVB_ERROR_OOM;
++	if (!value_size)
++		return FIOVB_IO_RESULT_ERROR_NO_SUCH_VALUE;
+ 
+-	if (tee_shm_alloc(tee, len, TEE_SHM_ALLOC, &shm_buf)) {
+-		rc = FIOVB_ERROR_OOM;
++	rc = tee_shm_alloc(tee, name_size,
++			   TEE_SHM_ALLOC, &shm_name);
++	if (rc)
++		return FIOVB_IO_RESULT_ERROR_OOM;
++
++	rc = tee_shm_alloc(tee, value_size,
++			   TEE_SHM_ALLOC, &shm_buf);
++	if (rc) {
++		rc = FIOVB_IO_RESULT_ERROR_OOM;
+ 		goto free_name;
+ 	}
+ 
+-	memcpy(shm_name->addr, name, nlen);
+-	memcpy(shm_buf->addr, value, len);
++	memcpy(shm_name->addr, name, name_size);
++	memcpy(shm_buf->addr, value, value_size);
+ 
+ 	memset(param, 0, sizeof(param));
+-
+ 	param[0].attr = TEE_PARAM_ATTR_TYPE_MEMREF_INPUT;
+ 	param[0].u.memref.shm = shm_name;
+-	param[0].u.memref.size = nlen;
+-
++	param[0].u.memref.size = name_size;
+ 	param[1].attr = TEE_PARAM_ATTR_TYPE_MEMREF_INPUT;
+ 	param[1].u.memref.shm = shm_buf;
+-	param[1].u.memref.size = len;
++	param[1].u.memref.size = value_size;
+ 
+-	rc = invoke_func(TA_FIOVB_CMD_WRITE_PERSIST_VALUE, 2, param);
+-	tee_shm_free(shm_buf);
++	rc = invoke_func(ops->user_data, TA_FIOVB_CMD_WRITE_PERSIST_VALUE,
++			 2, param);
++	if (rc)
++		goto out;
+ 
++out:
++	tee_shm_free(shm_buf);
+ free_name:
+ 	tee_shm_free(shm_name);
+ 
+ 	return rc;
+ }
+ 
+-enum fiovb_ret fiovb_delete(const char *name)
++static fiovb_io_result delete_persistent_value(struct fiovb_ops *ops,
++					       const char *name)
+ {
+-	size_t nlen = strlen(name) + 1;
+-	struct tee_param param[1] = { };
+-	struct tee_shm *shm_name = NULL;
+-	enum fiovb_ret rc = 0;
++	fiovb_io_result rc;
++	struct tee_shm *shm_name;
++	struct tee_param param[1];
++	struct udevice *tee;
++	size_t name_size = strlen(name) + 1;
+ 
+-	if (get_open_session())
+-		return FIOVB_ERROR_IO;
++	if (get_open_session(ops->user_data))
++		return FIOVB_IO_RESULT_ERROR_IO;
+ 
+-	rc = tee_shm_alloc(tee, nlen, TEE_SHM_ALLOC, &shm_name);
++	tee = ((struct fiovb_ops_data *)ops->user_data)->tee;
++
++	rc = tee_shm_alloc(tee, name_size,
++			   TEE_SHM_ALLOC, &shm_name);
+ 	if (rc)
+-		return FIOVB_ERROR_OOM;
++		return FIOVB_IO_RESULT_ERROR_OOM;
+ 
+-	memcpy(shm_name->addr, name, nlen);
++	memcpy(shm_name->addr, name, name_size);
+ 
+ 	memset(param, 0, sizeof(param));
+-
+ 	param[0].attr = TEE_PARAM_ATTR_TYPE_MEMREF_INPUT;
+ 	param[0].u.memref.shm = shm_name;
+-	param[0].u.memref.size = nlen;
++	param[0].u.memref.size = name_size;
++
++	rc = invoke_func(ops->user_data, TA_FIOVB_CMD_DELETE_PERSIST_VALUE,
++			 1, param);
+ 
+-	rc = invoke_func(TA_FIOVB_CMD_DELETE_PERSIST_VALUE, 1, param);
+ 	tee_shm_free(shm_name);
+ 
+ 	return rc;
+ }
++
++struct fiovb_ops *fiovb_ops_alloc(int boot_device)
++{
++	struct fiovb_ops_data *ops_data;
++
++	ops_data = calloc(1, sizeof(struct fiovb_ops_data));
++	if (!ops_data)
++		return NULL;
++
++	ops_data->ops.user_data = ops_data;
++
++	ops_data->ops.delete_persistent_value = delete_persistent_value;
++	ops_data->ops.write_persistent_value = write_persistent_value;
++	ops_data->ops.read_persistent_value = read_persistent_value;
++	ops_data->mmc_dev = boot_device;
++
++	return &ops_data->ops;
++}
++
++void fiovb_ops_free(struct fiovb_ops *ops)
++{
++	struct fiovb_ops_data *ops_data;
++
++	if (!ops)
++		return;
++
++	ops_data = ops->user_data;
++
++	if (ops_data) {
++		if (ops_data->tee)
++			tee_close_session(ops_data->tee, ops_data->session);
++		free(ops_data);
++	}
++}
+diff --git a/include/fiovb.h b/include/fiovb.h
+index 38421ff7371..5733cd1a156 100644
+--- a/include/fiovb.h
++++ b/include/fiovb.h
+@@ -1,7 +1,7 @@
+-/* SPDX-License-Identifier: GPL-2.0+ */
+ /*
+  * (C) Copyright 2019, Foundries.IO
+- * Jorge Ramirez-Ortiz <jorge@foundries.io>
++ *
++ * SPDX-License-Identifier:	GPL-2.0+
+  */
+ #ifndef	_FIOVB_H
+ #define _FIOVB_H
+@@ -9,11 +9,11 @@
+ #include <common.h>
+ #include <linux/types.h>
+ /*
+- * FIOVB_OK
+- * FIOVB_ERROR_IO: hardware I/O error.
+- * FIOVB_ERROR_OOM:  unable to allocate memory.
+- * FIOVB_ERROR_NO_SUCH_VALUE: persistent value does not exist.
+- * FIOVB_ERROR_INVALID_VALUE_SIZE: named persistent value size is
++ * FIOVB_IO_RESULT_OK
++ * FIOVB_IO_RESULT_ERROR_IO: hardware I/O error.
++ * FIOVB_IO_RESULT_ERROR_OOM:  unable to allocate memory.
++ * FIOVB_IO_RESULT_ERROR_NO_SUCH_VALUE: persistent value does not exist.
++ * FIOVB_IO_RESULT_ERROR_INVALID_VALUE_SIZE: named persistent value size is
+  *					     not supported or does not match the
+  *      				     expected size.
+  * FIOVB_IO_RESULT_ERROR_INSUFFICIENT_SPACE: buffer too small for the requested
+@@ -21,19 +21,58 @@
+  * FIOVB_IO_RESULT_ERROR_ACCESS_CONFLICT: persistent object already exists and
+  *					  no permission to overwrite.
+  */
+-enum fiovb_ret {
+-	FIOVB_OK = 0,
+-	FIOVB_ERROR_OOM,
+-	FIOVB_ERROR_IO,
+-	FIOVB_ERROR_NO_SUCH_VALUE,
+-	FIOVB_ERROR_INVALID_VALUE_SIZE,
+-	FIOVB_ERROR_INSUFFICIENT_SPACE,
+-	FIOVB_ERROR_ACCESS_CONFLICT,
++typedef enum {
++	FIOVB_IO_RESULT_OK,
++	FIOVB_IO_RESULT_ERROR_OOM,
++	FIOVB_IO_RESULT_ERROR_IO,
++	FIOVB_IO_RESULT_ERROR_NO_SUCH_VALUE,
++	FIOVB_IO_RESULT_ERROR_INVALID_VALUE_SIZE,
++	FIOVB_IO_RESULT_ERROR_INSUFFICIENT_SPACE,
++	FIOVB_IO_RESULT_ERROR_ACCESS_CONFLICT,
++} fiovb_io_result;
++
++struct fiovb_ops;
++
++struct fiovb_ops {
++
++  void* user_data;
++
++  fiovb_io_result (*read_persistent_value)(struct fiovb_ops* ops,
++                                           const char* name,
++                                           size_t buffer_size,
++                                           uint8_t* out_buffer,
++                                           size_t* out_num_bytes_read);
++
++  fiovb_io_result (*write_persistent_value)(struct fiovb_ops* ops,
++                                            const char* name,
++                                            size_t value_size,
++                                            const uint8_t* value);
++
++  fiovb_io_result (*delete_persistent_value)(struct fiovb_ops* ops,
++                                             const char* name);
++};
++
++struct fiovb_ops_data {
++	struct fiovb_ops ops;
++	int mmc_dev;
++	struct udevice *tee;
++	u32 session;
+ };
+ 
+-enum fiovb_ret fiovb_read(const char *name, size_t len, u8 *out, size_t *olen);
+-enum fiovb_ret fiovb_write(const char *name, size_t len, const u8 *val);
+-enum fiovb_ret fiovb_delete(const char* name);
++struct fiovb_ops *fiovb_ops_alloc(int boot_device);
++void fiovb_ops_free(struct fiovb_ops *ops);
++
++static inline int fiovb_get_boot_device(struct fiovb_ops *ops)
++{
++	struct fiovb_ops_data *data;
++
++	if (ops) {
++		data = ops->user_data;
++		if (data)
++			return data->mmc_dev;
++	}
+ 
++	return -1;
++}
+ 
+ #endif /* _FIOVB_H */
+-- 
+2.40.1
+

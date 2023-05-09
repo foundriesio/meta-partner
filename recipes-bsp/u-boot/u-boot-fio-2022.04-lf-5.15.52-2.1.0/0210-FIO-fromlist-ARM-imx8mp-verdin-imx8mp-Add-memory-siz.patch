@@ -1,0 +1,43 @@
+From 9deb78e307627cdc066e2cf4b95f47efb47bc3f4 Mon Sep 17 00:00:00 2001
+From: Francesco Dolcini <francesco.dolcini@toradex.com>
+Date: Tue, 6 Sep 2022 17:12:17 +0200
+Subject: [PATCH 210/233] [FIO fromlist] ARM: imx8mp: verdin-imx8mp: Add memory
+ size detection
+
+Add RAM auto-sizing, without this change memory size for all SKU is set
+to 8GB and the system will crash on SKU with less memory as soon as the
+non existent memory addresses are accessed.
+
+Upstream-Status: Submitted [https://lore.kernel.org/u-boot/20220907095105.21630-1-francesco.dolcini@toradex.com/]
+Fixes: 2bc2f817cea7 ("board: toradex: add verdin imx8m plus support")
+Signed-off-by: Francesco Dolcini <francesco.dolcini@toradex.com>
+(cherry picked from commit f83407fb55f8747e9120fc502d8e06821d588dd4)
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+---
+ board/toradex/verdin-imx8mp/verdin-imx8mp.c | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
+
+diff --git a/board/toradex/verdin-imx8mp/verdin-imx8mp.c b/board/toradex/verdin-imx8mp/verdin-imx8mp.c
+index df0d622c0fb..3a2b02c74a3 100644
+--- a/board/toradex/verdin-imx8mp/verdin-imx8mp.c
++++ b/board/toradex/verdin-imx8mp/verdin-imx8mp.c
+@@ -129,6 +129,16 @@ int board_late_init(void)
+ 	return 0;
+ }
+ 
++int board_phys_sdram_size(phys_size_t *size)
++{
++	if (!size)
++		return -EINVAL;
++
++	*size = get_ram_size((void *)PHYS_SDRAM, PHYS_SDRAM_SIZE + PHYS_SDRAM_2_SIZE);
++
++	return 0;
++}
++
+ #if IS_ENABLED(CONFIG_OF_LIBFDT) && IS_ENABLED(CONFIG_OF_BOARD_SETUP)
+ int ft_board_setup(void *blob, struct bd_info *bd)
+ {
+-- 
+2.25.1
+

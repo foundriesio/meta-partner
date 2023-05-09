@@ -1,0 +1,35 @@
+From c9d05f3ed13fe2f9e87aa48f7b475e6e22290d83 Mon Sep 17 00:00:00 2001
+From: Ricardo Salveti <ricardo@foundries.io>
+Date: Mon, 2 Sep 2019 18:21:35 -0300
+Subject: [PATCH 005/233] [FIO fromlist] apalis_imx6: allocate specific region
+ of memory to OP-TEE
+
+OP-TEE uses the memory region defined by the maximum DRAM address minus
+CONFIG_OPTEE_TZDRAM_SIZE, so subtract CONFIG_OPTEE_TZDRAM_SIZE from the
+available DRAM size to avoid conflicts.
+
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+Acked-by: Max Krummenacher <max.krummenacher@toradex.com>
+---
+ board/toradex/apalis_imx6/apalis_imx6.c | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/board/toradex/apalis_imx6/apalis_imx6.c b/board/toradex/apalis_imx6/apalis_imx6.c
+index 25a4cd9f38b..a968f9b22bb 100644
+--- a/board/toradex/apalis_imx6/apalis_imx6.c
++++ b/board/toradex/apalis_imx6/apalis_imx6.c
+@@ -82,6 +82,11 @@ int dram_init(void)
+ 	gd->ram_size = get_ram_size((void *)CONFIG_SYS_SDRAM_BASE,
+ 				    (ulong)imx_ddr_size());
+ 
++	/* Subtract the defined OPTEE runtime firmware length */
++#ifdef CONFIG_OPTEE_TZDRAM_SIZE
++	gd->ram_size -= CONFIG_OPTEE_TZDRAM_SIZE;
++#endif
++
+ 	return 0;
+ }
+ 
+-- 
+2.40.1
+

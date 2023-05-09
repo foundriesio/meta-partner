@@ -1,0 +1,57 @@
+From 4994f2c9275e75ba3d73fee7403138b842508ac7 Mon Sep 17 00:00:00 2001
+From: Max Krummenacher <max.krummenacher@toradex.com>
+Date: Fri, 21 Feb 2020 14:56:39 +0100
+Subject: [PATCH 001/233] [FIO fromtree] mmc board code: add a weak common
+ implementation
+
+NXP common code now calls a board function mmc_map_to_kernel_blk().
+Provide a weak function in common code for boards not requiring
+special handling.
+Taken from boards/freescale/common/mmc.c
+
+Related-to: ELB-2351
+Signed-off-by: Max Krummenacher <max.krummenacher@toradex.com>
+(cherry picked from commit a960b9ecd99d1b4e3f194bc52d92cb41b0d80e4a)
+
+(cherry picked from commit b7a010497ad54371bb99073058a137ca19303a08)
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+---
+ board/toradex/common/Makefile |  2 +-
+ board/toradex/common/mmc.c    | 13 +++++++++++++
+ 2 files changed, 14 insertions(+), 1 deletion(-)
+ create mode 100644 board/toradex/common/mmc.c
+
+diff --git a/board/toradex/common/Makefile b/board/toradex/common/Makefile
+index 7b19b6e4c87..4e9eae38e80 100644
+--- a/board/toradex/common/Makefile
++++ b/board/toradex/common/Makefile
+@@ -7,6 +7,6 @@ ifeq ($(CONFIG_SPL_BUILD),y)
+ obj- := __dummy__.o
+ else
+ obj-$(CONFIG_TDX_CFG_BLOCK) += tdx-cfg-block.o
+-obj-y += tdx-common.o
++obj-y += mmc.o tdx-common.o
+ obj-y += tdx-eeprom.o
+ endif
+diff --git a/board/toradex/common/mmc.c b/board/toradex/common/mmc.c
+new file mode 100644
+index 00000000000..5fe8026ed1b
+--- /dev/null
++++ b/board/toradex/common/mmc.c
+@@ -0,0 +1,13 @@
++// SPDX-License-Identifier: GPL-2.0+
++/*
++ * Copyright (c) 2016-2019 Toradex, Inc.
++ */
++
++#include <common.h>
++#include <mmc.h>
++
++/* provide a default implementation */
++__weak int mmc_map_to_kernel_blk(int dev_no)
++{
++	return dev_no;
++}
+-- 
+2.25.1
+

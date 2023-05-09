@@ -1,0 +1,260 @@
+From d9be21e5abe63459f485a7442dcf01731f084623 Mon Sep 17 00:00:00 2001
+From: Igor Opaniuk <igor.opaniuk@foundries.io>
+Date: Thu, 12 Aug 2021 16:18:10 +0300
+Subject: [PATCH 099/233] [FIO toup] ARM: dts: fsl-imx8qm-apalis: use dm-spl
+ properties
+
+Use u-boot,dm-spl property for nodes, that should be accessible by
+SPL instead of u-boot,dm-pre-proper.
+
+Signed-off-by: Igor Opaniuk <igor.opaniuk@foundries.io>
+---
+ arch/arm/dts/fsl-imx8qm-apalis-u-boot.dtsi | 92 +++++++++++-----------
+ 1 file changed, 46 insertions(+), 46 deletions(-)
+
+diff --git a/arch/arm/dts/fsl-imx8qm-apalis-u-boot.dtsi b/arch/arm/dts/fsl-imx8qm-apalis-u-boot.dtsi
+index e0ee0ec694e..4743d3ba146 100644
+--- a/arch/arm/dts/fsl-imx8qm-apalis-u-boot.dtsi
++++ b/arch/arm/dts/fsl-imx8qm-apalis-u-boot.dtsi
+@@ -20,192 +20,192 @@
+ 		dr_mode = "peripheral";
+ 		chipidea,usb = <&usbotg1>;
+ 		status = "okay";
+-		u-boot,dm-pre-proper;
++		u-boot,dm-spl;
+ 	};
+ };
+ 
+ &{/imx8qm-pm} {
+ 
+-	u-boot,dm-pre-proper;
++	u-boot,dm-spl;
+ };
+ 
+ &mu {
+-	u-boot,dm-pre-proper;
++	u-boot,dm-spl;
+ };
+ 
+ &clk {
+-	u-boot,dm-pre-proper;
++	u-boot,dm-spl;
+ };
+ 
+ &iomuxc {
+-	u-boot,dm-pre-proper;
++	u-boot,dm-spl;
+ };
+ 
+ &pd_lsio {
+-	u-boot,dm-pre-proper;
++	u-boot,dm-spl;
+ };
+ 
+ &pd_lsio_gpio0 {
+-	u-boot,dm-pre-proper;
++	u-boot,dm-spl;
+ };
+ 
+ &pd_lsio_gpio1 {
+-	u-boot,dm-pre-proper;
++	u-boot,dm-spl;
+ };
+ 
+ &pd_lsio_gpio2 {
+-	u-boot,dm-pre-proper;
++	u-boot,dm-spl;
+ };
+ 
+ &pd_lsio_gpio3 {
+-	u-boot,dm-pre-proper;
++	u-boot,dm-spl;
+ };
+ 
+ &pd_lsio_gpio4 {
+-	u-boot,dm-pre-proper;
++	u-boot,dm-spl;
+ };
+ 
+ &pd_lsio_gpio5 {
+-	u-boot,dm-pre-proper;
++	u-boot,dm-spl;
+ };
+ 
+ &pd_lsio_gpio6 {
+-	u-boot,dm-pre-proper;
++	u-boot,dm-spl;
+ };
+ 
+ &pd_lsio_gpio7 {
+-	u-boot,dm-pre-proper;
++	u-boot,dm-spl;
+ };
+ 
+ &pd_dma {
+-	u-boot,dm-pre-proper;
++	u-boot,dm-spl;
+ };
+ 
+ &pd_dma_lpuart0 {
+-	u-boot,dm-pre-proper;
++	u-boot,dm-spl;
+ };
+ 
+ &pd_dma_lpuart1 {
+-	u-boot,dm-pre-proper;
++	u-boot,dm-spl;
+ };
+ 
+ &pd_conn {
+-	u-boot,dm-pre-proper;
++	u-boot,dm-spl;
+ };
+ 
+ &pd_conn_sdch0 {
+-	u-boot,dm-pre-proper;
++	u-boot,dm-spl;
+ };
+ 
+ &pd_conn_sdch1 {
+-	u-boot,dm-pre-proper;
++	u-boot,dm-spl;
+ };
+ 
+ &pd_conn_sdch2 {
+-	u-boot,dm-pre-proper;
++	u-boot,dm-spl;
+ };
+ 
+ &pd_conn_usbotg0 {
+-	u-boot,dm-pre-proper;
++	u-boot,dm-spl;
+ };
+ 
+ &pd_conn_usbotg0_phy {
+-	u-boot,dm-pre-proper;
++	u-boot,dm-spl;
+ };
+ 
+ &pd_conn_usb2 {
+-	u-boot,dm-pre-proper;
++	u-boot,dm-spl;
+ };
+ 
+ &pd_conn_usb2_phy {
+-	u-boot,dm-pre-proper;
++	u-boot,dm-spl;
+ };
+ 
+ &gpio0 {
+-	u-boot,dm-pre-proper;
++	u-boot,dm-spl;
+ };
+ 
+ &gpio1 {
+-	u-boot,dm-pre-proper;
++	u-boot,dm-spl;
+ };
+ 
+ &gpio2 {
+-	u-boot,dm-pre-proper;
++	u-boot,dm-spl;
+ };
+ 
+ &gpio3 {
+-	u-boot,dm-pre-proper;
++	u-boot,dm-spl;
+ };
+ 
+ &gpio4 {
+-	u-boot,dm-pre-proper;
++	u-boot,dm-spl;
+ };
+ 
+ &gpio5 {
+-	u-boot,dm-pre-proper;
++	u-boot,dm-spl;
+ };
+ 
+ &gpio6 {
+-	u-boot,dm-pre-proper;
++	u-boot,dm-spl;
+ };
+ 
+ &gpio7 {
+-	u-boot,dm-pre-proper;
++	u-boot,dm-spl;
+ };
+ 
+ &lpuart0 {
+-	u-boot,dm-pre-proper;
++	u-boot,dm-spl;
+ };
+ 
+ &lpuart1 {
+-	u-boot,dm-pre-proper;
++	u-boot,dm-spl;
+ };
+ 
+ &lpuart2 {
+-	u-boot,dm-pre-proper;
++	u-boot,dm-spl;
+ };
+ 
+ &lpuart3 {
+-	u-boot,dm-pre-proper;
++	u-boot,dm-spl;
+ };
+ 
+ /* USB */
+ &usbmisc1 {
+-	u-boot,dm-pre-proper;
++	u-boot,dm-spl;
+ };
+ 
+ &usbphy1 {
+-	u-boot,dm-pre-proper;
++	u-boot,dm-spl;
+ };
+ 
+ &usbotg1 {
+-	u-boot,dm-pre-proper;
++	u-boot,dm-spl;
+ };
+ 
+ &usbphynop1 {
+ 	compatible = "cdns,usb3-phy";
+ 	reg = <0x0 0x5B160000 0x0 0x40000>;
+ 	#phy-cells = <0>;
+-	u-boot,dm-pre-proper;
++	u-boot,dm-spl;
+ };
+ 
+ &usbotg3 {
+ 	phys = <&usbphynop1>;
+-	u-boot,dm-pre-proper;
++	u-boot,dm-spl;
+ };
+ 
+ &usdhc1 {
+-	u-boot,dm-pre-proper;
++	u-boot,dm-spl;
+ };
+ 
+ &usdhc2 {
+-	u-boot,dm-pre-proper;
++	u-boot,dm-spl;
+ };
+ 
+ &usdhc3 {
+-	u-boot,dm-pre-proper;
++	u-boot,dm-spl;
+ };
+ 
+ &wu {
+-	u-boot,dm-pre-proper;
++	u-boot,dm-spl;
+ };
+-- 
+2.25.1
+

@@ -1,0 +1,144 @@
+From 3ad67a5fae392afc6a35b6e3901f72e3ae909b6e Mon Sep 17 00:00:00 2001
+From: Igor Opaniuk <igor.opaniuk@foundries.io>
+Date: Mon, 25 Oct 2021 17:18:21 +0300
+Subject: [PATCH 122/233] [FIO internal] imx: secondary_boot: enable support
+ for mx8
+
+Enable support of imx_secondary_boot and imx_is_closed cmds
+for MX8 SoCs (imx8qm and imx8qxp).
+
+Signed-off-by: Igor Opaniuk <igor.opaniuk@foundries.io>
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+---
+ arch/arm/include/asm/arch-imx8/sys_proto.h |  9 ++++++++
+ arch/arm/mach-imx/Kconfig                  |  3 ++-
+ arch/arm/mach-imx/image-container.c        |  1 -
+ arch/arm/mach-imx/imx8/ahab.c              | 17 ++++++++++++++
+ arch/arm/mach-imx/imx8/misc.c              | 27 ++++++++++++++++++++++
+ 5 files changed, 55 insertions(+), 2 deletions(-)
+
+diff --git a/arch/arm/include/asm/arch-imx8/sys_proto.h b/arch/arm/include/asm/arch-imx8/sys_proto.h
+index e4bd2961730..45b9acca1dc 100644
+--- a/arch/arm/include/asm/arch-imx8/sys_proto.h
++++ b/arch/arm/include/asm/arch-imx8/sys_proto.h
+@@ -21,9 +21,18 @@ struct pass_over_info_t {
+ 	u32 g_ap_mu;
+ };
+ 
++#if defined(CONFIG_IMX8QM)
++#define FUSE_IMG_SET_OFF_WORD 464
++#elif defined(CONFIG_IMX8QXP) || defined (CONFIG_IMX8DXL)
++#define FUSE_IMG_SET_OFF_WORD 720
++#endif
++
+ extern unsigned long rom_pointer[];
+ void build_info(void);
+ enum boot_device get_boot_device(void);
++int boot_mode_getprisec(void);
++int boot_mode_is_closed(void);
++void boot_mode_enable_secondary(bool enable);
+ int print_bootinfo(void);
+ int sc_pm_setup_uart(sc_rsrc_t uart_rsrc, sc_pm_clock_rate_t clk_rate);
+ int imx8_power_domain_lookup_name(const char *name,
+diff --git a/arch/arm/mach-imx/Kconfig b/arch/arm/mach-imx/Kconfig
+index 748a6e0c085..f884e461a1f 100644
+--- a/arch/arm/mach-imx/Kconfig
++++ b/arch/arm/mach-imx/Kconfig
+@@ -57,7 +57,8 @@ config IMX_BOOTAUX
+ config CMD_SECONDARY_BOOT
+ 	bool "Use SiP service exposed by trusted firmware for redundant boot control"
+ 	default n
+-	depends on ARCH_IMX8M || ARCH_MX6 || ARCH_MX7 || ARCH_MX7ULP
++	depends on ARCH_IMX8M || ARCH_MX6 || ARCH_MX7 || ARCH_MX7ULP || ARCH_IMX8
++	select AHAB_BOOT if ARCH_IMX8
+ 	help
+ 	  Command for triggering SiP service provided by TF-A for setting/clearing
+ 	  SRC GPR10 PERSIST_SECONDARY_BOOT bit, that identifies which image will be
+diff --git a/arch/arm/mach-imx/image-container.c b/arch/arm/mach-imx/image-container.c
+index 367410b1547..a101cfe7df9 100644
+--- a/arch/arm/mach-imx/image-container.c
++++ b/arch/arm/mach-imx/image-container.c
+@@ -33,7 +33,6 @@
+ #define SND_IMG_NUM_TO_OFF(num) \
+         ((1UL << ((0 == (num)) ? 2 : (2 == (num)) ? 0 : (num))) * SND_IMG_OFF_UNIT)
+ 
+-
+ #if defined(CONFIG_IMX8QM)
+ #define FUSE_IMG_SET_OFF_WORD 464
+ #elif defined(CONFIG_IMX8QXP) || defined (CONFIG_IMX8DXL)
+diff --git a/arch/arm/mach-imx/imx8/ahab.c b/arch/arm/mach-imx/imx8/ahab.c
+index 3c3c4cdc4fa..1056a8755ec 100644
+--- a/arch/arm/mach-imx/imx8/ahab.c
++++ b/arch/arm/mach-imx/imx8/ahab.c
+@@ -322,6 +322,23 @@ static int do_ahab_status(struct cmd_tbl *cmdtp, int flag, int argc,
+ 	return 0;
+ }
+ 
++#define AHAB_LIFECYCLE_OEM_CLOSED 0x80
++int boot_mode_is_closed(void)
++{
++	int err;
++	u16 lc;
++	err = sc_seco_chip_info(-1, &lc, NULL, NULL, NULL);
++	if (err != SC_ERR_NONE) {
++		printf("Error getting board AHAB lifecycle\n");
++		return -EIO;
++	}
++
++	if (lc == AHAB_LIFECYCLE_OEM_CLOSED)
++		return 1;
++
++	return 0;
++}
++
+ static int confirm_close(void)
+ {
+ 	puts("Warning: Please ensure your sample is in NXP closed state, "
+diff --git a/arch/arm/mach-imx/imx8/misc.c b/arch/arm/mach-imx/imx8/misc.c
+index 0f695708c5b..f1b454ea949 100644
+--- a/arch/arm/mach-imx/imx8/misc.c
++++ b/arch/arm/mach-imx/imx8/misc.c
+@@ -2,6 +2,7 @@
+ #include <common.h>
+ #include <log.h>
+ #include <asm/arch/sci/sci.h>
++#include <asm/arch/sys_proto.h>
+ #include <asm/mach-imx/sys_proto.h>
+ #include <asm/global_data.h>
+ #include <imx_sip.h>
+@@ -138,6 +139,32 @@ void build_info(void)
+ 	printf("\n");
+ }
+ 
++int boot_mode_getprisec(void)
++{
++	int ret;
++	u8 set_id = 1;
++	u32 fuse_val = 0;
++	sc_ipc_t ipc_handle = -1;
++
++	if (!(is_imx8qxp() && is_soc_rev(CHIP_REV_B))) {
++		ret = sc_misc_get_boot_container(ipc_handle, &set_id);
++		/* Secondary boot */
++		if (!ret && set_id == 2) {
++			ret = sc_misc_otp_fuse_read(ipc_handle, FUSE_IMG_SET_OFF_WORD, &fuse_val);
++			if (!ret) {
++				return 1;
++			}
++		}
++	}
++
++	return 0;
++}
++
++void boot_mode_enable_secondary(bool enable)
++{
++	printf("This functionality isn't supported on iMX8 SoC");
++}
++
+ #if !defined(CONFIG_SPL_BUILD) && defined(CONFIG_PSCI_BOARD_REBOOT)
+ 
+ #define PSCI_SYSTEM_RESET2_AARCH64		0xc4000012
+-- 
+2.40.1
+
