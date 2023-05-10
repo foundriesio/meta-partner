@@ -23,4 +23,5 @@ SRC_URI:append:imx8mn-var-som = " \
     file://0003-imx8mn_var_som-board-fix-compilation-errors.patch \
     file://0004-imx8mn_var_som-increase-CONFIG_SYS_SPL_MALLOC_SIZE-t.patch \
     file://0005-imx8mn_var_som-adjust-SPL-stack-settings-to-match-im.patch \
+    file://0006-imx8mn_var_som-use-common-spl_mmc_get_uboot_raw_sect.patch \
 "
