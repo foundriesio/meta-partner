@@ -1,7 +1,7 @@
 From baa7ca365dc9e60aad6550f214d640bfe5b59816 Mon Sep 17 00:00:00 2001
 From: Michael Scott <mike@foundries.io>
 Date: Sat, 6 May 2023 15:21:04 -0700
-Subject: [PATCH 2/6] imx8mn_var_som: define default dfu_alt_info for emmc
+Subject: [PATCH 2/7] imx8mn_var_som: define default dfu_alt_info for emmc
  updates
 
 Define dfu_alt_info to allow updating SPL/imx-boot and u-boot.itb via

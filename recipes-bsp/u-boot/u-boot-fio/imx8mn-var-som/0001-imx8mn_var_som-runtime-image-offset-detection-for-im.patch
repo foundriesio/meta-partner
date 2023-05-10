@@ -1,7 +1,7 @@
 From bb1eaf67be65c847c1d52b04b0a74c74ac47d8e6 Mon Sep 17 00:00:00 2001
 From: Michael Scott <mike@foundries.io>
 Date: Sat, 6 May 2023 15:20:07 -0700
-Subject: [PATCH 1/6] imx8mn_var_som: runtime image offset detection for imx8mn
+Subject: [PATCH 1/7] imx8mn_var_som: runtime image offset detection for imx8mn
 
 Add support of next image ram offset detection (in SPL) for
 IMX8MN_VAR_SOM.

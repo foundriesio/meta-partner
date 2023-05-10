@@ -1,7 +1,7 @@
 From 903d741751057e38680c987be52d3f459a888dc1 Mon Sep 17 00:00:00 2001
 From: Michael Scott <mike@foundries.io>
 Date: Mon, 8 May 2023 16:40:46 -0700
-Subject: [PATCH 4/6] imx8mn_var_som: increase CONFIG_SYS_SPL_MALLOC_SIZE to
+Subject: [PATCH 4/7] imx8mn_var_som: increase CONFIG_SYS_SPL_MALLOC_SIZE to
  16MB
 
 commit 03f1f78a9b44 ("spl: fit: Prefer a malloc()'d buffer for loading

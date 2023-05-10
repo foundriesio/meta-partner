@@ -1,7 +1,7 @@
 From 0a829ed62aa52c4bade9ec9e3834adf084e25d94 Mon Sep 17 00:00:00 2001
 From: Vanessa Maegima <vanessa.maegima@foundries.io>
 Date: Wed, 3 May 2023 16:01:45 -0300
-Subject: [PATCH 3/6] imx8mn_var_som: board: fix compilation errors
+Subject: [PATCH 3/7] imx8mn_var_som: board: fix compilation errors
 
 warning: implicit declaration of function 'setup_fec'; did you mean
 'setup_i2c'? [-Wimplicit-function-declaration]
