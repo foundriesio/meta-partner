@@ -25,6 +25,12 @@ SRC_URI:append:imx8mn-var-som = " \
         file://imx8mn-var-som-standard.scc \
 "
 
+SRC_URI:append:imx8mp-var-dart = " \
+        file://imx8mp-var-dart.cfg \
+        file://imx8mp-var-dart.scc   \
+        file://imx8mp-var-dart-standard.scc \
+"
+
 # FIX-UP build
 SRC_URI:remove:mx8m-var = "file://0001-FIO-extras-arm64-dts-imx8mm-evk-use-imx8mm-evkb-for-.patch"
 SRC_URI:remove:mx8m-var = "file://0001-FIO-fromlist-gpu-drm-imx-sec_mipi_dsim-imx-fix-probe.patch"

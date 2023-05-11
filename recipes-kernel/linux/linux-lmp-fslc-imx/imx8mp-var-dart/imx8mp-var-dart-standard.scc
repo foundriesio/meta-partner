@@ -1,0 +1,7 @@
+define KMACHINE imx8mp-var-dart
+define KARCH aarch64
+define KTYPE standard
+
+include ktypes/standard/standard.scc
+
+include imx8mp-var-dart.scc
