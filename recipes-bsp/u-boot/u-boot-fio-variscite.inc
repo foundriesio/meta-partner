@@ -25,3 +25,14 @@ SRC_URI:append:imx8mn-var-som = " \
     file://0005-imx8mn_var_som-adjust-SPL-stack-settings-to-match-im.patch \
     file://0006-imx8mn_var_som-use-common-spl_mmc_get_uboot_raw_sect.patch \
 "
+
+SRC_URI:append:imx8mp-var-dart = " \
+    file://0001-Kconfig-fix-selecting-FSL_CAAM-without-HAS_CAAM.patch \
+    file://0001-imx8mp_var_dart-runtime-image-offset-detection.patch \
+    file://0002-imx8mp_var_dart-update-dfu_alt_info-for-split-bootlo.patch \
+    file://0003-imx8mp_var_dart-increase-CONFIG_SYS_SPL_MALLOC_SIZE-.patch \
+    file://0004-imx8mp_var_dart-use-common-spl_mmc_get_uboot_raw_sec.patch \
+    file://0005-imx8mp_var_dart-allow-USB-and-ETH-to-be-disabled.patch \
+    file://0006-imx8mp_var_dart-Increase-CONFIG_SYS_BOOTM_LEN-to-64M.patch \
+    file://dtb.cfg \
+"

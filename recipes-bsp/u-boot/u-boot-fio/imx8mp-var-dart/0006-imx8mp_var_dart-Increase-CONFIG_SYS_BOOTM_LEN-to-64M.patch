@@ -1,0 +1,35 @@
+From 90573df4d12b8d1312a3c038732a23a2cc86c811 Mon Sep 17 00:00:00 2001
+From: Michael Scott <mike@foundries.io>
+Date: Wed, 10 May 2023 19:34:05 -0700
+Subject: [PATCH 6/6] imx8mp_var_dart: Increase CONFIG_SYS_BOOTM_LEN to 64MB
+
+The kernel size in LmP exceeds 32Mb. Increase the maximum size
+of an uncompressed kernel to fix the following error:
+    Uncompressing Kernel Image
+    Error: inflate() returned -5
+    gzip compressed: uncompress error -1
+    Must RESET board to recover
+
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+[mike@foundries.io: ported to imx8mp-var-dart]
+Signed-off-by: Michael Scott <mike@foundries.io>
+---
+ include/configs/imx8mp_var_dart.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/include/configs/imx8mp_var_dart.h b/include/configs/imx8mp_var_dart.h
+index 7250002a655..16c8c17cd69 100644
+--- a/include/configs/imx8mp_var_dart.h
++++ b/include/configs/imx8mp_var_dart.h
+@@ -13,7 +13,7 @@
+ 
+ #include "imx_env.h"
+ 
+-#define CONFIG_SYS_BOOTM_LEN		(32 * SZ_1M)
++#define CONFIG_SYS_BOOTM_LEN		(64 * SZ_1M)
+ 
+ #define CONFIG_SPL_MAX_SIZE				(176 * 1024)
+ #define CONFIG_SYS_MONITOR_LEN				(512 * 1024)
+-- 
+2.40.1
+

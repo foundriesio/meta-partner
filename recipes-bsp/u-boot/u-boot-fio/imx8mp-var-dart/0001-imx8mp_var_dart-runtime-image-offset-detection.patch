@@ -1,0 +1,37 @@
+From 119d89222d347f80eeba0e1fcb2fa1a0daea6e19 Mon Sep 17 00:00:00 2001
+From: Michael Scott <mike@foundries.io>
+Date: Wed, 10 May 2023 17:11:54 -0700
+Subject: [PATCH 1/6] imx8mp_var_dart: runtime image offset detection
+
+Add support of next image ram offset detection (in SPL) for
+IMX8MP_VAR_DART.
+
+Signed-off-by: Michael Scott <mike@foundries.io>
+---
+ include/configs/imx8mp_var_dart.h | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
+
+diff --git a/include/configs/imx8mp_var_dart.h b/include/configs/imx8mp_var_dart.h
+index 19e877cb5af..63be7f6265d 100644
+--- a/include/configs/imx8mp_var_dart.h
++++ b/include/configs/imx8mp_var_dart.h
+@@ -17,6 +17,16 @@
+ 
+ #define CONFIG_SPL_MAX_SIZE				(176 * 1024)
+ #define CONFIG_SYS_MONITOR_LEN				(512 * 1024)
++/*
++ * CONFIG_SECONDARY_BOOT_SECTOR_OFFSET was intended to be used as a compile time setting.
++ * If CONFIG_SECONDARY_BOOT_RUNTIME_DETECTION is defined, then only use the base offset of 0x300 here.
++ * CONFIG_SECONDARY_BOOT_SECTOR_OFFSET will be added dynamically if needed.
++ */
++#ifndef CONFIG_SECONDARY_BOOT_RUNTIME_DETECTION
++#undef CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_SECTOR
++#define CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_SECTOR        (0x300 + CONFIG_SECONDARY_BOOT_SECTOR_OFFSET)
++#endif
++
+ #define CONFIG_SYS_UBOOT_BASE				(QSPI0_AMBA_BASE + CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_SECTOR * 512)
+ 
+ #ifdef CONFIG_SPL_BUILD
+-- 
+2.40.1
+
