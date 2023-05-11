@@ -8,3 +8,7 @@ EXTRA_OEMAKE:append:imx8mn-var-som = " \
     CFG_TZDRAM_START=0x56000000 \
     CFG_UART_BASE=UART4_BASE \
 "
+
+EXTRA_OEMAKE:append:imx8mp-var-dart = " \
+    CFG_TZDRAM_START=0x56000000 \
+"

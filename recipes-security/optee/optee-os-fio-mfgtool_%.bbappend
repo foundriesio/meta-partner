@@ -9,3 +9,8 @@ EXTRA_OEMAKE:append:imx8mn-var-som = " \
     CFG_DDR_SIZE=0x18000000 \
     CFG_UART_BASE=UART4_BASE \
 "
+
+# Set size for force load to 0x56000000
+EXTRA_OEMAKE:append:imx8mp-var-dart = " \
+    CFG_DDR_SIZE=0x18000000 \
+"
