@@ -1,0 +1,32 @@
+From fad8ad81f24503e5ce328720552be8baaaa8236c Mon Sep 17 00:00:00 2001
+From: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+Date: Mon, 29 Aug 2022 20:43:37 +0300
+Subject: [PATCH 155/233] [FIO toup] imx: mx6: spl: reduce BSS size
+
+BSS size 1Mb is too big and the linking script for SPL uses this
+variable for calculating the max size of an image. Reduce BSS to a
+reasonable size.
+
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+---
+ include/configs/imx6_spl.h | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/include/configs/imx6_spl.h b/include/configs/imx6_spl.h
+index 234aacb3b91..9aaf38da1c7 100644
+--- a/include/configs/imx6_spl.h
++++ b/include/configs/imx6_spl.h
+@@ -75,8 +75,8 @@
+ 
+ #if defined(CONFIG_MX6SX) || defined(CONFIG_MX6SL) || \
+ 	defined(CONFIG_MX6UL) || defined(CONFIG_MX6ULL)
+-#define CONFIG_SPL_BSS_START_ADDR      0x88200000
+-#define CONFIG_SPL_BSS_MAX_SIZE        0x100000		/* 1 MB */
++#define CONFIG_SPL_BSS_START_ADDR      0x882FE000
++#define CONFIG_SPL_BSS_MAX_SIZE        0x2000		/* 8 KB */
+ #define CONFIG_SYS_SPL_MALLOC_START    0x88300000
+ #define CONFIG_SYS_SPL_MALLOC_SIZE     0x100000		/* 1 MB */
+ #else
+-- 
+2.40.1
+

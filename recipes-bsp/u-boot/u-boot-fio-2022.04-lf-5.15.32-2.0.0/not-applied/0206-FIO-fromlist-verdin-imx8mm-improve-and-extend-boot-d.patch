@@ -1,0 +1,42 @@
+From 2ae439b91c309b8ded2042044c6ecc460c0c0dfe Mon Sep 17 00:00:00 2001
+From: Marcel Ziswiler <marcel.ziswiler@toradex.com>
+Date: Wed, 18 May 2022 16:29:00 +0200
+Subject: [PATCH 206/233] [FIO fromlist] verdin-imx8mm: improve and extend boot
+ devices
+
+- Annotate boot devices available in spl_board_boot_device().
+- Drop SD3_BOOT/MMC3_BOOT not available for boot on Verdin iMX8M Mini.
+
+Upstream-Status: Submitted [https://lore.kernel.org/all/20220819051827.185560-4-marcel@ziswiler.com/]
+
+Signed-off-by: Marcel Ziswiler <marcel.ziswiler@toradex.com>
+(cherry picked from commit abbce9b0ac3e98f2b74d162b43a892a102d69002)
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+---
+ board/toradex/verdin-imx8mm/spl.c | 7 ++-----
+ 1 file changed, 2 insertions(+), 5 deletions(-)
+
+diff --git a/board/toradex/verdin-imx8mm/spl.c b/board/toradex/verdin-imx8mm/spl.c
+index 96fb3b08e32..067e8621eb0 100644
+--- a/board/toradex/verdin-imx8mm/spl.c
++++ b/board/toradex/verdin-imx8mm/spl.c
+@@ -34,14 +34,11 @@ DECLARE_GLOBAL_DATA_PTR;
+ int spl_board_boot_device(enum boot_device boot_dev_spl)
+ {
+ 	switch (boot_dev_spl) {
+-	case MMC1_BOOT:
++	case MMC1_BOOT: /* eMMC */
+ 		return BOOT_DEVICE_MMC1;
+-	case SD2_BOOT:
++	case SD2_BOOT: /* SD card */
+ 	case MMC2_BOOT:
+ 		return BOOT_DEVICE_MMC2;
+-	case SD3_BOOT:
+-	case MMC3_BOOT:
+-		return BOOT_DEVICE_MMC1;
+ 	case USB_BOOT:
+ 		return BOOT_DEVICE_BOARD;
+ 	default:
+-- 
+2.40.1
+

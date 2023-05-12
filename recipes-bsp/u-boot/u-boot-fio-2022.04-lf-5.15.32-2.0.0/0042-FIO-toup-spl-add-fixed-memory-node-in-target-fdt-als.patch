@@ -1,0 +1,51 @@
+From 621ce467457677a756c6eae2b5856b3d19cac6e6 Mon Sep 17 00:00:00 2001
+From: Ricardo Salveti <ricardo@foundries.io>
+Date: Thu, 14 Jan 2021 21:20:38 -0300
+Subject: [PATCH 042/233] [FIO toup] spl: add fixed memory node in target fdt
+ also when loading OP-TEE
+
+As done for the SPL -> ATF boot flow in commit a343b4fe73, add the fixed
+memory node in target fdt when booting OP-TEE directly from SPL.
+
+This is required because OP-TEE needs the memory information to be able
+to initialize dynamic shared memory.
+
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+---
+ common/spl/spl.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/common/spl/spl.c b/common/spl/spl.c
+index b452d4feeb2..5a05285c42a 100644
+--- a/common/spl/spl.c
++++ b/common/spl/spl.c
+@@ -71,7 +71,7 @@ __weak void show_boot_progress(int val) {}
+ #endif
+ 
+ #if defined(CONFIG_SPL_OS_BOOT) || CONFIG_IS_ENABLED(HANDOFF) || \
+-	defined(CONFIG_SPL_ATF)
++	defined(CONFIG_SPL_ATF) || defined(CONFIG_SPL_OPTEE)
+ /* weak, default platform-specific function to initialize dram banks */
+ __weak int dram_init_banksize(void)
+ {
+@@ -752,7 +752,7 @@ void board_init_r(gd_t *dummy1, ulong dummy2)
+ #endif
+ 
+ 	if (IS_ENABLED(CONFIG_SPL_OS_BOOT) || CONFIG_IS_ENABLED(HANDOFF) ||
+-	    IS_ENABLED(CONFIG_SPL_ATF))
++	    IS_ENABLED(CONFIG_SPL_ATF) || IS_ENABLED(CONFIG_SPL_OPTEE))
+ 		dram_init_banksize();
+ 
+ 	bootcount_inc();
+@@ -805,6 +805,7 @@ void board_init_r(gd_t *dummy1, ulong dummy2)
+ 	case IH_OS_TEE:
+ 		debug("Jumping to U-Boot via OP-TEE\n");
+ 		spl_board_prepare_for_optee(spl_image.fdt_addr);
++		spl_fixup_fdt(spl_image.fdt_addr);
+ 		jump_to_image_optee(&spl_image);
+ 		break;
+ #endif
+-- 
+2.40.1
+

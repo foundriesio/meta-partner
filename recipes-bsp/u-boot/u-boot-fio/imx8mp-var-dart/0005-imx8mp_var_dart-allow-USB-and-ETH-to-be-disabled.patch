@@ -1,0 +1,49 @@
+From b76b79b318d68ae648e9703df19a0d1addd9f9d3 Mon Sep 17 00:00:00 2001
+From: Michael Scott <mike@foundries.io>
+Date: Wed, 10 May 2023 17:19:29 -0700
+Subject: [PATCH 5/6] imx8mp_var_dart: allow USB and ETH to be disabled
+
+Fix compilation issues when CONFIG_USB or CONFIG_FEC_MXC are disabled.
+
+Signed-off-by: Michael Scott <mike@foundries.io>
+---
+ board/variscite/imx8mp_var_dart/imx8mp_var_dart.c | 14 ++++++++------
+ 1 file changed, 8 insertions(+), 6 deletions(-)
+
+diff --git a/board/variscite/imx8mp_var_dart/imx8mp_var_dart.c b/board/variscite/imx8mp_var_dart/imx8mp_var_dart.c
+index 29fdb0ef6e2..17c133f7083 100644
+--- a/board/variscite/imx8mp_var_dart/imx8mp_var_dart.c
++++ b/board/variscite/imx8mp_var_dart/imx8mp_var_dart.c
+@@ -339,13 +339,13 @@ int board_ehci_usb_phy_mode(struct udevice *dev)
+ 
+ int board_init(void)
+ {
+-	if (CONFIG_IS_ENABLED(EXTCON_PTN5150)) {
+-		extcon_ptn5150_setup(&usb_ptn5150);
+-	}
++#if defined(CONFIG_EXTCON_PTN5150) && defined(CONFIG_USB)
++	extcon_ptn5150_setup(&usb_ptn5150);
++#endif
+ 
+-	if (CONFIG_IS_ENABLED(FEC_MXC)) {
+-		setup_fec();
+-	}
++#ifdef CONFIG_FEC_MXC
++	setup_fec();
++#endif
+ 
+ 	if (CONFIG_IS_ENABLED(DWC_ETH_QOS)) {
+ 		setup_eqos();
+@@ -397,7 +397,9 @@ int board_late_init(void)
+ 		env_set("carrier_rev", carrier_rev);
+ 	}
+ 
++#ifdef CONFIG_FEC_MXC
+ 	var_setup_mac(ep);
++#endif
+ 	var_eeprom_print_prod_info(ep);
+ 
+ 	return 0;
+-- 
+2.40.1
+

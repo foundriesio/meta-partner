@@ -1,0 +1,36 @@
+From c66a5ab977dd3ffff0db2b7217b114b3cff31032 Mon Sep 17 00:00:00 2001
+From: Denys Drozdov <denys.drozdov@toradex.com>
+Date: Tue, 2 Nov 2021 15:07:07 +0200
+Subject: [PATCH 201/233] [FIO fromlist] verdin-imx8mm: do not save environment
+ when it's nowhere
+
+This code part is broken, remove it.
+
+Upstream-Status: Submitted [https://lore.kernel.org/all/20220823110549.20234-2-andrejs.cainikovs@toradex.com/]
+
+Signed-off-by: Andrejs Cainikovs <andrejs.cainikovs@toradex.com>
+Signed-off-by: Denys Drozdov <denys.drozdov@toradex.com>
+(cherry picked from commit b3d964c4f7b50d248e0df6742193bf573b8da0b5)
+(cherry picked from commit 6db28fcc8816f9f63ea74f51b5917de60064e3ba)
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+---
+ board/toradex/verdin-imx8mm/verdin-imx8mm.c | 3 ---
+ 1 file changed, 3 deletions(-)
+
+diff --git a/board/toradex/verdin-imx8mm/verdin-imx8mm.c b/board/toradex/verdin-imx8mm/verdin-imx8mm.c
+index ffcb04fc31e..55c02653da6 100644
+--- a/board/toradex/verdin-imx8mm/verdin-imx8mm.c
++++ b/board/toradex/verdin-imx8mm/verdin-imx8mm.c
+@@ -102,9 +102,6 @@ static void select_dt_from_module_version(void)
+ 	if (strcmp(variant, env_variant)) {
+ 		printf("Setting variant to %s\n", variant);
+ 		env_set("variant", variant);
+-
+-		if (IS_ENABLED(CONFIG_ENV_IS_NOWHERE))
+-			env_save();
+ 	}
+ }
+ 
+-- 
+2.25.1
+

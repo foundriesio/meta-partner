@@ -1,0 +1,29 @@
+From 0a79c3260766d76976a9b3721963026c48fc161b Mon Sep 17 00:00:00 2001
+From: Igor Opaniuk <igor.opaniuk@foundries.io>
+Date: Tue, 15 Feb 2022 18:19:08 +0200
+Subject: [PATCH 137/233] [FIO internal] imx8: select HAS_CAAM only if OPTEE is
+ n
+
+Select HAS_CAAM symbol only if OPTEE is not selected.
+
+Signed-off-by: Igor Opaniuk <igor.opaniuk@foundries.io>
+---
+ arch/arm/mach-imx/imx8/Kconfig | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/arm/mach-imx/imx8/Kconfig b/arch/arm/mach-imx/imx8/Kconfig
+index a251e37fa8f..a8b407cd2f1 100644
+--- a/arch/arm/mach-imx/imx8/Kconfig
++++ b/arch/arm/mach-imx/imx8/Kconfig
+@@ -20,7 +20,7 @@ config IMX_LOAD_HDMI_FIMRWARE_TX
+ 
+ config IMX8
+ 	bool
+-	select HAS_CAAM
++	select HAS_CAAM if !OPTEE
+ 
+ config MU_BASE_SPL
+ 	hex "MU base address used in SPL"
+-- 
+2.25.1
+

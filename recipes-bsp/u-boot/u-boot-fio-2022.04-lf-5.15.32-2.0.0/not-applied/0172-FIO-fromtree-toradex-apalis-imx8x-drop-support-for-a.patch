@@ -1,0 +1,1121 @@
+From fb459b78867a41281b3a87581e1090f198c0ac51 Mon Sep 17 00:00:00 2001
+From: Denys Drozdov <denys.drozdov@toradex.com>
+Date: Wed, 13 Apr 2022 11:33:25 +0200
+Subject: [PATCH 172/233] [FIO fromtree] toradex: apalis-imx8x: drop support
+ for apalis imx8x
+
+commit 47bcc0d056aa243a31d2a1edb44bdcd155f5335b upstream.
+
+Drop Apalis iMX8X platform as it never left sample state and is no
+longer supported.
+
+Signed-off-by: Denys Drozdov <denys.drozdov@toradex.com>
+Signed-off-by: Marcel Ziswiler <marcel.ziswiler@toradex.com>
+(cherry picked from commit 72288bb2b3a76833a5183dfd892f0e5384f6d935)
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+---
+ arch/arm/dts/Makefile                         |   1 -
+ arch/arm/dts/fsl-imx8qxp-apalis-u-boot.dtsi   | 139 ---------
+ arch/arm/dts/fsl-imx8qxp-apalis.dts           | 278 ------------------
+ arch/arm/mach-imx/imx8/Kconfig                |   6 -
+ board/toradex/apalis-imx8x/Kconfig            |  33 ---
+ board/toradex/apalis-imx8x/MAINTAINERS        |  10 -
+ board/toradex/apalis-imx8x/Makefile           |   6 -
+ .../apalis-imx8x/apalis-imx8x-imximage.cfg    |  23 --
+ board/toradex/apalis-imx8x/apalis-imx8x.c     | 155 ----------
+ board/toradex/common/tdx-cfg-block.c          |  13 +-
+ configs/apalis-imx8x_defconfig                |  80 -----
+ doc/board/toradex/apalis-imx8x.rst            |  77 -----
+ doc/board/toradex/index.rst                   |   1 -
+ include/configs/apalis-imx8x.h                | 129 --------
+ 14 files changed, 1 insertion(+), 950 deletions(-)
+ delete mode 100644 arch/arm/dts/fsl-imx8qxp-apalis-u-boot.dtsi
+ delete mode 100644 arch/arm/dts/fsl-imx8qxp-apalis.dts
+ delete mode 100644 board/toradex/apalis-imx8x/Kconfig
+ delete mode 100644 board/toradex/apalis-imx8x/MAINTAINERS
+ delete mode 100644 board/toradex/apalis-imx8x/Makefile
+ delete mode 100644 board/toradex/apalis-imx8x/apalis-imx8x-imximage.cfg
+ delete mode 100644 board/toradex/apalis-imx8x/apalis-imx8x.c
+ delete mode 100644 configs/apalis-imx8x_defconfig
+ delete mode 100644 doc/board/toradex/apalis-imx8x.rst
+ delete mode 100644 include/configs/apalis-imx8x.h
+
+diff --git a/arch/arm/dts/Makefile b/arch/arm/dts/Makefile
+index 0170c9c897c..f27ff45770b 100644
+--- a/arch/arm/dts/Makefile
++++ b/arch/arm/dts/Makefile
+@@ -942,7 +942,6 @@ dtb-$(CONFIG_ARCH_IMX8) += \
+ 	imx8qm-rom7720-a1.dtb \
+ 	fsl-imx8qxp-ai_ml.dtb \
+ 	fsl-imx8qxp-colibri.dtb \
+-	fsl-imx8qxp-apalis.dtb \
+ 	fsl-imx8qxp-mek.dtb \
+ 	fsl-imx8qxp-lpddr4-val.dtb \
+ 	fsl-imx8qxp-lpddr4-val-gpmi-nand.dtb \
+diff --git a/arch/arm/dts/fsl-imx8qxp-apalis-u-boot.dtsi b/arch/arm/dts/fsl-imx8qxp-apalis-u-boot.dtsi
+deleted file mode 100644
+index e41911a04aa..00000000000
+--- a/arch/arm/dts/fsl-imx8qxp-apalis-u-boot.dtsi
++++ /dev/null
+@@ -1,139 +0,0 @@
+-// SPDX-License-Identifier: GPL-2.0+ OR MIT
+-/*
+- * Copyright 2020 Toradex
+- */
+-
+-&{/imx8qx-pm} {
+-
+-	u-boot,dm-pre-proper;
+-};
+-
+-&mu {
+-	u-boot,dm-pre-proper;
+-};
+-
+-&clk {
+-	u-boot,dm-pre-proper;
+-};
+-
+-&iomuxc {
+-	u-boot,dm-pre-proper;
+-};
+-
+-&pd_lsio {
+-	u-boot,dm-pre-proper;
+-};
+-
+-&pd_lsio_gpio0 {
+-	u-boot,dm-pre-proper;
+-};
+-
+-&pd_lsio_gpio1 {
+-	u-boot,dm-pre-proper;
+-};
+-
+-&pd_lsio_gpio2 {
+-	u-boot,dm-pre-proper;
+-};
+-
+-&pd_lsio_gpio3 {
+-	u-boot,dm-pre-proper;
+-};
+-
+-&pd_lsio_gpio4 {
+-	u-boot,dm-pre-proper;
+-};
+-
+-&pd_lsio_gpio5 {
+-	u-boot,dm-pre-proper;
+-};
+-
+-&pd_lsio_gpio6 {
+-	u-boot,dm-pre-proper;
+-};
+-
+-&pd_lsio_gpio7 {
+-	u-boot,dm-pre-proper;
+-};
+-
+-&pd_dma {
+-	u-boot,dm-pre-proper;
+-};
+-
+-&pd_dma_lpuart0 {
+-	u-boot,dm-pre-proper;
+-};
+-
+-&pd_dma_lpuart3 {
+-	u-boot,dm-pre-proper;
+-};
+-
+-&pd_conn {
+-	u-boot,dm-pre-proper;
+-};
+-
+-&pd_conn_sdch0 {
+-	u-boot,dm-pre-proper;
+-};
+-
+-&pd_conn_sdch1 {
+-	u-boot,dm-pre-proper;
+-};
+-
+-&pd_conn_sdch2 {
+-	u-boot,dm-pre-proper;
+-};
+-
+-&pd_conn_enet0 {
+-	u-boot,dm-pre-proper;
+-};
+-
+-&gpio0 {
+-	u-boot,dm-pre-proper;
+-};
+-
+-&gpio1 {
+-	u-boot,dm-pre-proper;
+-};
+-
+-&gpio2 {
+-	u-boot,dm-pre-proper;
+-};
+-
+-&gpio3 {
+-	u-boot,dm-pre-proper;
+-};
+-
+-&gpio4 {
+-	u-boot,dm-pre-proper;
+-};
+-
+-&gpio5 {
+-	u-boot,dm-pre-proper;
+-};
+-
+-&gpio6 {
+-	u-boot,dm-pre-proper;
+-};
+-
+-&gpio7 {
+-	u-boot,dm-pre-proper;
+-};
+-
+-&lpuart3 {
+-	u-boot,dm-pre-proper;
+-};
+-
+-&lpuart0 {
+-	u-boot,dm-pre-proper;
+-};
+-
+-&usdhc1 {
+-	u-boot,dm-pre-proper;
+-	/delete-property/ assigned-clock-parents;
+-};
+-
+-&usdhc2 {
+-	u-boot,dm-pre-proper;
+-	/delete-property/ assigned-clock-parents;
+-};
+diff --git a/arch/arm/dts/fsl-imx8qxp-apalis.dts b/arch/arm/dts/fsl-imx8qxp-apalis.dts
+deleted file mode 100644
+index 9cb3d3a809b..00000000000
+--- a/arch/arm/dts/fsl-imx8qxp-apalis.dts
++++ /dev/null
+@@ -1,278 +0,0 @@
+-// SPDX-License-Identifier: GPL-2.0+ OR MIT
+-/*
+- * Copyright 2020 Toradex
+- */
+-
+-/dts-v1/;
+-
+-#include "fsl-imx8qxp.dtsi"
+-#include "fsl-imx8qxp-apalis-u-boot.dtsi"
+-
+-/ {
+-	model = "Toradex Apalis iMX8X";
+-	compatible = "toradex,apalis-imx8x", "fsl,imx8qxp";
+-
+-	chosen {
+-		bootargs = "console=ttyLP1,115200";
+-		stdout-path = &lpuart1;
+-	};
+-
+-	regulators {
+-		compatible = "simple-bus";
+-		#address-cells = <1>;
+-		#size-cells = <0>;
+-
+-		reg_usb_otg1_vbus: regulator@0 {
+-			compatible = "regulator-fixed";
+-			reg = <0>;
+-			regulator-name = "usb_otg1_vbus";
+-			regulator-min-microvolt = <5000000>;
+-			regulator-max-microvolt = <5000000>;
+-			gpio = <&gpio3 16 GPIO_ACTIVE_HIGH>;
+-			enable-active-high;
+-		};
+-	};
+-};
+-
+-&iomuxc {
+-	pinctrl-names = "default";
+-	pinctrl-0 = <&pinctrl_hog0>, <&pinctrl_hog1>, <&pinctrl_reset_moci>;
+-
+-	apalis-imx8x {
+-		/* Apalis UART1 */
+-		pinctrl_lpuart1: lpuart1grp {
+-			fsl,pins = <
+-				SC_P_UART1_RX_ADMA_UART1_RX		0x06000020	/* SODIMM 118 */
+-				SC_P_UART1_TX_ADMA_UART1_TX		0x06000020	/* SODIMM 112 */
+-			>;
+-		};
+-
+-		/* On-module Gigabit Ethernet PHY Micrel KSZ9031 */
+-		pinctrl_fec1: fec1grp {
+-			fsl,pins = <
+-				SC_P_COMP_CTL_GPIO_1V8_3V3_ENET_ENETB0_PAD	0x14a0
+-				SC_P_COMP_CTL_GPIO_1V8_3V3_ENET_ENETB1_PAD	0x14a0
+-				SC_P_ENET0_MDC_CONN_ENET0_MDC			0x06000020
+-				SC_P_ENET0_MDIO_CONN_ENET0_MDIO			0x06000020
+-				SC_P_ENET0_RGMII_TX_CTL_CONN_ENET0_RGMII_TX_CTL	0x61
+-				SC_P_ENET0_RGMII_TXC_CONN_ENET0_RGMII_TXC	0x61
+-				SC_P_ENET0_RGMII_TXD0_CONN_ENET0_RGMII_TXD0	0x61
+-				SC_P_ENET0_RGMII_TXD1_CONN_ENET0_RGMII_TXD1	0x61
+-				SC_P_ENET0_RGMII_TXD2_CONN_ENET0_RGMII_TXD2	0x61
+-				SC_P_ENET0_RGMII_TXD3_CONN_ENET0_RGMII_TXD3	0x61
+-				SC_P_ENET0_RGMII_RXC_CONN_ENET0_RGMII_RXC	0x61
+-				SC_P_ENET0_RGMII_RX_CTL_CONN_ENET0_RGMII_RX_CTL	0x61
+-				SC_P_ENET0_RGMII_RXD0_CONN_ENET0_RGMII_RXD0	0x61
+-				SC_P_ENET0_RGMII_RXD1_CONN_ENET0_RGMII_RXD1	0x61
+-				SC_P_ENET0_RGMII_RXD2_CONN_ENET0_RGMII_RXD2	0x61
+-				SC_P_ENET0_RGMII_RXD3_CONN_ENET0_RGMII_RXD3	0x61
+-				/* On-module ETH_RESET# */
+-				SC_P_MIPI_CSI0_MCLK_OUT_LSIO_GPIO3_IO04		0x06000020
+-				/* On-module ETH_INT# */
+-				SC_P_ADC_IN2_LSIO_GPIO1_IO12			0x21
+-			>;
+-		};
+-
+-		/* Apalis BKL_ON */
+-		pinctrl_gpio_bkl_on: gpio-bkl-on {
+-			fsl,pins = <
+-				SC_P_QSPI0A_DQS_LSIO_GPIO3_IO13			0x40		/* SODIMM 286 */
+-			>;
+-		};
+-
+-		pinctrl_hog0: hog0grp {
+-			fsl,pins = <
+-				SC_P_COMP_CTL_GPIO_1V8_3V3_GPIORHB_PAD		0x000514a0
+-			>;
+-		};
+-
+-		pinctrl_hog1: hog1grp {
+-			fsl,pins = <
+-				/* Apalis USBO1_EN */
+-				SC_P_QSPI0A_SCLK_LSIO_GPIO3_IO16		0x41		/* SODIMM 274 */
+-			>;
+-		};
+-
+-		/* Apalis RESET_MOCI# */
+-		pinctrl_reset_moci: gpioresetmocigrp {
+-			fsl,pins = <
+-				SC_P_PCIE_CTRL0_CLKREQ_B_LSIO_GPIO4_IO01	0x21
+-			>;
+-		};
+-
+-		/* On-module eMMC */
+-		pinctrl_usdhc1: usdhc1grp {
+-			fsl,pins = <
+-				SC_P_EMMC0_CLK_CONN_EMMC0_CLK			0x06000041
+-				SC_P_EMMC0_CMD_CONN_EMMC0_CMD			0x21
+-				SC_P_EMMC0_DATA0_CONN_EMMC0_DATA0		0x21
+-				SC_P_EMMC0_DATA1_CONN_EMMC0_DATA1		0x21
+-				SC_P_EMMC0_DATA2_CONN_EMMC0_DATA2		0x21
+-				SC_P_EMMC0_DATA3_CONN_EMMC0_DATA3		0x21
+-				SC_P_EMMC0_DATA4_CONN_EMMC0_DATA4		0x21
+-				SC_P_EMMC0_DATA5_CONN_EMMC0_DATA5		0x21
+-				SC_P_EMMC0_DATA6_CONN_EMMC0_DATA6		0x21
+-				SC_P_EMMC0_DATA7_CONN_EMMC0_DATA7		0x21
+-				SC_P_EMMC0_STROBE_CONN_EMMC0_STROBE		0x41
+-				SC_P_EMMC0_RESET_B_CONN_EMMC0_RESET_B		0x21
+-			>;
+-		};
+-
+-		pinctrl_usdhc1_100mhz: usdhc1grp100mhz {
+-			fsl,pins = <
+-				SC_P_EMMC0_CLK_CONN_EMMC0_CLK			0x06000041
+-				SC_P_EMMC0_CMD_CONN_EMMC0_CMD			0x21
+-				SC_P_EMMC0_DATA0_CONN_EMMC0_DATA0		0x21
+-				SC_P_EMMC0_DATA1_CONN_EMMC0_DATA1		0x21
+-				SC_P_EMMC0_DATA2_CONN_EMMC0_DATA2		0x21
+-				SC_P_EMMC0_DATA3_CONN_EMMC0_DATA3		0x21
+-				SC_P_EMMC0_DATA4_CONN_EMMC0_DATA4		0x21
+-				SC_P_EMMC0_DATA5_CONN_EMMC0_DATA5		0x21
+-				SC_P_EMMC0_DATA6_CONN_EMMC0_DATA6		0x21
+-				SC_P_EMMC0_DATA7_CONN_EMMC0_DATA7		0x21
+-				SC_P_EMMC0_STROBE_CONN_EMMC0_STROBE		0x41
+-				SC_P_EMMC0_RESET_B_CONN_EMMC0_RESET_B		0x21
+-			>;
+-		};
+-
+-		pinctrl_usdhc1_200mhz: usdhc1grp200mhz {
+-			fsl,pins = <
+-				SC_P_EMMC0_CLK_CONN_EMMC0_CLK			0x06000041
+-				SC_P_EMMC0_CMD_CONN_EMMC0_CMD			0x21
+-				SC_P_EMMC0_DATA0_CONN_EMMC0_DATA0		0x21
+-				SC_P_EMMC0_DATA1_CONN_EMMC0_DATA1		0x21
+-				SC_P_EMMC0_DATA2_CONN_EMMC0_DATA2		0x21
+-				SC_P_EMMC0_DATA3_CONN_EMMC0_DATA3		0x21
+-				SC_P_EMMC0_DATA4_CONN_EMMC0_DATA4		0x21
+-				SC_P_EMMC0_DATA5_CONN_EMMC0_DATA5		0x21
+-				SC_P_EMMC0_DATA6_CONN_EMMC0_DATA6		0x21
+-				SC_P_EMMC0_DATA7_CONN_EMMC0_DATA7		0x21
+-				SC_P_EMMC0_STROBE_CONN_EMMC0_STROBE		0x41
+-				SC_P_EMMC0_RESET_B_CONN_EMMC0_RESET_B		0x21
+-			>;
+-		};
+-
+-		/* Apalis MMC1_CD# */
+-		pinctrl_usdhc2_gpio: mmc1gpiogrp {
+-			fsl,pins = <
+-				SC_P_USDHC1_CD_B_LSIO_GPIO4_IO22		0x06000021	/* SODIMM 164 */
+-			>;
+-		};
+-
+-		pinctrl_usdhc2_gpio_sleep: usdhc1gpioslpgrp {
+-			fsl,pins = <
+-				SC_P_USDHC1_CD_B_LSIO_GPIO4_IO22		0x60		/* SODIMM 164 */
+-			>;
+-		};
+-
+-		/* Apalis USBH_EN */
+-		pinctrl_usbh_en: usbhen {
+-			fsl,pins = <
+-				SC_P_USB_SS3_TC1_LSIO_GPIO4_IO04		0x40		/* SODIMM 84 */
+-			>;
+-		};
+-
+-		/* Apalis MMC1 */
+-		pinctrl_usdhc2: usdhc2grp {
+-			fsl,pins = <
+-				SC_P_USDHC1_CLK_CONN_USDHC1_CLK			0x06000041	/* SODIMM 154 */
+-				SC_P_USDHC1_CMD_CONN_USDHC1_CMD			0x21		/* SODIMM 150 */
+-				SC_P_USDHC1_DATA0_CONN_USDHC1_DATA0		0x21		/* SODIMM 160 */
+-				SC_P_USDHC1_DATA1_CONN_USDHC1_DATA1		0x21		/* SODIMM 162 */
+-				SC_P_USDHC1_DATA2_CONN_USDHC1_DATA2		0x21		/* SODIMM 144 */
+-				SC_P_USDHC1_DATA3_CONN_USDHC1_DATA3		0x21		/* SODIMM 146 */
+-				SC_P_USDHC1_VSELECT_CONN_USDHC1_VSELECT		0x21
+-			>;
+-		};
+-
+-		pinctrl_usdhc2_100mhz: usdhc2grp100mhz {
+-			fsl,pins = <
+-				SC_P_USDHC1_CLK_CONN_USDHC1_CLK			0x06000041	/* SODIMM 154 */
+-				SC_P_USDHC1_CMD_CONN_USDHC1_CMD			0x21		/* SODIMM 150 */
+-				SC_P_USDHC1_DATA0_CONN_USDHC1_DATA0		0x21		/* SODIMM 160 */
+-				SC_P_USDHC1_DATA1_CONN_USDHC1_DATA1		0x21		/* SODIMM 162 */
+-				SC_P_USDHC1_DATA2_CONN_USDHC1_DATA2		0x21		/* SODIMM 144 */
+-				SC_P_USDHC1_DATA3_CONN_USDHC1_DATA3		0x21		/* SODIMM 146 */
+-				SC_P_USDHC1_VSELECT_CONN_USDHC1_VSELECT		0x21
+-			>;
+-		};
+-
+-		pinctrl_usdhc2_200mhz: usdhc2grp200mhz {
+-			fsl,pins = <
+-				SC_P_USDHC1_CLK_CONN_USDHC1_CLK			0x06000041	/* SODIMM 154 */
+-				SC_P_USDHC1_CMD_CONN_USDHC1_CMD			0x21		/* SODIMM 150 */
+-				SC_P_USDHC1_DATA0_CONN_USDHC1_DATA0		0x21		/* SODIMM 160 */
+-				SC_P_USDHC1_DATA1_CONN_USDHC1_DATA1		0x21		/* SODIMM 162 */
+-				SC_P_USDHC1_DATA2_CONN_USDHC1_DATA2		0x21		/* SODIMM 144 */
+-				SC_P_USDHC1_DATA3_CONN_USDHC1_DATA3		0x21		/* SODIMM 146 */
+-				SC_P_USDHC1_VSELECT_CONN_USDHC1_VSELECT		0x21
+-			>;
+-		};
+-
+-		pinctrl_usdhc2_sleep: usdhc2slpgrp {
+-			fsl,pins = <
+-				SC_P_USDHC1_CLK_LSIO_GPIO4_IO23			0x60		/* SODIMM 154 */
+-				SC_P_USDHC1_CMD_LSIO_GPIO4_IO24			0x60		/* SODIMM 150 */
+-				SC_P_USDHC1_DATA0_LSIO_GPIO4_IO25		0x60		/* SODIMM 160 */
+-				SC_P_USDHC1_DATA1_LSIO_GPIO4_IO26		0x60		/* SODIMM 162 */
+-				SC_P_USDHC1_DATA2_LSIO_GPIO4_IO27		0x60		/* SODIMM 144 */
+-				SC_P_USDHC1_DATA3_LSIO_GPIO4_IO28		0x60		/* SODIMM 146 */
+-				SC_P_USDHC1_VSELECT_CONN_USDHC1_VSELECT		0x21
+-			>;
+-		};
+-	};
+-};
+-
+-/* Apalis Gigabit LAN */
+-&fec1 {
+-	pinctrl-names = "default";
+-	pinctrl-0 = <&pinctrl_fec1>;
+-	fsl,magic-packet;
+-	phy-handle = <&ethphy0>;
+-	phy-mode = "rgmii-id";
+-	phy-reset-duration = <10>;
+-	phy-reset-post-delay = <150>;
+-	phy-reset-gpios = <&gpio3 4 GPIO_ACTIVE_LOW>;
+-	status = "okay";
+-
+-	mdio {
+-		#address-cells = <1>;
+-		#size-cells = <0>;
+-
+-		ethphy0: ethernet-phy@4 {
+-			compatible = "ethernet-phy-ieee802.3-c22";
+-			reg = <4>;
+-		};
+-	};
+-};
+-
+-/* Apalis UART1 */
+-&lpuart1 {
+-	pinctrl-names = "default";
+-	pinctrl-0 = <&pinctrl_lpuart1>;
+-	status = "okay";
+-};
+-
+-/* On-module eMMC */
+-&usdhc1 {
+-	bus-width = <8>;
+-	non-removable;
+-	pinctrl-names = "default", "state_100mhz", "state_200mhz";
+-	pinctrl-0 = <&pinctrl_usdhc1>;
+-	pinctrl-1 = <&pinctrl_usdhc1_100mhz>;
+-	pinctrl-2 = <&pinctrl_usdhc1_200mhz>;
+-	status = "okay";
+-};
+-
+-/* Apalis MMC1 */
+-&usdhc2 {
+-	bus-width = <4>;
+-	cd-gpios = <&gpio4 22 GPIO_ACTIVE_LOW>;
+-	pinctrl-names = "default", "state_100mhz", "state_200mhz", "sleep";
+-	pinctrl-0 = <&pinctrl_usdhc2>, <&pinctrl_usdhc2_gpio>;
+-	pinctrl-1 = <&pinctrl_usdhc2_100mhz>, <&pinctrl_usdhc2_gpio>;
+-	pinctrl-2 = <&pinctrl_usdhc2_200mhz>, <&pinctrl_usdhc2_gpio>;
+-	pinctrl-3 = <&pinctrl_usdhc2_sleep>, <&pinctrl_usdhc2_gpio_sleep>;
+-	disable-wp;
+-	status = "okay";
+-};
+diff --git a/arch/arm/mach-imx/imx8/Kconfig b/arch/arm/mach-imx/imx8/Kconfig
+index c02ac957d3b..d7ae06407ba 100644
+--- a/arch/arm/mach-imx/imx8/Kconfig
++++ b/arch/arm/mach-imx/imx8/Kconfig
+@@ -78,11 +78,6 @@ config TARGET_COLIBRI_IMX8X
+ 	select BOARD_LATE_INIT
+ 	select IMX8QXP
+ 
+-config TARGET_APALIS_IMX8X
+-	bool "Support Apalis iMX8X module"
+-	select BOARD_LATE_INIT
+-	select IMX8QXP
+-
+ config TARGET_DENEB
+ 	bool "Support i.MX8QXP Capricorn Deneb board"
+ 	select BOARD_LATE_INIT
+@@ -207,7 +202,6 @@ source "board/freescale/imx8dxl_evk/Kconfig"
+ source "board/advantech/imx8qm_rom7720_a1/Kconfig"
+ source "board/toradex/apalis-imx8/Kconfig"
+ source "board/toradex/colibri-imx8x/Kconfig"
+-source "board/toradex/apalis-imx8x/Kconfig"
+ source "board/siemens/capricorn/Kconfig"
+ 
+ config IMX_SNVS_SEC_SC
+diff --git a/board/toradex/apalis-imx8x/Kconfig b/board/toradex/apalis-imx8x/Kconfig
+deleted file mode 100644
+index d6cda7e3ff0..00000000000
+--- a/board/toradex/apalis-imx8x/Kconfig
++++ /dev/null
+@@ -1,33 +0,0 @@
+-if TARGET_APALIS_IMX8X
+-
+-config SYS_BOARD
+-	default "apalis-imx8x"
+-
+-config SYS_VENDOR
+-	default "toradex"
+-
+-config SYS_CONFIG_NAME
+-	default "apalis-imx8x"
+-
+-config TDX_CFG_BLOCK
+-	default y
+-
+-config TDX_HAVE_MMC
+-	default y
+-
+-config TDX_CFG_BLOCK_DEV
+-	default "0"
+-
+-config TDX_CFG_BLOCK_PART
+-	default "1"
+-
+-# Toradex config block in eMMC, at the end of 1st "boot sector"
+-config TDX_CFG_BLOCK_OFFSET
+-	default "-512"
+-
+-config IMX_CONFIG
+-	default "board/toradex/apalis-imx8x/apalis-imx8x-imximage.cfg"
+-
+-source "board/toradex/common/Kconfig"
+-
+-endif
+diff --git a/board/toradex/apalis-imx8x/MAINTAINERS b/board/toradex/apalis-imx8x/MAINTAINERS
+deleted file mode 100644
+index 93d6cdd4742..00000000000
+--- a/board/toradex/apalis-imx8x/MAINTAINERS
++++ /dev/null
+@@ -1,10 +0,0 @@
+-Apalis iMX8X
+-M:	Marcel Ziswiler <marcel.ziswiler@toradex.com>
+-W:	http://developer.toradex.com/software/linux/linux-software
+-S:	Maintained
+-F:	arch/arm/dts/fsl-imx8x-apalis.dts
+-F:	arch/arm/dts/fsl-imx8x-apalis-u-boot.dtsi
+-F:	board/toradex/apalis-imx8x/
+-F:	configs/apalis-imx8x_defconfig
+-F:	doc/board/toradex/apalis-imx8x.rst
+-F:	include/configs/apalis-imx8x.h
+diff --git a/board/toradex/apalis-imx8x/Makefile b/board/toradex/apalis-imx8x/Makefile
+deleted file mode 100644
+index 9d6e85b7429..00000000000
+--- a/board/toradex/apalis-imx8x/Makefile
++++ /dev/null
+@@ -1,6 +0,0 @@
+-# SPDX-License-Identifier: GPL-2.0+
+-#
+-# Copyright 2020 Toradex
+-#
+-
+-obj-y += apalis-imx8x.o
+diff --git a/board/toradex/apalis-imx8x/apalis-imx8x-imximage.cfg b/board/toradex/apalis-imx8x/apalis-imx8x-imximage.cfg
+deleted file mode 100644
+index c229706f80a..00000000000
+--- a/board/toradex/apalis-imx8x/apalis-imx8x-imximage.cfg
++++ /dev/null
+@@ -1,23 +0,0 @@
+-/* SPDX-License-Identifier: GPL-2.0+ */
+-/*
+- * Copyright 2020 Toradex
+- *
+- * Refer doc/imx/mkimage/imx8image.txt for more details about how-to configure
+- * and create imx8image boot image
+- */
+-
+-
+-/* Boot from SD, sector size 0x400 */
+-BOOT_FROM EMMC_FASTBOOT 0x400
+-/* SoC type IMX8QX */
+-SOC_TYPE IMX8QX
+-/* Append seco container image */
+-APPEND mx8qx-ahab-container.img
+-/* Create the 2nd container */
+-CONTAINER
+-/* Add scfw image with exec attribute */
+-IMAGE SCU mx8qx-apalis-scfw-tcm.bin
+-/* Add ATF image with exec attribute */
+-IMAGE A35 bl31.bin 0x80000000
+-/* Add U-Boot image with load attribute */
+-DATA A35 u-boot-dtb.bin 0x80020000
+diff --git a/board/toradex/apalis-imx8x/apalis-imx8x.c b/board/toradex/apalis-imx8x/apalis-imx8x.c
+deleted file mode 100644
+index ac3bac66a96..00000000000
+--- a/board/toradex/apalis-imx8x/apalis-imx8x.c
++++ /dev/null
+@@ -1,155 +0,0 @@
+-// SPDX-License-Identifier: GPL-2.0+
+-/*
+- * Copyright 2020 Toradex
+- */
+-
+-#include <common.h>
+-#include <cpu_func.h>
+-#include <init.h>
+-
+-#include <asm/arch/clock.h>
+-#include <asm/arch/imx8-pins.h>
+-#include <asm/arch/iomux.h>
+-#include <asm/arch/sci/sci.h>
+-#include <asm/arch/sys_proto.h>
+-#include <asm/global_data.h>
+-#include <asm/gpio.h>
+-#include <asm/io.h>
+-#include <env.h>
+-#include <errno.h>
+-#include <linux/libfdt.h>
+-
+-#include "../common/tdx-cfg-block.h"
+-
+-DECLARE_GLOBAL_DATA_PTR;
+-
+-#define UART_PAD_CTRL	((SC_PAD_CONFIG_OUT_IN << PADRING_CONFIG_SHIFT) | \
+-			 (SC_PAD_ISO_OFF << PADRING_LPCONFIG_SHIFT) | \
+-			 (SC_PAD_28FDSOI_DSE_DV_HIGH << PADRING_DSE_SHIFT) | \
+-			 (SC_PAD_28FDSOI_PS_PU << PADRING_PULL_SHIFT))
+-
+-static iomux_cfg_t uart1_pads[] = {
+-	SC_P_UART1_RX | MUX_PAD_CTRL(UART_PAD_CTRL),
+-	SC_P_UART1_TX | MUX_PAD_CTRL(UART_PAD_CTRL),
+-};
+-
+-static void setup_iomux_uart(void)
+-{
+-	imx8_iomux_setup_multiple_pads(uart1_pads, ARRAY_SIZE(uart1_pads));
+-}
+-
+-void board_mem_get_layout(u64 *phys_sdram_1_start,
+-			  u64 *phys_sdram_1_size,
+-			  u64 *phys_sdram_2_start,
+-			  u64 *phys_sdram_2_size)
+-{
+-	u32 is_dualx = 0, val = 0;
+-	sc_err_t scierr = sc_misc_otp_fuse_read(-1, 6, &val);
+-
+-	if (scierr == SC_ERR_NONE) {
+-		/* DX has two A35 cores disabled */
+-		is_dualx = (val & 0xf) != 0x0;
+-	}
+-
+-	*phys_sdram_1_start = PHYS_SDRAM_1;
+-	if (is_dualx)
+-		/* Our DX based SKUs only have 1 GB RAM */
+-		*phys_sdram_1_size = SZ_1G;
+-	else
+-		*phys_sdram_1_size = PHYS_SDRAM_1_SIZE;
+-	*phys_sdram_2_start = PHYS_SDRAM_2;
+-	*phys_sdram_2_size = PHYS_SDRAM_2_SIZE;
+-}
+-
+-int board_early_init_f(void)
+-{
+-	sc_pm_clock_rate_t rate;
+-	sc_err_t err = 0;
+-
+-	/*
+-	 * This works around that having only UART3 up the baudrate is 1.2M
+-	 * instead of 115.2k. Set UART0 clock root to 80 MHz
+-	 */
+-	rate = 80000000;
+-	err = sc_pm_set_clock_rate(-1, SC_R_UART_0, SC_PM_CLK_PER, &rate);
+-	if (err != SC_ERR_NONE)
+-		return 0;
+-
+-	/* Set UART3 clock root to 80 MHz and enable it */
+-	rate = SC_80MHZ;
+-	err = sc_pm_setup_uart(SC_R_UART_1, rate);
+-	if (err != SC_ERR_NONE)
+-		return 0;
+-
+-	setup_iomux_uart();
+-
+-	return 0;
+-}
+-
+-#if IS_ENABLED(CONFIG_DM_GPIO)
+-static void board_gpio_init(void)
+-{
+-	/* TODO */
+-}
+-#else
+-static inline void board_gpio_init(void) {}
+-#endif
+-
+-#if IS_ENABLED(CONFIG_FEC_MXC)
+-#include <miiphy.h>
+-
+-int board_phy_config(struct phy_device *phydev)
+-{
+-	if (phydev->drv->config)
+-		phydev->drv->config(phydev);
+-
+-	return 0;
+-}
+-#endif
+-
+-int checkboard(void)
+-{
+-	puts("Model: Toradex Apalis iMX8X\n");
+-
+-	build_info();
+-	print_bootinfo();
+-
+-	return 0;
+-}
+-
+-int board_init(void)
+-{
+-	board_gpio_init();
+-
+-	return 0;
+-}
+-
+-/*
+- * Board specific reset that is system reset.
+- */
+-void reset_cpu(void)
+-{
+-	/* TODO */
+-}
+-
+-#if defined(CONFIG_OF_LIBFDT) && defined(CONFIG_OF_BOARD_SETUP)
+-int ft_board_setup(void *blob, struct bd_info *bd)
+-{
+-	return ft_common_board_setup(blob, bd);
+-}
+-#endif
+-
+-int board_mmc_get_env_dev(int devno)
+-{
+-	return devno;
+-}
+-
+-int board_late_init(void)
+-{
+-#ifdef CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
+-/* TODO move to common */
+-	env_set("board_name", "Apalis iMX8X");
+-#endif
+-
+-	return 0;
+-}
+diff --git a/board/toradex/common/tdx-cfg-block.c b/board/toradex/common/tdx-cfg-block.c
+index 7cadd05c0a7..0e657a2a0a9 100644
+--- a/board/toradex/common/tdx-cfg-block.c
++++ b/board/toradex/common/tdx-cfg-block.c
+@@ -13,7 +13,6 @@
+ 
+ #if defined(CONFIG_TARGET_APALIS_IMX6) || \
+ 	defined(CONFIG_TARGET_APALIS_IMX8) || \
+-	defined(CONFIG_TARGET_APALIS_IMX8X) || \
+ 	defined(CONFIG_TARGET_COLIBRI_IMX6) || \
+ 	defined(CONFIG_TARGET_COLIBRI_IMX8X) || \
+ 	defined(CONFIG_TARGET_VERDIN_IMX8MM) || \
+@@ -379,7 +378,6 @@ static int get_cfgblock_interactive(void)
+ 	it = console_buffer[0];
+ 
+ #if defined(CONFIG_TARGET_APALIS_IMX8) || \
+-		defined(CONFIG_TARGET_APALIS_IMX8X) || \
+ 		defined(CONFIG_TARGET_COLIBRI_IMX6ULL) || \
+ 		defined(CONFIG_TARGET_COLIBRI_IMX8X) || \
+ 		defined(CONFIG_TARGET_VERDIN_IMX8MM) || \
+@@ -451,16 +449,7 @@ static int get_cfgblock_interactive(void)
+ 				tdx_hw_tag.prodid = APALIS_IMX8QP;
+ 		}
+ 	} else if (is_cpu_type(MXC_CPU_IMX8QXP)) {
+-#ifdef CONFIG_TARGET_APALIS_IMX8X
+-		if (it == 'y' || it == 'Y' || wb == 'y' || wb == 'Y') {
+-				tdx_hw_tag.prodid = APALIS_IMX8QXP_WIFI_BT_IT;
+-		} else {
+-			if (gd->ram_size == 0x40000000)
+-				tdx_hw_tag.prodid = APALIS_IMX8DXP;
+-			else
+-				tdx_hw_tag.prodid = APALIS_IMX8QXP;
+-		}
+-#elif CONFIG_TARGET_COLIBRI_IMX8X
++#ifdef CONFIG_TARGET_COLIBRI_IMX8X
+ 		if (it == 'y' || it == 'Y') {
+ 			if (wb == 'y' || wb == 'Y')
+ 				tdx_hw_tag.prodid = COLIBRI_IMX8QXP_WIFI_BT_IT;
+diff --git a/configs/apalis-imx8x_defconfig b/configs/apalis-imx8x_defconfig
+deleted file mode 100644
+index 25da027f7ec..00000000000
+--- a/configs/apalis-imx8x_defconfig
++++ /dev/null
+@@ -1,80 +0,0 @@
+-CONFIG_ARM=y
+-CONFIG_ARCH_IMX8=y
+-CONFIG_SYS_TEXT_BASE=0x80020000
+-CONFIG_SYS_MALLOC_LEN=0x2800000
+-CONFIG_SYS_MALLOC_F_LEN=0x4000
+-CONFIG_NR_DRAM_BANKS=3
+-CONFIG_SYS_MEMTEST_START=0x88000000
+-CONFIG_SYS_MEMTEST_END=0x89000000
+-CONFIG_ENV_SIZE=0x2000
+-CONFIG_ENV_OFFSET=0xFFFFDE00
+-CONFIG_DM_GPIO=y
+-CONFIG_DEFAULT_DEVICE_TREE="fsl-imx8qxp-apalis"
+-CONFIG_TARGET_APALIS_IMX8X=y
+-CONFIG_DISTRO_DEFAULTS=y
+-CONFIG_REMAKE_ELF=y
+-CONFIG_SYS_LOAD_ADDR=0x89000000
+-CONFIG_FIT=y
+-CONFIG_OF_SYSTEM_SETUP=y
+-CONFIG_BOOTDELAY=1
+-CONFIG_LOG=y
+-# CONFIG_DISPLAY_BOARDINFO is not set
+-CONFIG_BOARD_EARLY_INIT_F=y
+-CONFIG_SYS_PROMPT="Apalis iMX8X # "
+-CONFIG_CMD_CPU=y
+-# CONFIG_BOOTM_NETBSD is not set
+-CONFIG_CMD_ASKENV=y
+-CONFIG_CMD_MEMTEST=y
+-CONFIG_CMD_CLK=y
+-CONFIG_CMD_DM=y
+-CONFIG_CMD_GPIO=y
+-CONFIG_CMD_I2C=y
+-CONFIG_CMD_MMC=y
+-CONFIG_CMD_PCI=y
+-CONFIG_CMD_CACHE=y
+-CONFIG_CMD_UUID=y
+-CONFIG_CMD_EXT4_WRITE=y
+-CONFIG_ENV_OVERWRITE=y
+-CONFIG_ENV_IS_IN_MMC=y
+-CONFIG_SYS_RELOC_GD_ENV_ADDR=y
+-CONFIG_SYS_MMC_ENV_PART=1
+-CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG=y
+-CONFIG_VERSION_VARIABLE=y
+-CONFIG_NET_RANDOM_ETHADDR=y
+-CONFIG_IP_DEFRAG=y
+-CONFIG_TFTP_BLOCKSIZE=4096
+-CONFIG_TFTP_TSIZE=y
+-CONFIG_BOOTCOUNT_LIMIT=y
+-CONFIG_BOOTCOUNT_ENV=y
+-CONFIG_CLK_IMX8=y
+-CONFIG_CPU=y
+-CONFIG_MXC_GPIO=y
+-CONFIG_DM_I2C=y
+-CONFIG_SYS_I2C_IMX_LPI2C=y
+-CONFIG_I2C_MUX=y
+-CONFIG_I2C_MUX_PCA954x=y
+-CONFIG_MISC=y
+-CONFIG_SUPPORT_EMMC_BOOT=y
+-CONFIG_FSL_USDHC=y
+-CONFIG_PHYLIB=y
+-CONFIG_PHY_ADDR_ENABLE=y
+-CONFIG_PHY_MICREL=y
+-CONFIG_PHY_MICREL_KSZ90X1=y
+-CONFIG_DM_ETH=y
+-CONFIG_FEC_MXC_SHARE_MDIO=y
+-CONFIG_FEC_MXC_MDIO_BASE=0x5B040000
+-CONFIG_FEC_MXC=y
+-CONFIG_MII=y
+-CONFIG_PCI=y
+-CONFIG_PINCTRL=y
+-CONFIG_PINCTRL_IMX8=y
+-CONFIG_POWER_DOMAIN=y
+-CONFIG_IMX8_POWER_DOMAIN=y
+-CONFIG_DM_REGULATOR=y
+-CONFIG_DM_REGULATOR_FIXED=y
+-CONFIG_DM_REGULATOR_GPIO=y
+-CONFIG_DM_SERIAL=y
+-CONFIG_FSL_LPUART=y
+-CONFIG_DM_THERMAL=y
+-CONFIG_IMX_SCU_THERMAL=y
+-# CONFIG_EFI_LOADER is not set
+diff --git a/doc/board/toradex/apalis-imx8x.rst b/doc/board/toradex/apalis-imx8x.rst
+deleted file mode 100644
+index e62578b1527..00000000000
+--- a/doc/board/toradex/apalis-imx8x.rst
++++ /dev/null
+@@ -1,77 +0,0 @@
+-.. SPDX-License-Identifier: GPL-2.0+
+-
+-Apalis iMX8X V1.1A Module (SoC NXP i.MX8QXP RevB)
+-=================================================
+-
+-Quick Start
+------------
+-
+-- Get and Build the ARM trusted firmware
+-- Get System Controller firmware
+-- Get SECO container
+-- Build U-Boot
+-- Load U-Boot binary using uuu
+-- Flash U-Boot binary into the eMMC
+-- Boot
+-
+-Note: builddir is U-Boot build directory (source directory for in-tree builds)
+-
+-Get and Build the ARM Trusted Firmware
+---------------------------------------
+-
+-.. code-block:: bash
+-
+-    $ cd $(builddir)
+-    $ git clone -b toradex_imx_5.4.70_2.3.0 http://git.toradex.com/cgit/imx-atf.git
+-    $ make PLAT=imx8qx bl31 -C imx-atf
+-    $ cp imx-atf/build/imx8qx/release/bl31.bin $(builddir)
+-
+-Get System Controller firmware
+----------------------------------------
+-
+-.. code-block:: bash
+-
+-    $ wget https://github.com/toradex/i.MX-System-Controller-Firmware/raw/master/src/scfw_export_mx8qx_b0/build_mx8qx_b0/mx8qx-apalis-scfw-tcm.bin
+-
+-Get SECO container
+----------------------------------------
+-
+-.. code-block:: bash
+-
+-    $ wget https://www.nxp.com/lgfiles/NMG/MAD/YOCTO/imx-seco-3.7.4.bin
+-    $ sh imx-seco-3.7.4.bin
+-    $ cp imx-seco-3.7.4/firmware/seco/mx8qxb0-ahab-container.img $(builddir)/mx8qx-ahab-container.img
+-
+-Build U-Boot
+-------------
+-.. code-block:: bash
+-
+-    $ make apalis-imx8x_defconfig
+-    $ make u-boot-dtb.imx
+-
+-Load the U-Boot Binary Using UUU
+---------------------------------
+-
+-Get the latest version of the universal update utility (uuu) aka ``mfgtools 3.0``:
+-
+-https://community.nxp.com/external-link.jspa?url=https%3A%2F%2Fgithub.com%2FNXPmicro%2Fmfgtools%2Freleases
+-
+-Put the module into USB recovery aka serial downloader mode, connect USB device
+-to your host and execute uuu:
+-
+-.. code-block:: bash
+-
+-    sudo ./uuu $(builddir)/u-boot-dtb.imx
+-
+-Flash the U-Boot Binary into the eMMC
+--------------------------------------
+-
+-Burn the ``u-boot-dtb.imx`` binary to the primary eMMC hardware boot area
+-partition and boot:
+-
+-.. code-block:: bash
+-
+-    load mmc 1:1 $loadaddr u-boot-dtb.imx
+-    setexpr blkcnt ${filesize} + 0x1ff && setexpr blkcnt ${blkcnt} / 0x200
+-    mmc dev 0 1
+-    mmc write ${loadaddr} 0x0 ${blkcnt}
+diff --git a/doc/board/toradex/index.rst b/doc/board/toradex/index.rst
+index 1cd926a7303..ead5efbb955 100644
+--- a/doc/board/toradex/index.rst
++++ b/doc/board/toradex/index.rst
+@@ -7,7 +7,6 @@ Toradex
+    :maxdepth: 2
+ 
+    apalis-imx8
+-   apalis-imx8x
+    colibri_imx7
+    colibri-imx8x
+    verdin-imx8mm
+diff --git a/include/configs/apalis-imx8x.h b/include/configs/apalis-imx8x.h
+deleted file mode 100644
+index 8a6f294ae89..00000000000
+--- a/include/configs/apalis-imx8x.h
++++ /dev/null
+@@ -1,129 +0,0 @@
+-/* SPDX-License-Identifier: GPL-2.0+ */
+-/*
+- * Copyright 2020 Toradex
+- */
+-
+-#ifndef __APALIS_IMX8X_H
+-#define __APALIS_IMX8X_H
+-
+-#include <asm/arch/imx-regs.h>
+-#include <linux/sizes.h>
+-#include <linux/stringify.h>
+-
+-#define CONFIG_SYS_FSL_ESDHC_ADDR	0
+-#define USDHC1_BASE_ADDR		0x5b010000
+-#define USDHC2_BASE_ADDR		0x5b020000
+-
+-#define CONFIG_IPADDR			192.168.10.2
+-#define CONFIG_NETMASK			255.255.255.0
+-#define CONFIG_SERVERIP			192.168.10.1
+-
+-#define MEM_LAYOUT_ENV_SETTINGS \
+-	"kernel_addr_r=0x80280000\0" \
+-	"fdt_addr_r=0x83100000\0" \
+-	"ramdisk_addr_r=0x8a000000\0" \
+-	"scriptaddr=0x83200000\0"
+-
+-#ifdef CONFIG_AHAB_BOOT
+-#define AHAB_ENV "sec_boot=yes\0"
+-#else
+-#define AHAB_ENV "sec_boot=no\0"
+-#endif
+-
+-/* Boot M4 */
+-#define M4_BOOT_ENV \
+-	"m4_0_image=m4_0.bin\0" \
+-	"loadm4image_0=fatload mmc ${mmcdev}:${mmcpart} ${loadaddr} " \
+-		"${m4_0_image}\0" \
+-	"m4boot_0=run loadm4image_0; dcache flush; bootaux ${loadaddr} 0\0" \
+-
+-#define MFG_NAND_PARTITION ""
+-
+-#define BOOT_TARGET_DEVICES(func) \
+-	func(MMC, mmc, 1) \
+-	func(MMC, mmc, 0) \
+-	func(DHCP, dhcp, na)
+-#include <config_distro_bootcmd.h>
+-#undef BOOTENV_RUN_NET_USB_START
+-#define BOOTENV_RUN_NET_USB_START ""
+-
+-#define CONFIG_MFG_ENV_SETTINGS \
+-	"mfgtool_args=setenv bootargs ${consoleargs} " \
+-		"rdinit=/linuxrc g_mass_storage.stall=0 " \
+-		"g_mass_storage.removable=1 g_mass_storage.idVendor=0x066F " \
+-		"g_mass_storage.idProduct=0x37FF " \
+-		"g_mass_storage.iSerialNumber=\"\" " MFG_NAND_PARTITION \
+-		"${vidargs} clk_ignore_unused\0" \
+-	"initrd_addr=0x83800000\0" \
+-	"bootcmd_mfg=run mfgtool_args;booti ${loadaddr} ${initrd_addr} " \
+-		"${fdt_addr};\0" \
+-
+-/* Initial environment variables */
+-#define CONFIG_EXTRA_ENV_SETTINGS \
+-	AHAB_ENV \
+-	BOOTENV \
+-	CONFIG_MFG_ENV_SETTINGS \
+-	M4_BOOT_ENV \
+-	MEM_LAYOUT_ENV_SETTINGS \
+-	"boot_file=Image\0" \
+-	"consoleargs=console=ttyLP3,${baudrate} earlycon\0" \
+-	"fdt_file=imx8qxp-apalis-eval.dtb\0" \
+-	"fdtfile=imx8qxp-apalis-eval.dtb\0" \
+-	"finduuid=part uuid mmc ${mmcdev}:2 uuid\0" \
+-	"image=Image\0" \
+-	"initrd_addr=0x83800000\0" \
+-	"mmcargs=setenv bootargs ${consoleargs} " \
+-		"root=PARTUUID=${uuid} rootwait " \
+-	"mmcdev=" __stringify(CONFIG_SYS_MMC_ENV_DEV) "\0" \
+-	"mmcpart=1\0" \
+-	"netargs=setenv bootargs ${consoleargs} " \
+-		"root=/dev/nfs ip=dhcp nfsroot=${serverip}:${nfsroot},v3,tcp " \
+-		"${vidargs}\0" \
+-	"nfsboot=run netargs; dhcp ${loadaddr} ${image}; tftp ${fdt_addr} " \
+-		"apalis-imx8x/${fdt_file}; booti ${loadaddr} - " \
+-		"${fdt_addr}\0" \
+-	"panel=NULL\0" \
+-	"script=boot.scr\0" \
+-	"update_uboot=askenv confirm Did you load u-boot-dtb.imx (y/N)?; " \
+-		"if test \"$confirm\" = \"y\"; then " \
+-		"setexpr blkcnt ${filesize} + 0x1ff && setexpr blkcnt " \
+-		"${blkcnt} / 0x200; mmc dev 0 1; mmc write ${loadaddr} 0x0 " \
+-		"${blkcnt}; fi\0" \
+-	"vidargs=video=imxdpufb5:off video=imxdpufb6:off video=imxdpufb7:off\0"
+-
+-/* Link Definitions */
+-
+-#define CONFIG_SYS_INIT_SP_ADDR		0x80200000
+-
+-/* Environment in eMMC, before config block at the end of 1st "boot sector" */
+-
+-/* On Apalis iMX8X USDHC1 is eMMC, USDHC2 is 4-bit SD */
+-#define CONFIG_SYS_FSL_USDHC_NUM	2
+-
+-#define CONFIG_SYS_BOOTM_LEN		SZ_64M /* Increase max gunzip size */
+-
+-#define CONFIG_SYS_SDRAM_BASE		0x80000000
+-#define PHYS_SDRAM_1			0x80000000
+-#define PHYS_SDRAM_2			0x880000000
+-#define PHYS_SDRAM_1_SIZE		SZ_2G		/* 2 GB */
+-#define PHYS_SDRAM_2_SIZE		0x00000000	/* 0 GB */
+-
+-/* Monitor Command Prompt */
+-#define CONFIG_SYS_CBSIZE		SZ_2K
+-#define CONFIG_SYS_MAXARGS		64
+-#define CONFIG_SYS_BARGSIZE		CONFIG_SYS_CBSIZE
+-#define CONFIG_SYS_PBSIZE		(CONFIG_SYS_CBSIZE + \
+-					sizeof(CONFIG_SYS_PROMPT) + 16)
+-
+-/* Generic Timer Definitions */
+-#define COUNTER_FREQUENCY		8000000	/* 8MHz */
+-
+-/* Networking */
+-#define CONFIG_FEC_ENET_DEV 0
+-#define IMX_FEC_BASE			0x5b040000
+-#define CONFIG_FEC_MXC_PHYADDR          0x4
+-#define CONFIG_ETHPRIME                 "eth0"
+-#define CONFIG_FEC_XCV_TYPE		RGMII
+-#define PHY_ANEG_TIMEOUT 20000
+-
+-#endif /* __APALIS_IMX8X_H */
+-- 
+2.40.1
+

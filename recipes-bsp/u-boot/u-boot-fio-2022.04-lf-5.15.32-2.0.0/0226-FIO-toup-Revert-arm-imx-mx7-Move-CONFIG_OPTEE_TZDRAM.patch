@@ -1,0 +1,57 @@
+From 63725c22145301cd39aac90ac44c6d8ddf20d503 Mon Sep 17 00:00:00 2001
+From: Ricardo Salveti <ricardo@foundries.io>
+Date: Fri, 25 Nov 2022 14:22:41 -0300
+Subject: [PATCH 226/233] [FIO toup] Revert "arm: imx: mx7: Move
+ CONFIG_OPTEE_TZDRAM_SIZE from lib/optee"
+
+This reverts commit c5b68ef8af3c2f515c1f5b8d63a69359a85d753b.
+
+We require CONFIG_OPTEE_TZDRAM_SIZE on imx6-based SoCs as well.
+
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+---
+ arch/arm/mach-imx/mx7/Kconfig | 8 --------
+ lib/optee/Kconfig             | 8 ++++++++
+ 2 files changed, 8 insertions(+), 8 deletions(-)
+
+diff --git a/arch/arm/mach-imx/mx7/Kconfig b/arch/arm/mach-imx/mx7/Kconfig
+index 9036927ba17..7bbe3e7442b 100644
+--- a/arch/arm/mach-imx/mx7/Kconfig
++++ b/arch/arm/mach-imx/mx7/Kconfig
+@@ -23,14 +23,6 @@ config SPL_TEXT_BASE
+ 	depends on SPL
+ 	default 0x00912000
+ 
+-config OPTEE_TZDRAM_SIZE
+-	hex "Amount of Trust-Zone RAM for the OPTEE image"
+-	default 0x0000000
+-	depends on OPTEE_LIB
+-	help
+-	  The size of pre-allocated Trust Zone DRAM to allocate for the OPTEE
+-	  runtime.
+-
+ config IMX_TAMPER
+ 	bool "Enable commands for SNVS tamper pin configuration and test"
+ 	help
+diff --git a/lib/optee/Kconfig b/lib/optee/Kconfig
+index 517136a4485..e6834d4d3e1 100644
+--- a/lib/optee/Kconfig
++++ b/lib/optee/Kconfig
+@@ -11,6 +11,14 @@ config OPTEE_IMAGE
+ 	  This option enable the OPTEE specific checks done before booting
+ 	  an OPTEE image created with mkimage
+ 
++config OPTEE_TZDRAM_SIZE
++	hex "Amount of Trust-Zone RAM for the OPTEE image"
++	default 0x0000000
++	depends on OPTEE_LIB
++	help
++	  The size of pre-allocated Trust Zone DRAM to allocate for the OPTEE
++	  runtime.
++
+ config BOOTM_OPTEE
+ 	bool "Support OPTEE bootm command"
+ 	select BOOTM_LINUX
+-- 
+2.40.1
+

@@ -1,0 +1,30 @@
+From 7bd9d0a8fcc854d969d2420c29114fed1a2693e5 Mon Sep 17 00:00:00 2001
+From: Igor Opaniuk <igor.opaniuk@foundries.io>
+Date: Mon, 28 Nov 2022 14:29:25 +0200
+Subject: [PATCH 231/233] [FIO tosquash] imx8: adjust address for FIT buffer
+
+Use different location for FIT image, as current one is not big enough
+and it overlaps with U-Boot image.
+
+Fixes: 3c3b138ccd("[FIO internal] imx8: use different address for FIT buffer in board_spl_fit_buffer_addr()")
+Signed-off-by: Igor Opaniuk <igor.opaniuk@foundries.io>
+---
+ arch/arm/mach-imx/spl.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/arm/mach-imx/spl.c b/arch/arm/mach-imx/spl.c
+index acf85d466d9..3a5109c6b51 100644
+--- a/arch/arm/mach-imx/spl.c
++++ b/arch/arm/mach-imx/spl.c
+@@ -349,7 +349,7 @@ void *board_spl_fit_buffer_addr(ulong fit_size, int sectors, int bl_len)
+ 		bl_len = 512;
+ 
+ 	if (is_imx8qm() || is_imx8qxp() || is_imx8dxl())
+-		base_addr = 0x80280000;
++		base_addr = 0x83000000;
+ 	else
+ 		base_addr = CONFIG_SYS_TEXT_BASE;
+ 
+-- 
+2.40.1
+

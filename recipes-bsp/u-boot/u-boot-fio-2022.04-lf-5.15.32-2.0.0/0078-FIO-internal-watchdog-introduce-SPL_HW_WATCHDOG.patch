@@ -1,0 +1,78 @@
+From afd5218d15850946a44012a5f2677a56873d6edc Mon Sep 17 00:00:00 2001
+From: Igor Opaniuk <igor.opaniuk@foundries.io>
+Date: Thu, 29 Apr 2021 01:01:56 +0300
+Subject: [PATCH 078/233] [FIO internal] watchdog: introduce SPL_HW_WATCHDOG
+
+Introduce SPL_HW_WATCHDOG Kconfig symbol which can be used to enable
+non-WDT HW watchdog in SPL.
+
+Signed-off-by: Igor Opaniuk <igor.opaniuk@foundries.io>
+Co-developed-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+---
+ common/spl/Kconfig       | 1 -
+ drivers/watchdog/Kconfig | 4 ++++
+ include/watchdog.h       | 5 ++++-
+ 3 files changed, 8 insertions(+), 2 deletions(-)
+
+diff --git a/common/spl/Kconfig b/common/spl/Kconfig
+index 48bb4692db6..587962b6f74 100644
+--- a/common/spl/Kconfig
++++ b/common/spl/Kconfig
+@@ -1216,7 +1216,6 @@ endif
+ 
+ config SPL_WATCHDOG
+ 	bool "Support watchdog drivers"
+-	imply SPL_WDT if !HW_WATCHDOG
+ 	help
+ 	  Enable support for watchdog drivers in SPL. A watchdog is
+ 	  typically a hardware peripheral which can reset the system when it
+diff --git a/drivers/watchdog/Kconfig b/drivers/watchdog/Kconfig
+index f90f0ca02bc..03b529198af 100644
+--- a/drivers/watchdog/Kconfig
++++ b/drivers/watchdog/Kconfig
+@@ -36,9 +36,13 @@ config WATCHDOG_TIMEOUT_MSECS
+ config HW_WATCHDOG
+ 	bool
+ 
++config SPL_HW_WATCHDOG
++	bool
++
+ config IMX_WATCHDOG
+ 	bool "Enable Watchdog Timer support for IMX and LSCH2 of NXP"
+ 	select HW_WATCHDOG if !WDT
++	select SPL_HW_WATCHDOG if !SPL_WDT
+ 	help
+ 	  Select this to enable the IMX and LSCH2 of Layerscape watchdog
+ 	  driver.
+diff --git a/include/watchdog.h b/include/watchdog.h
+index 14fa5fda259..1b4863ce894 100644
+--- a/include/watchdog.h
++++ b/include/watchdog.h
+@@ -10,6 +10,8 @@
+ #ifndef _WATCHDOG_H_
+ #define _WATCHDOG_H_
+ 
++#if !defined(USE_HOSTCC)
++
+ #if !defined(__ASSEMBLY__)
+ /*
+  * Reset the watchdog timer, always returns 0
+@@ -35,7 +37,7 @@ int init_func_watchdog_reset(void);
+ /*
+  * Hardware watchdog
+  */
+-#ifdef CONFIG_HW_WATCHDOG
++#if CONFIG_IS_ENABLED(HW_WATCHDOG)
+ 	#if defined(__ASSEMBLY__)
+ 		#define WATCHDOG_RESET bl hw_watchdog_reset
+ 	#else
+@@ -84,4 +86,5 @@ int init_func_watchdog_reset(void);
+ #if defined(CONFIG_MPC85xx) && !defined(__ASSEMBLY__)
+ 	void init_85xx_watchdog(void);
+ #endif
++#endif /* !defined(USE_HOSTCC) */
+ #endif /* _WATCHDOG_H_ */
+-- 
+2.40.1
+

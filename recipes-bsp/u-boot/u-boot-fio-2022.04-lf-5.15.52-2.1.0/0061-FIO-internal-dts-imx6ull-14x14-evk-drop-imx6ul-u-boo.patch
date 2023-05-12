@@ -1,0 +1,30 @@
+From 7c6096be4806e4804c92da183566f53b2f9d9974 Mon Sep 17 00:00:00 2001
+From: Michael Scott <mike@foundries.io>
+Date: Wed, 23 Dec 2020 15:28:54 -0800
+Subject: [PATCH 061/233] [FIO internal] dts: imx6ull-14x14-evk: drop imx6ul
+ u-boot include
+
+Since we've added our own u-boot dtsi, this isn't needed.
+It creates double alias nodes and a lot of wasted space with
+alias definitions.
+
+Signed-off-by: Michael Scott <mike@foundries.io>
+---
+ arch/arm/dts/imx6ull-14x14-evk.dts | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/arch/arm/dts/imx6ull-14x14-evk.dts b/arch/arm/dts/imx6ull-14x14-evk.dts
+index 1542335f9ab..4dc5f426408 100644
+--- a/arch/arm/dts/imx6ull-14x14-evk.dts
++++ b/arch/arm/dts/imx6ull-14x14-evk.dts
+@@ -6,7 +6,6 @@
+ 
+ #include "imx6ull.dtsi"
+ #include "imx6ul-14x14-evk.dtsi"
+-#include "imx6ul-14x14-evk-u-boot.dtsi"
+ 
+ / {
+ 	model = "i.MX6 ULL 14x14 EVK Board";
+-- 
+2.25.1
+

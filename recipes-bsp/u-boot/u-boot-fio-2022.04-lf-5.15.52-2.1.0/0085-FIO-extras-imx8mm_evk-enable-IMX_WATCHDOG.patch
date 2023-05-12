@@ -1,0 +1,28 @@
+From 3e418f972c001271b0faab0aed5912e43e242d0b Mon Sep 17 00:00:00 2001
+From: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+Date: Wed, 29 Sep 2021 23:39:07 +0300
+Subject: [PATCH 085/233] [FIO extras] imx8mm_evk: enable IMX_WATCHDOG
+
+After enabling SPL by default the IMX_WATCHDOG should be enabled in
+order to build u-boot successfully.
+
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+---
+ configs/imx8mm_evk_defconfig | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/configs/imx8mm_evk_defconfig b/configs/imx8mm_evk_defconfig
+index ca1c4a268a0..08595034fbe 100644
+--- a/configs/imx8mm_evk_defconfig
++++ b/configs/imx8mm_evk_defconfig
+@@ -40,6 +40,7 @@ CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_SECTOR=0x300
+ CONFIG_SPL_I2C=y
+ CONFIG_SPL_POWER=y
+ CONFIG_SPL_WATCHDOG=y
++CONFIG_IMX_WATCHDOG=y
+ CONFIG_NR_DRAM_BANKS=2
+ CONFIG_SYS_PROMPT="u-boot=> "
+ # CONFIG_CMD_EXPORTENV is not set
+-- 
+2.25.1
+

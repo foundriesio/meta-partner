@@ -1,0 +1,58 @@
+From 51aa7ad312c949701b5c2fb98a73f1710cef84fe Mon Sep 17 00:00:00 2001
+From: Igor Opaniuk <igor.opaniuk@foundries.io>
+Date: Thu, 18 Feb 2021 17:42:26 +0200
+Subject: [PATCH 059/233] [FIO internal] imx: mmc: detect offset of next image
+ in runtime
+
+Detect offset of the next boot image in runtime for all iMX-based SoCs
+if SECONDARY_BOOT_RUNTIME_DETECTION and SECONDARY_BOOT_SECTOR_OFFSET
+are set.
+
+1. Dynamic detection of offset for the next boot image based on the
+value SRC_GPR10_PERSIST_SECONDARY_BOOT bit.
+2. In case of regular boot set that bit so we can automatically boot
+into recovery boot path after WDT reset occurs.
+
+Don't autoset seconday boot bit, as we boot into primary boot path by
+default on WDOG reset.
+
+Signed-off-by: Igor Opaniuk <igor.opaniuk@foundries.io>
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+Co-developed-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+---
+ arch/arm/mach-imx/spl.c | 21 +++++++++++++++++++++
+ 1 file changed, 21 insertions(+)
+
+diff --git a/arch/arm/mach-imx/spl.c b/arch/arm/mach-imx/spl.c
+index 53631bf684c..ff014eb76b3 100644
+--- a/arch/arm/mach-imx/spl.c
++++ b/arch/arm/mach-imx/spl.c
+@@ -486,3 +486,24 @@ int mmc_image_load_late(struct spl_image_info *spl_image, struct mmc *mmc)
+ 	return check_rpmb_blob(mmc);
+ }
+ #endif
++
++#if defined(CONFIG_SECONDARY_BOOT_RUNTIME_DETECTION) && \
++    defined(CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_USE_SECTOR)
++unsigned long spl_mmc_get_uboot_raw_sector(struct mmc *mmc,
++					   unsigned long raw_sect)
++{
++	int boot_secondary = boot_mode_getprisec();
++	unsigned long offset = CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_SECTOR;
++
++	if (boot_secondary) {
++		offset += CONFIG_SECONDARY_BOOT_SECTOR_OFFSET;
++		printf("SPL: Booting secondary boot path: using 0x%lx offset "
++		       "for next boot image\n", offset);
++	} else {
++		printf("SPL: Booting primary boot path: using 0x%lx offset "
++		       "for next boot image\n", offset);
++	}
++
++	return offset;
++}
++#endif
+-- 
+2.40.1
+

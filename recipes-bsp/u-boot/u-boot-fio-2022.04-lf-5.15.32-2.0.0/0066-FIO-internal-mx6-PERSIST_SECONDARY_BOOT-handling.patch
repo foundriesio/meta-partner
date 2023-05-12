@@ -1,0 +1,72 @@
+From 938c2e793497e975a0d792875e8b5f4c666dc0e3 Mon Sep 17 00:00:00 2001
+From: Igor Opaniuk <igor.opaniuk@foundries.io>
+Date: Fri, 16 Apr 2021 16:20:00 +0300
+Subject: [PATCH 066/233] [FIO internal] mx6: PERSIST_SECONDARY_BOOT handling
+
+Add functions for retrieving/setting PERSIST_SECONDARY_BOOT bit
+in SRC GPR10.
+
+Signed-off-by: Igor Opaniuk <igor.opaniuk@foundries.io>
+---
+ arch/arm/include/asm/arch-mx6/imx-regs.h  |  2 ++
+ arch/arm/include/asm/arch-mx6/sys_proto.h |  3 +++
+ arch/arm/mach-imx/mx6/soc.c               | 18 ++++++++++++++++++
+ 3 files changed, 23 insertions(+)
+
+diff --git a/arch/arm/include/asm/arch-mx6/imx-regs.h b/arch/arm/include/asm/arch-mx6/imx-regs.h
+index 1a1159908dc..63746da2548 100644
+--- a/arch/arm/include/asm/arch-mx6/imx-regs.h
++++ b/arch/arm/include/asm/arch-mx6/imx-regs.h
+@@ -456,6 +456,8 @@ extern void imx_get_mac_from_fuse(int dev_id, unsigned char *mac);
+ #define SRC_SCR_CORE_3_ENABLE_OFFSET    24
+ #define SRC_SCR_CORE_3_ENABLE_MASK      (1<<SRC_SCR_CORE_3_ENABLE_OFFSET)
+ 
++#define SRC_GPR10_PERSIST_SECONDARY_BOOT	BIT(30)
++
+ struct rdc_regs {
+ 	u32	vir;		/* Version information */
+ 	u32	reserved1[8];
+diff --git a/arch/arm/include/asm/arch-mx6/sys_proto.h b/arch/arm/include/asm/arch-mx6/sys_proto.h
+index 412acbf1bcf..aca64547dbc 100644
+--- a/arch/arm/include/asm/arch-mx6/sys_proto.h
++++ b/arch/arm/include/asm/arch-mx6/sys_proto.h
+@@ -51,4 +51,7 @@ void prep_anatop_bypass(void);
+ void finish_anatop_bypass(void);
+ #endif
+ 
++int boot_mode_getprisec(void);
++void boot_mode_enable_secondary(bool enable);
++
+ #endif /* __SYS_PROTO_IMX6_ */
+diff --git a/arch/arm/mach-imx/mx6/soc.c b/arch/arm/mach-imx/mx6/soc.c
+index b243f6101a5..c8c498352a5 100644
+--- a/arch/arm/mach-imx/mx6/soc.c
++++ b/arch/arm/mach-imx/mx6/soc.c
+@@ -681,6 +681,24 @@ __weak int board_mmc_get_env_dev(int devno)
+ 	return devno;
+ }
+ 
++void boot_mode_enable_secondary(bool enable)
++{
++	u32 persist_sec = SRC_GPR10_PERSIST_SECONDARY_BOOT;
++	struct src *psrc = (struct src *)SRC_BASE_ADDR;
++
++	if (enable)
++		setbits_le32(&psrc->gpr10, persist_sec);
++	else
++		clrbits_le32(&psrc->gpr10, persist_sec);
++}
++
++int boot_mode_getprisec(void)
++{
++	struct src *psrc = (struct src *)SRC_BASE_ADDR;
++
++	return !!(readl(&psrc->gpr10) & SRC_GPR10_PERSIST_SECONDARY_BOOT);
++}
++
+ static int mmc_get_boot_dev(void)
+ {
+ 	u32 soc_sbmr = imx6_src_get_boot_mode();
+-- 
+2.40.1
+

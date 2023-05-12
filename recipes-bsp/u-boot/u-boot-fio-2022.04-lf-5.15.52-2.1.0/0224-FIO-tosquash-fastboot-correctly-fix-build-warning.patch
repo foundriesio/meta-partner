@@ -1,0 +1,31 @@
+From 8dbcdd99bb921b641bbd0d6123565811fcb9caf9 Mon Sep 17 00:00:00 2001
+From: Ricardo Salveti <ricardo@foundries.io>
+Date: Tue, 22 Nov 2022 18:13:20 -0300
+Subject: [PATCH 224/233] [FIO tosquash] fastboot: correctly fix build warning
+
+serial usage depends on two configs, so make sure they are both covered
+at the variable declaration to avoid build failures.
+
+Fixes: bd6722adf89 ("[FIO tonxp] fastboot: fix build warnings")
+
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+---
+ drivers/fastboot/fb_fsl/fb_fsl_getvar.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/fastboot/fb_fsl/fb_fsl_getvar.c b/drivers/fastboot/fb_fsl/fb_fsl_getvar.c
+index 6970904528b..ec96911c0bb 100644
+--- a/drivers/fastboot/fb_fsl/fb_fsl_getvar.c
++++ b/drivers/fastboot/fb_fsl/fb_fsl_getvar.c
+@@ -118,7 +118,7 @@ static bool is_slotvar(char *cmd)
+ 	return false;
+ }
+ 
+-#ifdef CONFIG_SERIAL_TAG
++#if defined(CONFIG_SERIAL_TAG) || defined(CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG)
+ static char serial[IMX_SERIAL_LEN];
+ #endif
+ 
+-- 
+2.25.1
+

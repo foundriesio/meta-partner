@@ -1,0 +1,37 @@
+From e5192d7f2ab783fc0da42cd4e863ce3f355dbf7d Mon Sep 17 00:00:00 2001
+From: Vanessa Maegima <vanessa.maegima@foundries.io>
+Date: Wed, 18 Aug 2021 10:44:29 -0300
+Subject: [PATCH 104/233] [FIO internal] arch: arm: dts: imx8mm-evk-u-boot: add
+ RPMB dev ID
+
+Set the RPMB dev ID node for imx8mm-evk-u-boot.dtsi as usdhc3. (eMMC
+device).
+
+Signed-off-by: Vanessa Maegima <vanessa.maegima@foundries.io>
+---
+ arch/arm/dts/imx8mm-evk-u-boot.dtsi | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/arch/arm/dts/imx8mm-evk-u-boot.dtsi b/arch/arm/dts/imx8mm-evk-u-boot.dtsi
+index 7ff878b5f96..f0af7f0dc2b 100644
+--- a/arch/arm/dts/imx8mm-evk-u-boot.dtsi
++++ b/arch/arm/dts/imx8mm-evk-u-boot.dtsi
+@@ -15,6 +15,7 @@
+ 	aliases {
+ 		usbgadget0 = &usbg1;
+ 		usbgadget1 = &usbg2;
++		mmc2 = &usdhc3;
+ 	};
+ 
+ 	usbg1: usbg1 {
+@@ -35,6 +36,7 @@
+ 		optee {
+ 			compatible = "linaro,optee-tz";
+ 			method = "smc";
++			rpmb-dev = <&usdhc3>;
+ 		};
+ 	};
+ };
+-- 
+2.25.1
+

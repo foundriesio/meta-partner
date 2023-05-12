@@ -1,0 +1,30 @@
+From d5c50f0f736c3fb4a6dbb6c150f0fdebeaf4df09 Mon Sep 17 00:00:00 2001
+From: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+Date: Sun, 16 Oct 2022 17:53:55 +0300
+Subject: [PATCH 165/233] [FIO squash] boot: image-sig: fix using disabled SHA1
+
+SHA1 can be disabled in either SPL or u-boot. Use the signature
+checking table entry for this algorithm only if [SPL_]SHA1 enabled.
+
+Fixes: e3e2acb5f31 ("[FIO extra] image-fit: dont use weak hash if SIGNATURE_STRICT")
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+---
+ boot/image-sig.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/boot/image-sig.c b/boot/image-sig.c
+index f1584efee9c..6f91e3ed892 100644
+--- a/boot/image-sig.c
++++ b/boot/image-sig.c
+@@ -17,7 +17,7 @@ DECLARE_GLOBAL_DATA_PTR;
+ #define IMAGE_MAX_HASHED_NODES		100
+ 
+ struct checksum_algo checksum_algos[] = {
+-#if !CONFIG_IS_ENABLED(FIT_SIGNATURE_STRICT)
++#if CONFIG_IS_ENABLED(SHA1) && !CONFIG_IS_ENABLED(FIT_SIGNATURE_STRICT)
+ 	{
+ 		.name = "sha1",
+ 		.checksum_len = SHA1_SUM_LEN,
+-- 
+2.40.1
+

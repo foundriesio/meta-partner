@@ -1,0 +1,30 @@
+From d4edfe54e46a1381b37b5fd780af58eb634e9f96 Mon Sep 17 00:00:00 2001
+From: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+Date: Mon, 12 Sep 2022 17:13:32 +0300
+Subject: [PATCH 156/233] [FIO squash] image-sig: fix disabling SHA1 with
+ FIT_SIGNATURE_STRICT
+
+Fix the logic of enabling SHA1 algorithm entry.
+
+Fixes: e3e2acb5f31 ("[FIO extra] image-fit: dont use weak hash if SIGNATURE_STRICT")
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+---
+ boot/image-sig.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/boot/image-sig.c b/boot/image-sig.c
+index 3aeee498b9f..f1584efee9c 100644
+--- a/boot/image-sig.c
++++ b/boot/image-sig.c
+@@ -17,7 +17,7 @@ DECLARE_GLOBAL_DATA_PTR;
+ #define IMAGE_MAX_HASHED_NODES		100
+ 
+ struct checksum_algo checksum_algos[] = {
+-#if CONFIG_IS_ENABLED(FIT_SIGNATURE_STRICT)
++#if !CONFIG_IS_ENABLED(FIT_SIGNATURE_STRICT)
+ 	{
+ 		.name = "sha1",
+ 		.checksum_len = SHA1_SUM_LEN,
+-- 
+2.25.1
+

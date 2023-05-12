@@ -1,0 +1,41 @@
+From 096aa15d9eee202ff45d120e3d0d5bab5ef74db6 Mon Sep 17 00:00:00 2001
+From: Marek Vasut <marex@denx.de>
+Date: Mon, 11 Apr 2022 22:39:44 +0200
+Subject: [PATCH 197/233] [FIO fromtree] ARM: imx8mm: verdin-imx8mm: Drop
+ superfluous header
+
+The power/bd71837.h should no longer be included, since V1.1 SoM
+uses only the PCA9450 PMIC and the BD71837 support was removed.
+Drop the header too.
+
+Upstream-Status: Backport [9f3370f800ecc5b24fa727e22c4b345cf2661e8a]
+
+Signed-off-by: Marek Vasut <marex@denx.de>
+Cc: Fabio Estevam <festevam@denx.de>
+Cc: Marcel Ziswiler <marcel.ziswiler@toradex.com>
+Cc: Max Krummenacher <max.krummenacher@toradex.com>
+Cc: Peng Fan <peng.fan@nxp.com>
+Cc: Stefano Babic <sbabic@denx.de>
+Acked-by: Marcel Ziswiler <marcel.ziswiler@toradex.com>
+(cherry picked from commit 9f3370f800ecc5b24fa727e22c4b345cf2661e8a)
+(cherry picked from commit d8320be62c78d5a5af1a504c9bf98b4c79d0aeae)
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+---
+ board/toradex/verdin-imx8mm/spl.c | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/board/toradex/verdin-imx8mm/spl.c b/board/toradex/verdin-imx8mm/spl.c
+index 4e6128c3314..1f3f38351ef 100644
+--- a/board/toradex/verdin-imx8mm/spl.c
++++ b/board/toradex/verdin-imx8mm/spl.c
+@@ -23,7 +23,6 @@
+ #include <dm/uclass-internal.h>
+ #include <hang.h>
+ #include <i2c.h>
+-#include <power/bd71837.h>
+ #include <power/pca9450.h>
+ #include <power/pmic.h>
+ #include <spl.h>
+-- 
+2.40.1
+

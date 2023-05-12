@@ -1,0 +1,42 @@
+From b6d5483bbb03d4b2bda6931d32f365a2b7a89282 Mon Sep 17 00:00:00 2001
+From: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+Date: Wed, 13 Jul 2022 16:40:10 +0300
+Subject: [PATCH 034/233] [FIO toup] spl: remove duplicate SPL_MD5 option
+
+There is another SPL_MD5 option defined in lib/Kconfig.
+Renaming SPL_MD5_SUPPORT introduced duplicate option with
+different description. As for now FIT and hash algorithm options
+are not related to each others, removing a duplicate option seems OK.
+
+Fixes: 4b00fd1a84c ("Kconfig: Rename SPL_MD5_SUPPORT to SPL_MD5")
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+---
+ common/spl/Kconfig | 12 ------------
+ 1 file changed, 12 deletions(-)
+
+diff --git a/common/spl/Kconfig b/common/spl/Kconfig
+index 90b1ef4148d..e8dd463fdd0 100644
+--- a/common/spl/Kconfig
++++ b/common/spl/Kconfig
+@@ -440,18 +440,6 @@ config SPL_CRC32
+ 	  for detected accidental image corruption. For secure applications you
+ 	  should consider SHA1 or SHA256.
+ 
+-config SPL_MD5
+-	bool "Support MD5"
+-	depends on SPL_FIT
+-	help
+-	  Enable this to support MD5 in FIT images within SPL. An MD5
+-	  checksum is a 128-bit hash value used to check that the image
+-	  contents have not been corrupted. Note that MD5 is not considered
+-	  secure as it is possible (with a brute-force attack) to adjust the
+-	  image while still retaining the same MD5 hash value. For secure
+-	  applications where images may be changed maliciously, you should
+-	  consider SHA256 or SHA384.
+-
+ config SPL_FIT_IMAGE_TINY
+ 	bool "Remove functionality from SPL FIT loading to reduce size"
+ 	depends on SPL_FIT
+-- 
+2.40.1
+

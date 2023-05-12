@@ -1,27 +1,36 @@
-FILESEXTRAPATHS_prepend := "${THISDIR}/${PN}:"
+FILESEXTRAPATHS:prepend := "${THISDIR}/${PN}:"
 
-SRC_URI_append_mx8m-var = " \
-        file://0901-sn65dsi83-Add-dsi2lvds-bridge.patch \
-        file://0902-sn65dsi83-Fix-complation-failures.patch \
-        file://0903-sn65dsi83-Fix-Kconfig-help-messages.patch \
-        file://0904-sn65dsi83-Convert-debug-messages-from-dev_info-to-de.patch \
-        file://0905-sn65dsi83-Add-burst-sync-option-switch.patch \
-        file://0906-sn65dsi83-Add-panel-enable-option.patch \
-        file://0907-sn65dsi83-Add-de-neg-polarity-option.patch \
-        file://0908-sn65dsi83-Add-dual-channel-support.patch \
+KERNEL_REPO = "git://github.com/varigit/linux-imx.git"
+KERNEL_BRANCH = "5.15-2.0.x-imx_var01"
+SRCREV_machine = "823c33d95f44b8d3cd61ce55b2470eecb87503dc"
+LINUX_VERSION = "5.15.60"
+
+KERNEL_BRANCH:imx8mn-var-som = "lf-5.15.y_var01"
+SRCREV_machine:imx8mn-var-som = "d4a03eb6188c8e3b31719d9b72680ab2fca86217"
+LINUX_VERSION:imx8mn-var-som = "5.15.71"
+
+KERNEL_BRANCH:imx8mp-var-dart = "lf-5.15.y_var01"
+SRCREV_machine:imx8mp-var-dart = "289a927366f57435d24b41dc641eaeffb1e0de80"
+LINUX_VERSION:imx8mp-var-dart = "5.15.71"
+
+SRC_URI:append:imx8mm-var-som-symphony = " \
+        file://imx8mm_var_som_symphony.cfg \
+        file://imx8mm_var_som_symphony.scc   \
+        file://imx8mm_var_som_symphony-standard.scc \
 "
 
-SRC_URI_append_imx8mm-var-som-symphony = " \
-        file://kernel-meta/bsp/imx/imx8mm_var_som_symphony.cfg \
-        file://kernel-meta/bsp/imx/imx8mm_var_som_symphony.scc   \
-        file://kernel-meta/bsp/imx/imx8mm_var_som_symphony-standard.scc \
-        file://kernel-meta/bsp/imx/fragment-sn65dsi83.cfg \
-        file://0001-arm64-dts-imx8mm-Add-missing-mux-options-for-UART1-a.patch \
+SRC_URI:append:imx8mn-var-som = " \
+        file://imx8mn-var-som.cfg \
+        file://imx8mn-var-som.scc   \
+        file://imx8mn-var-som-standard.scc \
 "
 
-SRC_URI_append_imx8mn-var-som = " \
-        file://kernel-meta/bsp/imx/imx8mn-var-som.cfg \
-        file://kernel-meta/bsp/imx/imx8mn-var-som.scc   \
-        file://kernel-meta/bsp/imx/imx8mn-var-som-standard.scc \
-        file://kernel-meta/bsp/imx/fragment-sn65dsi83.cfg \
+SRC_URI:append:imx8mp-var-dart = " \
+        file://imx8mp-var-dart.cfg \
+        file://imx8mp-var-dart.scc   \
+        file://imx8mp-var-dart-standard.scc \
 "
+
+# FIX-UP build
+SRC_URI:remove:mx8m-var = "file://0001-FIO-extras-arm64-dts-imx8mm-evk-use-imx8mm-evkb-for-.patch"
+SRC_URI:remove:mx8m-var = "file://0001-FIO-fromlist-gpu-drm-imx-sec_mipi_dsim-imx-fix-probe.patch"

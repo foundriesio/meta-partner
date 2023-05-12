@@ -1,0 +1,37 @@
+From 45bddb55f9e92b11a269ea33714bc283c8ffb796 Mon Sep 17 00:00:00 2001
+From: Felix Radensky <felix.r@variscite.com>
+Date: Mon, 11 May 2020 09:05:19 +0300
+Subject: [PATCH 136/233] [FIO fromtree] imx8m: drivers/ddr: Change padding of
+ DDR4 and LPDDR4 DMEM firmware
+
+DMEM firmware files are padded to 16KB, wasting precious space
+in processor internal RAM (TMU). The actual size of these files
+is less than 2KB, so padding them to 4KB is sufficient.
+
+This patch changes the expected size of DMEM firmware.
+It relies on boot image creation tools to generate 4KB padding.
+
+Signed-off-by: Felix Radensky <felix.r@variscite.com>
+Signed-off-by: Vanessa Maegima <vanessa.maegima@foundries.io>
+---
+ drivers/ddr/imx/phy/helper.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/ddr/imx/phy/helper.c b/drivers/ddr/imx/phy/helper.c
+index 43b40a8029c..f79650315e2 100644
+--- a/drivers/ddr/imx/phy/helper.c
++++ b/drivers/ddr/imx/phy/helper.c
+@@ -17,8 +17,8 @@
+ DECLARE_GLOBAL_DATA_PTR;
+ 
+ #define IMEM_LEN 32768 /* byte */
+-#define DMEM_LEN 16384 /* byte */
+-#define IMEM_2D_OFFSET	49152
++#define DMEM_LEN 4096  /* byte */
++#define IMEM_2D_OFFSET	36864
+ 
+ #define IMEM_OFFSET_ADDR 0x00050000
+ #define DMEM_OFFSET_ADDR 0x00054000
+-- 
+2.40.1
+

@@ -1,0 +1,63 @@
+From 62042c06c7b832a74946ac46316cee58edbb04de Mon Sep 17 00:00:00 2001
+From: Igor Opaniuk <igor.opaniuk@foundries.io>
+Date: Mon, 15 Feb 2021 19:46:02 +0200
+Subject: [PATCH 056/233] [FIO internal] ARM: imx8m: add support for reading
+ out the primary/secondary bmode
+
+Add new getprisec() function, which returns 0 if the system booted
+from primary copy or to 1 if the system booted from secondary copy,
+by reading PERSIST_SECONDARY_BOOT bit from GPR10 register.
+
+Signed-off-by: Igor Opaniuk <igor.opaniuk@foundries.io>
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+---
+ arch/arm/include/asm/arch-imx8m/imx-regs.h  | 2 ++
+ arch/arm/include/asm/arch-imx8m/sys_proto.h | 1 +
+ arch/arm/mach-imx/imx8m/soc.c               | 7 +++++++
+ 3 files changed, 10 insertions(+)
+
+diff --git a/arch/arm/include/asm/arch-imx8m/imx-regs.h b/arch/arm/include/asm/arch-imx8m/imx-regs.h
+index 333e57c603a..f99af2ed849 100644
+--- a/arch/arm/include/asm/arch-imx8m/imx-regs.h
++++ b/arch/arm/include/asm/arch-imx8m/imx-regs.h
+@@ -258,6 +258,8 @@
+ 
+ #define SNVS_HPSR              (SNVS_HP_BASE_ADDR + 0x14)
+ 
++#define SRC_GPR10_PERSIST_SECONDARY_BOOT	BIT(30)
++
+ struct iomuxc_gpr_base_regs {
+ 	u32 gpr[48];
+ };
+diff --git a/arch/arm/include/asm/arch-imx8m/sys_proto.h b/arch/arm/include/asm/arch-imx8m/sys_proto.h
+index 3e54f9b6764..c005709256b 100644
+--- a/arch/arm/include/asm/arch-imx8m/sys_proto.h
++++ b/arch/arm/include/asm/arch-imx8m/sys_proto.h
+@@ -14,5 +14,6 @@ void restore_boot_params(void);
+ int imx8m_usb_power(int usb_id, bool on);
+ extern unsigned long rom_pointer[];
+ enum boot_device get_boot_device(void);
++int boot_mode_getprisec(void);
+ bool is_usb_boot(void);
+ #endif
+diff --git a/arch/arm/mach-imx/imx8m/soc.c b/arch/arm/mach-imx/imx8m/soc.c
+index 0d2f7a5897f..2a4f22e3d05 100644
+--- a/arch/arm/mach-imx/imx8m/soc.c
++++ b/arch/arm/mach-imx/imx8m/soc.c
+@@ -743,6 +743,13 @@ int spl_mmc_emmc_boot_partition(struct mmc *mmc)
+ }
+ #endif
+ 
++int boot_mode_getprisec(void)
++{
++	struct src *psrc = (struct src *)SRC_BASE_ADDR;
++
++	return !!(readl(&psrc->gpr10) & SRC_GPR10_PERSIST_SECONDARY_BOOT);
++}
++
+ bool is_usb_boot(void)
+ {
+ 	return get_boot_device() == USB_BOOT;
+-- 
+2.40.1
+

@@ -1,0 +1,76 @@
+From b96234d4d8fbd546dacea7fb5a087c7849966248 Mon Sep 17 00:00:00 2001
+From: Marcel Ziswiler <marcel.ziswiler@toradex.com>
+Date: Fri, 9 Sep 2022 00:03:14 +0200
+Subject: [PATCH 218/233] [FIO tonxp] board: toradex: verdin-imx8mp: add
+ usb_1_en handling
+
+Add Verdin USB_1_EN (SODIMM 155) aka GPIO1_IO12 handling.
+
+Upstream-Status: Inappropriate [other]
+- NXP downstream specific
+
+Signed-off-by: Marcel Ziswiler <marcel.ziswiler@toradex.com>
+(cherry picked from commit f56e6141e671521fbe3279ad9f588d1290713e72)
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+---
+ board/toradex/verdin-imx8mp/verdin-imx8mp.c | 21 +++++++--------------
+ 1 file changed, 7 insertions(+), 14 deletions(-)
+
+diff --git a/board/toradex/verdin-imx8mp/verdin-imx8mp.c b/board/toradex/verdin-imx8mp/verdin-imx8mp.c
+index 9b9d1ce0f4c..4a0840e999c 100644
+--- a/board/toradex/verdin-imx8mp/verdin-imx8mp.c
++++ b/board/toradex/verdin-imx8mp/verdin-imx8mp.c
+@@ -163,25 +163,19 @@ static void dwc3_nxp_usb_phy_init(struct dwc3_device *dwc3)
+ #endif
+ 
+ #if defined(CONFIG_USB_DWC3) || defined(CONFIG_USB_XHCI_IMX8M)
++#define USB1_PWR_EN IMX_GPIO_NR(1, 12)
+ #define USB2_PWR_EN IMX_GPIO_NR(1, 14)
+ int board_usb_init(int index, enum usb_init_type init)
+ {
+-	int ret = 0;
+ 	imx8m_usb_power(index, true);
+ 
+ 	if (index == 0 && init == USB_INIT_DEVICE) {
+-#ifdef CONFIG_USB_TCPC
+-		ret = tcpc_setup_ufp_mode(&port1);
+-		if (ret)
+-			return ret;
+-#endif
+ 		dwc3_nxp_usb_phy_init(&dwc3_device_data);
+ 		return dwc3_uboot_init(&dwc3_device_data);
+ 	} else if (index == 0 && init == USB_INIT_HOST) {
+-#ifdef CONFIG_USB_TCPC
+-		ret = tcpc_setup_dfp_mode(&port1);
+-#endif
+-		return ret;
++		/* Enable GPIO1_IO12 for 5V VBUS */
++		gpio_request(USB1_PWR_EN, "usb1_pwr");
++		gpio_direction_output(USB1_PWR_EN, 1);
+ 	} else if (index == 1 && init == USB_INIT_HOST) {
+ 		/* Enable GPIO1_IO14 for 5V VBUS */
+ 		gpio_request(USB2_PWR_EN, "usb2_pwr");
+@@ -197,9 +191,8 @@ int board_usb_cleanup(int index, enum usb_init_type init)
+ 	if (index == 0 && init == USB_INIT_DEVICE) {
+ 		dwc3_uboot_exit(index);
+ 	} else if (index == 0 && init == USB_INIT_HOST) {
+-#ifdef CONFIG_USB_TCPC
+-		ret = tcpc_disable_src_vbus(&port1);
+-#endif
++		/* Disable GPIO1_IO12 for 5V VBUS */
++		gpio_direction_output(USB1_PWR_EN, 0);
+ 	} else if (index == 1 && init == USB_INIT_HOST) {
+ 		/* Disable GPIO1_IO14 for 5V VBUS */
+ 		gpio_direction_output(USB2_PWR_EN, 0);
+@@ -207,7 +200,7 @@ int board_usb_cleanup(int index, enum usb_init_type init)
+ 
+ 	imx8m_usb_power(index, false);
+ 
+-return ret;
++	return ret;
+ }
+ 
+ #endif
+-- 
+2.25.1
+

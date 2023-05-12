@@ -1,0 +1,31 @@
+From b03347490bf9e882f08ca3a03414597649d1d738 Mon Sep 17 00:00:00 2001
+From: Michael Scott <mike@foundries.io>
+Date: Fri, 10 Jul 2020 17:10:45 -0700
+Subject: [PATCH 118/233] [FIO extras] board: imx6ullevk: for OP-TEE lower
+ ram_size by CONFIG_OPTEE_TZDRAM_SIZE
+
+Signed-off-by: Michael Scott <mike@foundries.io>
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+---
+ board/freescale/mx6ullevk/mx6ullevk.c | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/board/freescale/mx6ullevk/mx6ullevk.c b/board/freescale/mx6ullevk/mx6ullevk.c
+index 72e4898ae86..d2d126e674c 100644
+--- a/board/freescale/mx6ullevk/mx6ullevk.c
++++ b/board/freescale/mx6ullevk/mx6ullevk.c
+@@ -127,6 +127,11 @@ int dram_init(void)
+ {
+ 	gd->ram_size = imx_ddr_size();
+ 
++	/* Subtract the defined OPTEE runtime firmware length */
++#ifdef CONFIG_OPTEE_TZDRAM_SIZE
++	gd->ram_size -= CONFIG_OPTEE_TZDRAM_SIZE;
++#endif
++
+ 	return 0;
+ }
+ 
+-- 
+2.25.1
+

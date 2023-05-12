@@ -1,0 +1,49 @@
+From 1e49fb5613e64b61476f3dd30adf572b70a75c67 Mon Sep 17 00:00:00 2001
+From: Andrejs Cainikovs <andrejs.cainikovs@toradex.com>
+Date: Thu, 22 Sep 2022 13:48:27 +0200
+Subject: [PATCH 220/233] [FIO extras] configs: verdin-imx8mm: revert to old
+ bootcount functionality
+
+This change reverts to old bootcount functionality when bootcount
+is stored in non-volatile memory. When storing bootcount in volatile
+register in SoC, U-Boot does not check upgrade_available variable,
+which leads to a different behavior which we would like to avoid.
+
+Upstream-Status: Inappropriate [other]
+- Partial revert of submitted patch not merged yet
+  [https://lore.kernel.org/all/20220822130604.843081-5-marcel@ziswiler.com/]
+
+Signed-off-by: Andrejs Cainikovs <andrejs.cainikovs@toradex.com>
+(cherry picked from commit 0206838324ac33a1dda5d269f31e65bc388fcc23)
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+---
+ configs/verdin-imx8mm_defconfig | 5 +----
+ 1 file changed, 1 insertion(+), 4 deletions(-)
+
+diff --git a/configs/verdin-imx8mm_defconfig b/configs/verdin-imx8mm_defconfig
+index b9d01d8d9f4..69b12868fa8 100644
+--- a/configs/verdin-imx8mm_defconfig
++++ b/configs/verdin-imx8mm_defconfig
+@@ -15,10 +15,7 @@ CONFIG_TARGET_VERDIN_IMX8MM=y
+ CONFIG_SPL_MMC=y
+ CONFIG_SPL_SERIAL=y
+ CONFIG_SPL_DRIVERS_MISC=y
+-CONFIG_BOOTCOUNT_BOOTLIMIT=3
+-CONFIG_SYS_BOOTCOUNT_ADDR=0x30370090
+ CONFIG_SPL=y
+-CONFIG_SYS_BOOTCOUNT_SINGLEWORD=y
+ CONFIG_SYS_LOAD_ADDR=0x48200000
+ CONFIG_SYS_MEMTEST_START=0x40000000
+ CONFIG_SYS_MEMTEST_END=0x80000000
+@@ -81,7 +78,7 @@ CONFIG_IP_DEFRAG=y
+ CONFIG_TFTP_BLOCKSIZE=4096
+ CONFIG_SPL_DM=y
+ CONFIG_BOOTCOUNT_LIMIT=y
+-CONFIG_SYS_BOOTCOUNT_MAGIC=0xB0C40000
++CONFIG_BOOTCOUNT_ENV=y
+ CONFIG_SPL_CLK_COMPOSITE_CCF=y
+ CONFIG_CLK_COMPOSITE_CCF=y
+ CONFIG_SPL_CLK_IMX8MM=y
+-- 
+2.25.1
+

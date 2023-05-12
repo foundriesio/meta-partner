@@ -1,0 +1,88 @@
+From a7c31f5df6113a9f0f24559e44b270effcabcd70 Mon Sep 17 00:00:00 2001
+From: Andrejs Cainikovs <andrejs.cainikovs@toradex.com>
+Date: Fri, 27 May 2022 15:20:42 +0200
+Subject: [PATCH 178/233] [FIO fromtree] imx8m: fixup thermal trips
+
+commit 0543a1ed2787805dbbf5f32b5bfae323452b4bd9 upstream.
+
+Fixup thermal trips in Linux device tree according to SoC thermal
+grade.
+
+Signed-off-by: Andrejs Cainikovs <andrejs.cainikovs@toradex.com>
+Reviewed-by: Francesco Dolcini <francesco.dolcini@toradex.com>
+Tested-by: Adam Ford <aford173@gmail.com>
+(cherry picked from commit 0a5ef3b4aa364be5fde1d0eb4bb3021cbcc3ec25)
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+---
+ arch/arm/mach-imx/imx8m/soc.c | 48 +++++++++++++++++++++++++++++++++++
+ 1 file changed, 48 insertions(+)
+
+diff --git a/arch/arm/mach-imx/imx8m/soc.c b/arch/arm/mach-imx/imx8m/soc.c
+index 4283ecc4296..f30e957465f 100644
+--- a/arch/arm/mach-imx/imx8m/soc.c
++++ b/arch/arm/mach-imx/imx8m/soc.c
+@@ -1311,6 +1311,48 @@ static int cleanup_nodes_for_efi(void *blob)
+ 	return 0;
+ }
+ 
++static int fixup_thermal_trips(void *blob, const char *name)
++{
++	int minc, maxc;
++	int node, trip;
++
++	node = fdt_path_offset(blob, "/thermal-zones");
++	if (node < 0)
++		return node;
++
++	node = fdt_subnode_offset(blob, node, name);
++	if (node < 0)
++		return node;
++
++	node = fdt_subnode_offset(blob, node, "trips");
++	if (node < 0)
++		return node;
++
++	get_cpu_temp_grade(&minc, &maxc);
++
++	fdt_for_each_subnode(trip, blob, node) {
++		const char *type;
++		int temp, ret;
++
++		type = fdt_getprop(blob, trip, "type", NULL);
++		if (!type)
++			continue;
++
++		temp = 0;
++		if (!strcmp(type, "critical"))
++			temp = 1000 * maxc;
++		else if (!strcmp(type, "passive"))
++			temp = 1000 * (maxc - 10);
++		if (temp) {
++			ret = fdt_setprop_u32(blob, trip, "temperature", temp);
++			if (ret)
++				return ret;
++		}
++	}
++
++	return 0;
++}
++
+ int ft_system_setup(void *blob, struct bd_info *bd)
+ {
+ #ifdef CONFIG_IMX8MQ
+@@ -1456,6 +1498,12 @@ usb_modify_speed:
+ 
+ 	delete_u_boot_nodes(blob);
+ 
++	if (fixup_thermal_trips(blob, "cpu-thermal"))
++		printf("Failed to update cpu-thermal trip(s)");
++	if (IS_ENABLED(CONFIG_IMX8MP) &&
++	    fixup_thermal_trips(blob, "soc-thermal"))
++		printf("Failed to update soc-thermal trip(s)");
++
+ #if defined(CONFIG_ANDROID_SUPPORT) || defined(CONFIG_ANDROID_AUTO_SUPPORT)
+ 	return 0;
+ #else
+-- 
+2.40.1
+

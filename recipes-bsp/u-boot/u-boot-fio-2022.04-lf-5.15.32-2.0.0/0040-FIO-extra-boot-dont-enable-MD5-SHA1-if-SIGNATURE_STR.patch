@@ -1,0 +1,36 @@
+From f1edda8adf78a63ce132573a82b9dfe2960d2e30 Mon Sep 17 00:00:00 2001
+From: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+Date: Wed, 13 Jul 2022 20:33:02 +0300
+Subject: [PATCH 040/233] [FIO extra] boot: dont enable MD5,SHA1 if
+ SIGNATURE_STRICT
+
+Allowing these options to be disabled saves ~4k of SPL binary size,
+that allows more SoC with smaller SPL requirements use the
+SIGNATURE_STRICT setting.
+
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+---
+ boot/Kconfig | 7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
+
+diff --git a/boot/Kconfig b/boot/Kconfig
+index 008ea3d55f9..b7dbdae80c9 100644
+--- a/boot/Kconfig
++++ b/boot/Kconfig
+@@ -12,8 +12,11 @@ config ANDROID_BOOT_IMAGE
+ config FIT
+ 	bool "Support Flattened Image Tree"
+ 	select HASH
+-	select MD5
+-	select SHA1
++	select MD5 if (!SPL_BUILD && !FIT_SIGNATURE_STRICT) || \
++		      (SPL_BUILD && !SPL_FIT_SIGNATURE_STRICT)
++	select SHA1 if (!SPL_BUILD && !FIT_SIGNATURE_STRICT) || \
++		       (SPL_BUILD && !SPL_FIT_SIGNATURE_STRICT)
++
+ 	imply SHA256
+ 	help
+ 	  This option allows you to boot the new uImage structure,
+-- 
+2.40.1
+

@@ -1,0 +1,67 @@
+From f552f539a47397e2df4a9a2298ea83b0fdbae92c Mon Sep 17 00:00:00 2001
+From: Igor Opaniuk <igor.opaniuk@foundries.io>
+Date: Sat, 26 Nov 2022 19:00:37 +0200
+Subject: [PATCH 229/233] [FIO totoradex] ARM: dts: fsl-imx8qm-apalis: adjust
+ usdhc node pinctrls
+
+Add additional "state_100mhz", "state_200mhz" pinctrl configurations,
+as fsl_esdhc_imx driver expects them to be defined in usdhc node.
+Use imx8qm-mek usdhc nodes as a reference.
+
+This fixes such issues during MMC initialization:
+esdhc_change_pinstate 10 error
+esdhc_set_timing error -38
+esdhc_change_pinstate 11 error
+esdhc_set_timing error -38
+Select HS400 failed -38
+unable to select a mode : -5
+MMC init failed
+
+Signed-off-by: Igor Opaniuk <igor.opaniuk@foundries.io>
+---
+ arch/arm/dts/fsl-imx8qm-apalis.dts | 12 +++++++++---
+ 1 file changed, 9 insertions(+), 3 deletions(-)
+
+diff --git a/arch/arm/dts/fsl-imx8qm-apalis.dts b/arch/arm/dts/fsl-imx8qm-apalis.dts
+index 25f99dc2cf8..9ac8f122fd8 100644
+--- a/arch/arm/dts/fsl-imx8qm-apalis.dts
++++ b/arch/arm/dts/fsl-imx8qm-apalis.dts
+@@ -638,8 +638,10 @@
+ 
+ /* eMMC */
+ &usdhc1 {
+-	pinctrl-names = "default";
++	pinctrl-names = "default", "state_100mhz", "state_200mhz";
+ 	pinctrl-0 = <&pinctrl_usdhc1>;
++	pinctrl-1 = <&pinctrl_usdhc1>;
++	pinctrl-2 = <&pinctrl_usdhc1>;
+ 	bus-width = <8>;
+ 	non-removable;
+ 	status = "okay";
+@@ -647,8 +649,10 @@
+ 
+ /* Apalis MMC1 */
+ &usdhc2 {
+-	pinctrl-names = "default";
++	pinctrl-names = "default", "state_100mhz", "state_200mhz";
+ 	pinctrl-0 = <&pinctrl_usdhc2>, <&pinctrl_mmc1_cd>;
++	pinctrl-1 = <&pinctrl_usdhc2>, <&pinctrl_mmc1_cd>;
++	pinctrl-2 = <&pinctrl_usdhc2>, <&pinctrl_mmc1_cd>;
+ 	bus-width = <8>;
+ 	cd-gpios = <&gpio2 9 GPIO_ACTIVE_LOW>; /* Apalis MMC1_CD# */
+ 	vmmc-supply = <&reg_usdhc2_vmmc>;
+@@ -657,8 +661,10 @@
+ 
+ /* Apalis SD1 */
+ &usdhc3 {
+-	pinctrl-names = "default";
++	pinctrl-names = "default", "state_100mhz", "state_200mhz";
+ 	pinctrl-0 = <&pinctrl_usdhc3>, <&pinctrl_sd1_cd>;
++	pinctrl-1 = <&pinctrl_usdhc3>, <&pinctrl_sd1_cd>;
++	pinctrl-2 = <&pinctrl_usdhc3>, <&pinctrl_sd1_cd>;
+ 	bus-width = <4>;
+ 	cd-gpios = <&gpio4 12 GPIO_ACTIVE_LOW>; /* Apalis SD1_CD# */
+ 	status = "okay";
+-- 
+2.25.1
+

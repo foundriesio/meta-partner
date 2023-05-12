@@ -1,0 +1,56 @@
+From 6b26efc67a045063e7bcf4130060ed8c092871b6 Mon Sep 17 00:00:00 2001
+From: Fabio Estevam <festevam@denx.de>
+Date: Sat, 26 Mar 2022 11:47:40 -0300
+Subject: [PATCH 211/233] [FIO fromtree] imx8/ls10xx: Use a sane
+ SYS_MALLOC_F_LEN default
+
+When adding new features to imx8m boards, such as DM clock support,
+the malloc area can be exhausted.
+
+To avoid such issue, provide a reasonable default for the
+SYS_MALLOC_F_LEN size.
+
+Quoting Tom Rini:
+
+"This seems to be an area where everyone is either:
+- Kicking the value up a bit for themselves
+- Having hard to figure out problems booting the platform because it's
+  too small a value until they see someone else picked a larger value.
+
+So lets raise these a bit and get some acks, please."
+
+Upstream-Status: Backported [545eceb52062cdc995c45b9581174b7ae66b0e6f]
+
+Suggested-by: Heinrich Schuchardt <xypron.glpk@gmx.de>
+Signed-off-by: Fabio Estevam <festevam@denx.de>
+Tested-by: Adam Ford <aford173@gmail.com> #imx8mm-beacon, imx8mn-beacon
+Tested-by: Heiko Thiery <heiko.thiery@gmail.com>
+(cherry picked from commit 545eceb52062cdc995c45b9581174b7ae66b0e6f)
+(cherry picked from commit 0fb88d15dd73db94a8227e6043d6fa6ac331a5c0)
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+---
+ Kconfig | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/Kconfig b/Kconfig
+index da1444fc7bb..2c5b7035662 100644
+--- a/Kconfig
++++ b/Kconfig
+@@ -232,10 +232,10 @@ config SYS_MALLOC_F_LEN
+ 	depends on SYS_MALLOC_F
+ 	default 0x1000 if AM33XX
+ 	default 0x4000 if SANDBOX
+-	default 0x2000 if (ARCH_IMX8 || ARCH_IMX8M || ARCH_MX7 || \
+-			   ARCH_MX7ULP || ARCH_MX6 || ARCH_MX5 || \
+-			   ARCH_LS1012A || ARCH_LS1021A || ARCH_LS1043A || \
+-			   ARCH_LS1046A || ARCH_QEMU || ARCH_SUNXI || ARCH_OWL)
++	default 0x2000 if (ARCH_MX7 || ARCH_MX7ULP || ARCH_MX6 || ARCH_MX5 || \
++			   ARCH_QEMU || ARCH_SUNXI || ARCH_OWL)
++	default 0x10000 if (ARCH_IMX8 || ARCH_IMX8M || ARCH_LS1012A || \
++			    ARCH_LS1021A || ARCH_LS1043A || ARCH_LS1046A)
+ 	default 0x400
+ 	help
+ 	  Before relocation, memory is very limited on many platforms. Still,
+-- 
+2.40.1
+

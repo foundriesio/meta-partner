@@ -1,0 +1,129 @@
+From 8338f8de803b6ec160b825b02e63f4ff742500d5 Mon Sep 17 00:00:00 2001
+From: Marcel Ziswiler <marcel.ziswiler@toradex.com>
+Date: Thu, 18 Aug 2022 09:51:14 +0200
+Subject: [PATCH 204/233] [FIO fromlist] verdin-imx8mm: verdin-imx8mp: update
+ env memory layout
+
+Update the distro config env memory layout for the Verdin iMX8M Mini and
+Verdin iMX8M Plus:
+
+- loadaddr=0x48200000 allows for 128MB area for uncompressing (ie FIT
+  images, kernel_comp_addr_r, kernel_comp_size)
+- fdt_addr_r = loadaddr + 128MB - allows for 128MB kernel
+- scriptaddr = fdt_addr_r + 512KB - allows for 512KB fdt
+- ramdisk_addr_r = scriptaddr + 512KB - allows for 512KB script
+
+Memory layout taken from commit fd5c7173ade4
+("imx8m{m,n}_venice: update env memory layout").
+
+Note that for our regular BSP Layers and Reference Images for Yocto
+Project an updated distro boot script is required (see
+meta-toradex-bsp-common/recipes-bsp/u-boot/u-boot-distro-boot).
+
+Upstream-Status: Submitted [https://lore.kernel.org/all/20220819051827.185560-2-marcel@ziswiler.com/]
+
+Signed-off-by: Marcel Ziswiler <marcel.ziswiler@toradex.com>
+(cherry picked from commit 18a45a5270159f6f2e56a445433377cba7fb9076)
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+---
+ configs/verdin-imx8mm_defconfig |  6 +++---
+ configs/verdin-imx8mp_defconfig |  6 +++---
+ include/configs/verdin-imx8mm.h | 10 ++++++----
+ include/configs/verdin-imx8mp.h | 10 ++++++----
+ 4 files changed, 18 insertions(+), 14 deletions(-)
+
+diff --git a/configs/verdin-imx8mm_defconfig b/configs/verdin-imx8mm_defconfig
+index aa89738b44a..67dba48b25e 100644
+--- a/configs/verdin-imx8mm_defconfig
++++ b/configs/verdin-imx8mm_defconfig
+@@ -6,8 +6,6 @@ CONFIG_SYS_MALLOC_F_LEN=0x10000
+ CONFIG_SPL_GPIO=y
+ CONFIG_SPL_LIBCOMMON_SUPPORT=y
+ CONFIG_SPL_LIBGENERIC_SUPPORT=y
+-CONFIG_SYS_MEMTEST_START=0x40000000
+-CONFIG_SYS_MEMTEST_END=0x80000000
+ CONFIG_ENV_SIZE=0x2000
+ CONFIG_ENV_OFFSET=0xFFFFDE00
+ CONFIG_DM_GPIO=y
+@@ -18,8 +16,10 @@ CONFIG_SPL_MMC=y
+ CONFIG_SPL_SERIAL=y
+ CONFIG_SPL_DRIVERS_MISC=y
+ CONFIG_SPL=y
++CONFIG_SYS_LOAD_ADDR=0x48200000
++CONFIG_SYS_MEMTEST_START=0x40000000
++CONFIG_SYS_MEMTEST_END=0x80000000
+ CONFIG_DISTRO_DEFAULTS=y
+-CONFIG_SYS_LOAD_ADDR=0x40480000
+ CONFIG_FIT=y
+ CONFIG_FIT_EXTERNAL_OFFSET=0x3000
+ CONFIG_FIT_VERBOSE=y
+diff --git a/configs/verdin-imx8mp_defconfig b/configs/verdin-imx8mp_defconfig
+index 50729d0be6d..f2f40ed537c 100644
+--- a/configs/verdin-imx8mp_defconfig
++++ b/configs/verdin-imx8mp_defconfig
+@@ -6,8 +6,6 @@ CONFIG_SPL_GPIO=y
+ CONFIG_SPL_LIBCOMMON_SUPPORT=y
+ CONFIG_SPL_LIBGENERIC_SUPPORT=y
+ CONFIG_NR_DRAM_BANKS=2
+-CONFIG_SYS_MEMTEST_START=0x40000000
+-CONFIG_SYS_MEMTEST_END=0x80000000
+ CONFIG_ENV_SIZE=0x2000
+ CONFIG_ENV_OFFSET=0xFFFFDE00
+ CONFIG_SYS_I2C_MXC_I2C1=y
+@@ -24,8 +22,10 @@ CONFIG_SPL_DRIVERS_MISC=y
+ CONFIG_SPL=y
+ CONFIG_IMX_BOOTAUX=y
+ CONFIG_SPL_IMX_ROMAPI_LOADADDR=0x48000000
++CONFIG_SYS_LOAD_ADDR=0x48200000
++CONFIG_SYS_MEMTEST_START=0x40000000
++CONFIG_SYS_MEMTEST_END=0x80000000
+ CONFIG_DISTRO_DEFAULTS=y
+-CONFIG_SYS_LOAD_ADDR=0x43500000
+ CONFIG_FIT=y
+ CONFIG_FIT_EXTERNAL_OFFSET=0x3000
+ CONFIG_FIT_VERBOSE=y
+diff --git a/include/configs/verdin-imx8mm.h b/include/configs/verdin-imx8mm.h
+index 0425e7ba90a..b18a60cc59a 100644
+--- a/include/configs/verdin-imx8mm.h
++++ b/include/configs/verdin-imx8mm.h
+@@ -30,10 +30,12 @@
+ #endif
+ 
+ #define MEM_LAYOUT_ENV_SETTINGS \
+-	"fdt_addr_r=0x44000000\0" \
+-	"kernel_addr_r=0x42000000\0" \
+-	"ramdisk_addr_r=0x46400000\0" \
+-	"scriptaddr=0x46000000\0"
++	"fdt_addr_r=0x50200000\0" \
++	"kernel_addr_r=" __stringify(CONFIG_SYS_LOAD_ADDR) "\0" \
++	"kernel_comp_addr_r=0x40200000\0" \
++	"kernel_comp_size=0x08000000\0" \
++	"ramdisk_addr_r=0x50300000\0" \
++	"scriptaddr=0x50280000\0"
+ 
+ /* Enable Distro Boot */
+ #ifndef CONFIG_SPL_BUILD
+diff --git a/include/configs/verdin-imx8mp.h b/include/configs/verdin-imx8mp.h
+index 299b09411e5..d000b7d2788 100644
+--- a/include/configs/verdin-imx8mp.h
++++ b/include/configs/verdin-imx8mp.h
+@@ -49,10 +49,12 @@
+ #endif /* CONFIG_CMD_NET */
+ 
+ #define MEM_LAYOUT_ENV_SETTINGS \
+-	"fdt_addr_r=0x43000000\0" \
+-	"kernel_addr_r=0x40000000\0" \
+-	"ramdisk_addr_r=0x46400000\0" \
+-	"scriptaddr=0x46000000\0"
++	"fdt_addr_r=0x50200000\0" \
++	"kernel_addr_r=" __stringify(CONFIG_SYS_LOAD_ADDR) "\0" \
++	"kernel_comp_addr_r=0x40200000\0" \
++	"kernel_comp_size=0x08000000\0" \
++	"ramdisk_addr_r=0x50300000\0" \
++	"scriptaddr=0x50280000\0"
+ 
+ /* Enable Distro Boot */
+ #ifndef CONFIG_SPL_BUILD
+-- 
+2.40.1
+

@@ -1,0 +1,43 @@
+From ac8fb5ce3eac0c39bf02caab9a08b46c7814d5c4 Mon Sep 17 00:00:00 2001
+From: Igor Opaniuk <igor.opaniuk@foundries.io>
+Date: Mon, 14 Jun 2021 18:29:30 +0300
+Subject: [PATCH 075/233] [FIO internal] spl: enable hw_watchdog if it enabled
+
+Call hw_watchdog_init() when SPL_HW_WATCHDOG enabled.
+
+Signed-off-by: Igor Opaniuk <igor.opaniuk@foundries.io>
+Co-developed-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+---
+ common/spl/spl.c | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
+
+diff --git a/common/spl/spl.c b/common/spl/spl.c
+index 5a05285c42a..386e6b5f142 100644
+--- a/common/spl/spl.c
++++ b/common/spl/spl.c
+@@ -36,6 +36,7 @@
+ #include <fdt_support.h>
+ #include <bootcount.h>
+ #include <wdt.h>
++#include <watchdog.h>
+ 
+ DECLARE_GLOBAL_DATA_PTR;
+ 
+@@ -747,8 +748,12 @@ void board_init_r(gd_t *dummy1, ulong dummy2)
+ 	spl_board_init();
+ #endif
+ 
+-#if defined(CONFIG_SPL_WATCHDOG) && CONFIG_IS_ENABLED(WDT)
++#if defined(CONFIG_SPL_WATCHDOG)
++#if CONFIG_IS_ENABLED(WDT)
+ 	initr_watchdog();
++#elif CONFIG_IS_ENABLED(HW_WATCHDOG)
++	hw_watchdog_init();
++#endif
+ #endif
+ 
+ 	if (IS_ENABLED(CONFIG_SPL_OS_BOOT) || CONFIG_IS_ENABLED(HANDOFF) ||
+-- 
+2.40.1
+

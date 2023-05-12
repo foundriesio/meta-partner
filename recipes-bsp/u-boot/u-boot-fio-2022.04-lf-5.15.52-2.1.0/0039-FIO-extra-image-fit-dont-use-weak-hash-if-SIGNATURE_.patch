@@ -1,0 +1,98 @@
+From efc355d9834f452d64b1eb4bc34c20e0b6743082 Mon Sep 17 00:00:00 2001
+From: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+Date: Wed, 13 Jul 2022 20:31:49 +0300
+Subject: [PATCH 039/233] [FIO extra] image-fit: dont use weak hash if
+ SIGNATURE_STRICT
+
+Disable weak methods of fit verification/signing when
+SIGNATURE_STRICT enabled. This protects against potential threats
+vectors.
+
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+---
+ boot/image-fit.c | 34 ++++++++++++++++++++++++++++++++++
+ boot/image-sig.c |  2 ++
+ 2 files changed, 36 insertions(+)
+
+diff --git a/boot/image-fit.c b/boot/image-fit.c
+index 0de9180d2bb..b31e7a9ce74 100644
+--- a/boot/image-fit.c
++++ b/boot/image-fit.c
+@@ -1198,6 +1198,28 @@ int fit_set_timestamp(void *fit, int noffset, time_t timestamp)
+ 	return 0;
+ }
+ 
++#if CONFIG_IS_ENABLED(FIT_SIGNATURE_STRICT)
++# define ALGO_NAME_ENT(x)	{ x, sizeof(x) }
++static struct algo_name {
++	const char *name;
++	int len;
++} loose_algo[] = {
++	ALGO_NAME_ENT("crc32"),
++	ALGO_NAME_ENT("sha1"),
++	ALGO_NAME_ENT("md5"),
++};
++
++int weak_algo(const char *name)
++{
++	for (int i = 0; i < sizeof(loose_algo) / sizeof(loose_algo[0]); i++) {
++		if (!strncmp(name, loose_algo[i].name, loose_algo[i].len))
++		    return -1;
++	}
++
++	return 0;
++}
++#endif
++
+ /**
+  * calculate_hash - calculate and return hash for provided input data
+  * @data: pointer to the input data
+@@ -1230,6 +1252,12 @@ int calculate_hash(const void *data, int data_len, const char *name,
+ 		return -1;
+ 	}
+ 
++#if CONFIG_IS_ENABLED(FIT_SIGNATURE_STRICT)
++	if (weak_algo(name)) {
++		debug("Only strong hash algorithm accepted\n");
++		return -1;
++	}
++#endif
+ 	hash_algo = hash_algo_lookup_by_name(name);
+ 	if (hash_algo == HASH_ALGO_INVALID) {
+ 		debug("Unsupported hash algorithm\n");
+@@ -1247,6 +1275,12 @@ int calculate_hash(const void *data, int data_len, const char *name,
+ 	struct hash_algo *algo;
+ 	int ret;
+ 
++#if CONFIG_IS_ENABLED(FIT_SIGNATURE_STRICT)
++	if (weak_algo(name)) {
++		debug("Only strong hash algorithm accepted\n");
++		return -1;
++	}
++#endif
+ 	ret = hash_lookup_algo(name, &algo);
+ 	if (ret < 0) {
+ 		debug("Unsupported hash alogrithm\n");
+diff --git a/boot/image-sig.c b/boot/image-sig.c
+index 1aa0b586450..3aeee498b9f 100644
+--- a/boot/image-sig.c
++++ b/boot/image-sig.c
+@@ -17,6 +17,7 @@ DECLARE_GLOBAL_DATA_PTR;
+ #define IMAGE_MAX_HASHED_NODES		100
+ 
+ struct checksum_algo checksum_algos[] = {
++#if CONFIG_IS_ENABLED(FIT_SIGNATURE_STRICT)
+ 	{
+ 		.name = "sha1",
+ 		.checksum_len = SHA1_SUM_LEN,
+@@ -24,6 +25,7 @@ struct checksum_algo checksum_algos[] = {
+ 		.der_prefix = sha1_der_prefix,
+ 		.calculate = hash_calculate,
+ 	},
++#endif
+ 	{
+ 		.name = "sha256",
+ 		.checksum_len = SHA256_SUM_LEN,
+-- 
+2.25.1
+

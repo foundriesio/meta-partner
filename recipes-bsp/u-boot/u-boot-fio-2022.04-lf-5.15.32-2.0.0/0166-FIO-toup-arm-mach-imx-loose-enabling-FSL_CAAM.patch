@@ -1,0 +1,31 @@
+From e77d2f5643db18a3fbc0a4bf779be8621d052efc Mon Sep 17 00:00:00 2001
+From: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+Date: Mon, 17 Oct 2022 11:16:57 +0300
+Subject: [PATCH 166/233] [FIO toup] arm: mach-imx: loose enabling FSL_CAAM
+
+HAS_CAAM should be enabled for all architecture support it. Whereas
+FSL_CAAM enables a driver for a device which may be managed by
+another system, like OP-TEE. Allow disabling u-boot FSL CAAM driver
+on systems with CAAM to prevent access conflicts.
+
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+---
+ arch/arm/mach-imx/Kconfig | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/arm/mach-imx/Kconfig b/arch/arm/mach-imx/Kconfig
+index f81d1d67626..420968e062d 100644
+--- a/arch/arm/mach-imx/Kconfig
++++ b/arch/arm/mach-imx/Kconfig
+@@ -101,7 +101,7 @@ config USE_IMXIMG_PLUGIN
+ config IMX_HAB
+ 	bool "Support i.MX HAB features"
+ 	depends on ARCH_MX7 || ARCH_MX6 || ARCH_MX5 || ARCH_IMX8M || ARCH_MX7ULP
+-	select FSL_CAAM if HAS_CAAM
++	imply FSL_CAAM if HAS_CAAM
+ 	imply CMD_PROVISION_KEY if HAS_CAAM
+ 	help
+ 	  This option enables the support for secure boot (HAB).
+-- 
+2.40.1
+

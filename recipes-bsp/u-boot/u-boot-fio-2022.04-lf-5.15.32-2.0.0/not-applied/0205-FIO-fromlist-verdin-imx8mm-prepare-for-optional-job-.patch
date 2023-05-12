@@ -1,0 +1,41 @@
+From 1fc6282945e4edcae3eb53ad3653c05a17683ca5 Mon Sep 17 00:00:00 2001
+From: Marcel Ziswiler <marcel.ziswiler@toradex.com>
+Date: Wed, 18 May 2022 16:31:29 +0200
+Subject: [PATCH 205/233] [FIO fromlist] verdin-imx8mm: prepare for optional
+ job ring driver model
+
+Prepare for optional job ring driver model. Sec may be initialized based
+on the job ring information processed from the device tree.
+
+Upstream-Status: Submitted [https://lore.kernel.org/all/20220819051827.185560-3-marcel@ziswiler.com/]
+
+Signed-off-by: Marcel Ziswiler <marcel.ziswiler@toradex.com>
+(cherry picked from commit 10a4a54a488a1d4877b8387dc4a3a9b470fa4d11)
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+---
+ board/toradex/verdin-imx8mm/spl.c | 9 +++++++++
+ 1 file changed, 9 insertions(+)
+
+diff --git a/board/toradex/verdin-imx8mm/spl.c b/board/toradex/verdin-imx8mm/spl.c
+index f0361f93ea9..96fb3b08e32 100644
+--- a/board/toradex/verdin-imx8mm/spl.c
++++ b/board/toradex/verdin-imx8mm/spl.c
+@@ -56,6 +56,15 @@ void spl_dram_init(void)
+ 
+ void spl_board_init(void)
+ {
++	if (IS_ENABLED(CONFIG_FSL_CAAM)) {
++		struct udevice *dev;
++		int ret;
++
++		ret = uclass_get_device_by_driver(UCLASS_MISC, DM_DRIVER_GET(caam_jr), &dev);
++		if (ret)
++			printf("Failed to initialize %s: %d\n", dev->name, ret);
++	}
++
+ 	/* Serial download mode */
+ 	if (is_usb_boot()) {
+ 		puts("Back to ROM, SDP\n");
+-- 
+2.40.1
+

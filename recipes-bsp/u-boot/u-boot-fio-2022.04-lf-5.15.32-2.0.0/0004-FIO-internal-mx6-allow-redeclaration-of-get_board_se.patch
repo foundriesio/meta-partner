@@ -1,0 +1,36 @@
+From 0aad461653fdd5fc37458a020b17dab609889c7b Mon Sep 17 00:00:00 2001
+From: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+Date: Wed, 15 Sep 2021 18:18:35 +0300
+Subject: [PATCH 004/233] [FIO internal] mx6: allow redeclaration of
+ get_board_serial()
+
+Toradex boards have their own serial numbers stored in a config block.
+Let Toradex iMX6 boards redefine the get_board_serial() to
+fix compile-time error [1].
+
+[1]
+board/toradex/common/built-in.o: in function `get_board_serial':
+board/toradex/common/tdx-common.c:50: multiple definition of `get_board_serial'; \
+arch/arm/mach-imx/built-in.o:arch/arm/mach-imx/mx6/soc.c:754: first defined here
+
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+---
+ arch/arm/mach-imx/mx6/soc.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/arm/mach-imx/mx6/soc.c b/arch/arm/mach-imx/mx6/soc.c
+index 9bf16119c20..b243f6101a5 100644
+--- a/arch/arm/mach-imx/mx6/soc.c
++++ b/arch/arm/mach-imx/mx6/soc.c
+@@ -746,7 +746,7 @@ int board_postclk_init(void)
+ }
+ 
+ #ifdef CONFIG_SERIAL_TAG
+-void get_board_serial(struct tag_serialnr *serialnr)
++void __weak get_board_serial(struct tag_serialnr *serialnr)
+ {
+ 	struct ocotp_regs *ocotp = (struct ocotp_regs *)OCOTP_BASE_ADDR;
+ 	struct fuse_bank *bank = &ocotp->bank[0];
+-- 
+2.40.1
+

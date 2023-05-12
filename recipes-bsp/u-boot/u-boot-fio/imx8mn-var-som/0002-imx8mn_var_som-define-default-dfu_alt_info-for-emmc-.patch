@@ -1,0 +1,30 @@
+From baa7ca365dc9e60aad6550f214d640bfe5b59816 Mon Sep 17 00:00:00 2001
+From: Michael Scott <mike@foundries.io>
+Date: Sat, 6 May 2023 15:21:04 -0700
+Subject: [PATCH 2/7] imx8mn_var_som: define default dfu_alt_info for emmc
+ updates
+
+Define dfu_alt_info to allow updating SPL/imx-boot and u-boot.itb via
+DFU (which is also used by EFI capsule updates).
+
+Signed-off-by: Michael Scott <mike@foundries.io>
+---
+ include/configs/imx8mn_var_som.h | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/include/configs/imx8mn_var_som.h b/include/configs/imx8mn_var_som.h
+index d609bdafa22..59cc240880f 100644
+--- a/include/configs/imx8mn_var_som.h
++++ b/include/configs/imx8mn_var_som.h
+@@ -105,6 +105,8 @@
+ 	"fdt_high=0xffffffffffffffff\0" \
+ 	"boot_fdt=try\0" \
+ 	"ip_dyn=yes\0" \
++	"dfu_alt_info=mmc 2=imx-boot raw 0x0 0x300 mmcpart 1;" \
++		"u-boot-itb raw 0x300 0xD00 mmcpart 1\0" \
+ 	"fdt_file=undefined\0" \
+ 	"bootm_size=0x10000000\0" \
+ 	"initrd_addr=0x43800000\0" \
+-- 
+2.40.1
+

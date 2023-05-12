@@ -1,0 +1,50 @@
+From a7820d2fe99fb65a55d8fd32942345a2e0207b23 Mon Sep 17 00:00:00 2001
+From: Ricardo Salveti <ricardo@foundries.io>
+Date: Mon, 11 Oct 2021 16:40:03 -0300
+Subject: [PATCH 110/233] [FIO extras] imx: always define
+ CONFIG_SYS_MMC_ENV_DEV
+
+Commit 34ddce8d removed the CONFIG_ENV_IS_IN_MMC dependency for mmc_env,
+assuming it always needs to be available, even when there is no
+CONFIG_SYS_MMC_ENV_DEV defined by the board, causing build failures on a
+reduced board config (e.g. mfgtools).
+
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+---
+ arch/arm/mach-imx/imx8/cpu.c | 4 ++++
+ arch/arm/mach-imx/mmc_env.c  | 4 ++++
+ 2 files changed, 8 insertions(+)
+
+diff --git a/arch/arm/mach-imx/imx8/cpu.c b/arch/arm/mach-imx/imx8/cpu.c
+index 10fcada0cbe..79f58b463e5 100644
+--- a/arch/arm/mach-imx/imx8/cpu.c
++++ b/arch/arm/mach-imx/imx8/cpu.c
+@@ -421,6 +421,10 @@ void get_board_serial(struct tag_serialnr *serialnr)
+ }
+ #endif /*CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG*/
+ 
++#ifndef CONFIG_SYS_MMC_ENV_DEV
++#define CONFIG_SYS_MMC_ENV_DEV -1
++#endif
++
+ __weak int board_mmc_get_env_dev(int devno)
+ {
+ 	return devno;
+diff --git a/arch/arm/mach-imx/mmc_env.c b/arch/arm/mach-imx/mmc_env.c
+index 7012ae9d7bd..31954b86cd7 100644
+--- a/arch/arm/mach-imx/mmc_env.c
++++ b/arch/arm/mach-imx/mmc_env.c
+@@ -10,6 +10,10 @@
+ #include <asm/mach-imx/boot_mode.h>
+ #include <env.h>
+ 
++#ifndef CONFIG_SYS_MMC_ENV_DEV
++#define CONFIG_SYS_MMC_ENV_DEV -1
++#endif
++
+ __weak int board_mmc_get_env_dev(int devno)
+ {
+ 	return devno;
+-- 
+2.40.1
+

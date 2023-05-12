@@ -1,0 +1,45 @@
+From 49fd0d0437adb303aac6a566495d82f7722f74a0 Mon Sep 17 00:00:00 2001
+From: Ricardo Salveti <ricardo@foundries.io>
+Date: Wed, 26 Aug 2020 16:18:34 -0300
+Subject: [PATCH 020/233] [FIO internal] imx_env: set mfg to run fastboot by
+ default
+
+We don't support any other mfg boot mechanism other than fastboot, so
+jump to that by default instead of trying to load a custom kernel.
+
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+Co-developed-by: Michael Scott <mike@foundries.io>
+Signed-off-by: Michael Scott <mike@foundries.io>
+Co-developed-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+---
+ include/configs/imx_env.h | 12 ++----------
+ 1 file changed, 2 insertions(+), 10 deletions(-)
+
+diff --git a/include/configs/imx_env.h b/include/configs/imx_env.h
+index 2ca95826f08..35e68803d57 100644
+--- a/include/configs/imx_env.h
++++ b/include/configs/imx_env.h
+@@ -57,17 +57,9 @@
+ 		"rdinit=/linuxrc " \
+ 		"clk_ignore_unused "\
+ 		"\0" \
+-	"kboot="MFG_BOOT_CMD"\0"\
+ 	"bootcmd_mfg=run mfgtool_args;" \
+-        "if iminfo ${initrd_addr}; then " \
+-            "if test ${tee} = yes; then " \
+-                "bootm ${tee_addr} ${initrd_addr} ${fdt_addr}; " \
+-            "else " \
+-                MFG_BOOT_CMD "${loadaddr} ${initrd_addr} ${fdt_addr}; " \
+-            "fi; " \
+-        "else " \
+-		FASTBOOT_CMD  \
+-        "fi;\0" \
++	FASTBOOT_CMD \
++	"\0" \
+ 	MFG_NAND_FIT_PARTITION \
+ 
+ #endif
+-- 
+2.40.1
+

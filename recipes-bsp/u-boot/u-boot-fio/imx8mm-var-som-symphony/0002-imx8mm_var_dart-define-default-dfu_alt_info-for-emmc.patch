@@ -1,0 +1,30 @@
+From 3d6e9823a056e026f1617bdf203526e3eac1f0b7 Mon Sep 17 00:00:00 2001
+From: Michael Scott <mike@foundries.io>
+Date: Mon, 8 May 2023 16:35:39 -0700
+Subject: [PATCH 2/3] imx8mm_var_dart: define default dfu_alt_info for emmc
+ updates
+
+Define dfu_alt_info to allow updating SPL/imx-boot and u-boot.itb via
+DFU (which is also used by EFI capsule updates).
+
+Signed-off-by: Michael Scott <mike@foundries.io>
+---
+ include/configs/imx8mm_var_dart.h | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/include/configs/imx8mm_var_dart.h b/include/configs/imx8mm_var_dart.h
+index a69ad7a2aa3..440cdb0ee82 100644
+--- a/include/configs/imx8mm_var_dart.h
++++ b/include/configs/imx8mm_var_dart.h
+@@ -96,6 +96,8 @@
+ 	"fdt_high=0xffffffffffffffff\0"		\
+ 	"boot_fdt=try\0" \
+ 	"boot_fit=no\0" \
++	"dfu_alt_info=mmc 2=imx-boot raw 0x42 0x250 mmcpart 1;" \
++		"u-boot-itb raw 0x300 0xD00 mmcpart 1\0" \
+ 	"fdt_file=undefined\0" \
+ 	"ip_dyn=yes\0" \
+ 	"mmcdev="__stringify(CONFIG_SYS_MMC_ENV_DEV)"\0" \
+-- 
+2.40.1
+

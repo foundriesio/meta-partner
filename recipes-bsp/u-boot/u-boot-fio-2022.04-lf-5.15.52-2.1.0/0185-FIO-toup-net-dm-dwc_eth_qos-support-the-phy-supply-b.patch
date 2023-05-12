@@ -1,0 +1,80 @@
+From d076aff3cc226153cc197c4eb3f4cb83973da66b Mon Sep 17 00:00:00 2001
+From: Marcel Ziswiler <marcel.ziswiler@toradex.com>
+Date: Sun, 13 Dec 2020 22:34:23 +0100
+Subject: [PATCH 185/233] [FIO toup] net: dm: dwc_eth_qos: support the
+ phy-supply binding
+
+Configure the PHY regulator if defined by the "phy-supply" device tree
+phandle.
+
+Signed-off-by: Marcel Ziswiler <marcel.ziswiler@toradex.com>
+(cherry picked from commit 6b3515eea55985e02a1689a2137ca080b94ed551)
+(cherry picked from commit 58a2b1bd8ffefc1b283303e3426ece16844bf716)
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+---
+ drivers/net/dwc_eth_qos.c | 21 +++++++++++++++++++++
+ 1 file changed, 21 insertions(+)
+
+diff --git a/drivers/net/dwc_eth_qos.c b/drivers/net/dwc_eth_qos.c
+index ad48a131703..baea2a07997 100644
+--- a/drivers/net/dwc_eth_qos.c
++++ b/drivers/net/dwc_eth_qos.c
+@@ -42,6 +42,7 @@
+ #include <net.h>
+ #include <netdev.h>
+ #include <phy.h>
++#include <power/regulator.h>
+ #include <reset.h>
+ #include <wait_bit.h>
+ #include <asm/cache.h>
+@@ -310,6 +311,7 @@ struct eqos_priv {
+ 	struct clk clk_slave_bus;
+ 	struct mii_dev *mii;
+ 	struct phy_device *phy;
++	struct udevice *phy_supply;
+ 	ofnode phy_of_node;
+ 	u32 max_speed;
+ 	void *descs;
+@@ -1657,6 +1659,16 @@ static int eqos_probe_resources_core(struct udevice *dev)
+ 	eqos->config->ops->eqos_inval_buffer(eqos->rx_dma_buf,
+ 			EQOS_MAX_PACKET_SIZE * EQOS_DESCRIPTORS_RX);
+ 
++#ifdef CONFIG_DM_REGULATOR
++	if (eqos->phy_supply) {
++		ret = regulator_set_enable(eqos->phy_supply, true);
++		if (ret) {
++			printf("%s: Error enabling phy supply\n", dev->name);
++			goto err_free_rx_dma_buf;
++		}
++	}
++#endif
++
+ 	debug("%s: OK\n", __func__);
+ 	return 0;
+ 
+@@ -1678,6 +1690,11 @@ static int eqos_remove_resources_core(struct udevice *dev)
+ 
+ 	debug("%s(dev=%p):\n", __func__, dev);
+ 
++#ifdef CONFIG_DM_REGULATOR
++	if (eqos->phy_supply)
++		regulator_set_enable(eqos->phy_supply, false);
++#endif
++
+ 	free(eqos->rx_pkt);
+ 	free(eqos->rx_dma_buf);
+ 	free(eqos->tx_dma_buf);
+@@ -1982,6 +1999,10 @@ static int eqos_probe(struct udevice *dev)
+ 	eqos->dma_regs = (void *)(eqos->regs + EQOS_DMA_REGS_BASE);
+ 	eqos->tegra186_regs = (void *)(eqos->regs + EQOS_TEGRA186_REGS_BASE);
+ 
++#ifdef CONFIG_DM_REGULATOR
++	device_get_supply_regulator(dev, "phy-supply", &eqos->phy_supply);
++#endif
++
+ 	ret = eqos_probe_resources_core(dev);
+ 	if (ret < 0) {
+ 		pr_err("eqos_probe_resources_core() failed: %d", ret);
+-- 
+2.25.1
+

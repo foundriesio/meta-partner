@@ -1,0 +1,55 @@
+From e32ed8fa75b37da27d8b2a205842aaecb97c0f96 Mon Sep 17 00:00:00 2001
+From: Andrejs Cainikovs <andrejs.cainikovs@toradex.com>
+Date: Mon, 3 Oct 2022 14:34:19 +0200
+Subject: [PATCH 221/233] [FIO fromlist] arm: dts: verdin-imx8mp: enable caam
+ in SPL
+
+CAAM is initialized in SPL, so relevant device tree nodes needs to be
+updated.
+
+Upstream-Status: Submitted [https://lore.kernel.org/all/20221004110632.21045-2-andrejs.cainikovs@toradex.com/]
+
+Signed-off-by: Andrejs Cainikovs <andrejs.cainikovs@toradex.com>
+(cherry picked from commit ba2ef3f8a235de9c194f519d4ee5e78e5e61977f)
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+---
+ arch/arm/dts/imx8mp-verdin-u-boot.dtsi | 16 ++++++++++++++++
+ 1 file changed, 16 insertions(+)
+
+diff --git a/arch/arm/dts/imx8mp-verdin-u-boot.dtsi b/arch/arm/dts/imx8mp-verdin-u-boot.dtsi
+index 8aec33a463d..9cd0343b0ed 100644
+--- a/arch/arm/dts/imx8mp-verdin-u-boot.dtsi
++++ b/arch/arm/dts/imx8mp-verdin-u-boot.dtsi
+@@ -74,6 +74,10 @@
+ 
+ };
+ 
++&crypto {
++	u-boot,dm-spl;
++};
++
+ &eqos {
+ 	compatible = "fsl,imx-eqos";
+ 	/delete-property/ assigned-clocks;
+@@ -150,6 +154,18 @@
+ 	u-boot,dm-spl;
+ };
+ 
++&sec_jr0 {
++	u-boot,dm-spl;
++};
++
++&sec_jr1 {
++	u-boot,dm-spl;
++};
++
++&sec_jr2 {
++	u-boot,dm-spl;
++};
++
+ &uart3 {
+ 	u-boot,dm-spl;
+ };
+-- 
+2.40.1
+

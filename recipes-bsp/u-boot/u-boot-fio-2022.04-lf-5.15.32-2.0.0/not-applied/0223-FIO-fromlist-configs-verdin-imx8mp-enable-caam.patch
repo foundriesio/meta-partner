@@ -1,0 +1,28 @@
+From 258be720254497774150fb70bfe9b3156293ed77 Mon Sep 17 00:00:00 2001
+From: Andrejs Cainikovs <andrejs.cainikovs@toradex.com>
+Date: Mon, 3 Oct 2022 14:49:20 +0200
+Subject: [PATCH 223/233] [FIO fromlist] configs: verdin-imx8mp: enable caam
+
+This change enables Cryptographic Accelerator and Assurance Module.
+
+Upstream-Status: Submitted [https://lore.kernel.org/all/20221004110632.21045-4-andrejs.cainikovs@toradex.com/]
+
+Signed-off-by: Andrejs Cainikovs <andrejs.cainikovs@toradex.com>
+(cherry picked from commit 00f84bd784c4dc88947f440e4c7bf6117539c6f0)
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+---
+ configs/verdin-imx8mp_defconfig | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/configs/verdin-imx8mp_defconfig b/configs/verdin-imx8mp_defconfig
+index 389f23f86e2..6f3ab522f17 100644
+--- a/configs/verdin-imx8mp_defconfig
++++ b/configs/verdin-imx8mp_defconfig
+@@ -153,3 +153,4 @@ CONFIG_USB_HOST_ETHER=y
+ CONFIG_IMX_WATCHDOG=y
+ CONFIG_HEXDUMP=y
+ CONFIG_OF_LIBFDT_OVERLAY=y
++CONFIG_FSL_CAAM=y
+-- 
+2.40.1
+

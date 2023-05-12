@@ -1,0 +1,33 @@
+From b4d62dc03a19c7f58f45fb45151c16e4a94ed640 Mon Sep 17 00:00:00 2001
+From: Igor Opaniuk <igor.opaniuk@foundries.io>
+Date: Sat, 26 Nov 2022 18:42:27 +0200
+Subject: [PATCH 228/233] [FIO tosquash] imx8qm_mek: fix build issues for
+ CONFIG_MMCROOT
+
+Fix build issue, which is caused by appending a numeric constant to
+string literal. This fixes error:
+ note: in expansion of macro 'CONFIG_SYS_MMC_ENV_DEV'
+  289 | #define CONFIG_MMCROOT    "/dev/mmcblk" CONFIG_SYS_MMC_ENV_DEV "p2"
+      |                                               ^~~~~~~~~~~~~~~~~~~~~~
+
+Signed-off-by: Igor Opaniuk <igor.opaniuk@foundries.io>
+---
+ include/configs/imx8qm_mek.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/include/configs/imx8qm_mek.h b/include/configs/imx8qm_mek.h
+index 45425648bf5..c3aa8afa7a5 100644
+--- a/include/configs/imx8qm_mek.h
++++ b/include/configs/imx8qm_mek.h
+@@ -286,7 +286,7 @@
+ #endif
+ #endif
+ 
+-#define CONFIG_MMCROOT		"/dev/mmcblk" CONFIG_SYS_MMC_ENV_DEV "p2"
++#define CONFIG_MMCROOT		"/dev/mmcblk"__stringify(CONFIG_SYS_MMC_ENV_DEV)"p2"
+ 
+ #define CONFIG_SYS_FSL_USDHC_NUM	2
+ 
+-- 
+2.25.1
+

@@ -1,0 +1,80 @@
+From 4b0c7b3d323d60a2651dfc335693c762c16a2584 Mon Sep 17 00:00:00 2001
+From: Ricardo Salveti <ricardo@foundries.io>
+Date: Thu, 20 Aug 2020 18:24:52 -0300
+Subject: [PATCH 015/233] [FIO extras] fit: verify: abort if signature not
+ found and strict
+
+Prefer aborting the fit verification process when a signature node is
+not found by U-Boot and FIT SIGNATURE STRICT is enabled. This is a way
+to always force a proper signature verification via sig verify.
+
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+---
+ boot/image-fit-sig.c   | 23 +++++++++++++++++++----
+ tools/image-sig-host.c |  1 +
+ 2 files changed, 20 insertions(+), 4 deletions(-)
+
+diff --git a/boot/image-fit-sig.c b/boot/image-fit-sig.c
+index a461d591a0e..870650001a1 100644
+--- a/boot/image-fit-sig.c
++++ b/boot/image-fit-sig.c
+@@ -15,6 +15,7 @@ DECLARE_GLOBAL_DATA_PTR;
+ #endif /* !USE_HOSTCC*/
+ #include <fdt_region.h>
+ #include <image.h>
++#include <linux/kconfig.h>
+ #include <u-boot/rsa.h>
+ #include <u-boot/hash-checksum.h>
+ 
+@@ -196,8 +197,15 @@ int fit_image_verify_required_sigs(const void *fit, int image_noffset,
+ 	*no_sigsp = 1;
+ 	key_node = fdt_subnode_offset(key_blob, 0, FIT_SIG_NODENAME);
+ 	if (key_node < 0) {
+-		debug("%s: No signature node found: %s\n", __func__,
+-		      fdt_strerror(key_node));
++		if (IS_ENABLED(CONFIG_FIT_SIGNATURE_STRICT)) {
++			printf("%s: No signature node found: %s\n", __func__,
++			       fdt_strerror(key_node));
++			return -1;
++		} else {
++			debug("%s: No signature node found: %s\n", __func__,
++			      fdt_strerror(key_node));
++			return 0;
++		}
+ 		return 0;
+ 	}
+ 
+@@ -490,8 +498,15 @@ static int fit_config_verify_required_keys(const void *fit, int conf_noffset,
+ 	/* Work out what we need to verify */
+ 	key_node = fdt_subnode_offset(key_blob, 0, FIT_SIG_NODENAME);
+ 	if (key_node < 0) {
+-		debug("%s: No signature node found: %s\n", __func__,
+-		      fdt_strerror(key_node));
++		if (IS_ENABLED(CONFIG_FIT_SIGNATURE_STRICT)) {
++			printf("%s: No signature node found: %s\n", __func__,
++			       fdt_strerror(key_node));
++			return -1;
++		} else {
++			debug("%s: No signature node found: %s\n", __func__,
++			      fdt_strerror(key_node));
++			return 0;
++		}
+ 		return 0;
+ 	}
+ 
+diff --git a/tools/image-sig-host.c b/tools/image-sig-host.c
+index d0133aec4c8..5b82e654f6f 100644
+--- a/tools/image-sig-host.c
++++ b/tools/image-sig-host.c
+@@ -11,6 +11,7 @@
+ #include <u-boot/ecdsa.h>
+ #include <u-boot/rsa.h>
+ #include <u-boot/hash-checksum.h>
++#include <linux/kconfig.h>
+ 
+ struct checksum_algo checksum_algos[] = {
+ 	{
+-- 
+2.40.1
+

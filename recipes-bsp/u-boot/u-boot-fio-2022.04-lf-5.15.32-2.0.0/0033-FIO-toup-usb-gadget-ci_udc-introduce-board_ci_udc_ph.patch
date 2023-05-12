@@ -1,0 +1,61 @@
+From 8bb2d007b60d3d96ed2c20fe4963411087fa3644 Mon Sep 17 00:00:00 2001
+From: Igor Opaniuk <igor.opaniuk@toradex.com>
+Date: Wed, 30 Sep 2020 16:42:38 +0300
+Subject: [PATCH 033/233] [FIO toup] usb: gadget: ci_udc: introduce
+ board_ci_udc_phy_mode
+
+Introduce board_ci_udc_phy_mode() weak function which provides
+opportunity to re-define the logic of OTG role detection, and use
+board specific way of generation of USB cable states (for example,
+when USB ID pin is connected to a GPIO pin).
+
+Signed-off-by: Igor Opaniuk <igor.opaniuk@toradex.com>
+Co-developed-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+---
+ drivers/usb/gadget/ci_udc.c | 16 +++++++++++-----
+ 1 file changed, 11 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/usb/gadget/ci_udc.c b/drivers/usb/gadget/ci_udc.c
+index 2bae39347db..e3b976d69a6 100644
+--- a/drivers/usb/gadget/ci_udc.c
++++ b/drivers/usb/gadget/ci_udc.c
+@@ -1357,17 +1357,14 @@ static int ci_udc_otg_clk_init(struct udevice *dev,
+ 	return 0;
+ }
+ 
+-static int ci_udc_otg_phy_mode(struct udevice *dev)
++int __weak board_ci_udc_phy_mode(void *__iomem phy_base, int phy_off)
+ {
+-	struct ci_udc_priv_data *priv = dev_get_priv(dev);
+-
+ 	void *__iomem phy_ctrl, *__iomem phy_status;
+-	void *__iomem phy_base = (void *__iomem)devfdt_get_addr(&priv->otgdev);
+ 	u32 val;
+ 
+ 	if (is_mx6() || is_mx7ulp() || is_imx8() || is_imx8ulp()) {
+ 		phy_base = (void __iomem *)fdtdec_get_addr_size_auto_noparent(gd->fdt_blob,
+-							   priv->phy_off,
++							   phy_off,
+ 							   "reg", 0, NULL, false);
+ 		if ((fdt_addr_t)phy_base == FDT_ADDR_T_NONE)
+ 			return -EINVAL;
+@@ -1391,6 +1388,15 @@ static int ci_udc_otg_phy_mode(struct udevice *dev)
+ 	}
+ }
+ 
++
++static int ci_udc_otg_phy_mode(struct udevice *dev)
++{
++	struct ci_udc_priv_data *priv = dev_get_priv(dev);
++
++	void *__iomem phy_base = (void *__iomem)devfdt_get_addr(&priv->otgdev);
++	return board_ci_udc_phy_mode(phy_base, priv->phy_off);
++}
++
+ static int ci_udc_otg_ofdata_to_platdata(struct udevice *dev)
+ {
+ 	struct ci_udc_priv_data *priv = dev_get_priv(dev);
+-- 
+2.40.1
+

@@ -1,0 +1,57 @@
+From 0417679d1f8321978ec49c94d54cac462f94c39c Mon Sep 17 00:00:00 2001
+From: Philippe Schenker <philippe.schenker@toradex.com>
+Date: Wed, 25 May 2022 09:55:02 +0200
+Subject: [PATCH 193/233] [FIO fromtree] verdin-imx8mm, verdin-imx8mp: Fix
+ default systemd console output
+
+systemd prints its messages on the last console= statement that it finds
+in the kernel arguments. The current ordering sends the systemd messages
+to tty1, by default this is the display.
+
+Ensure that systemd sends its messages to the default UART, reorder the
+console= statements accordingly.
+
+Upstream-Status: Backport [a3f2dcf8f44445703a1919a5fa83b4328b244f92]
+
+Signed-off-by: Philippe Schenker <philippe.schenker@toradex.com>
+Reviewed-by: Stefano Babic <sbabic@denx.de>
+Acked-by: Marcel Ziswiler <marcel.ziswiler@toradex.com>
+Signed-off-by: Marcel Ziswiler <marcel.ziswiler@toradex.com>
+(cherry picked from commit b9f51c5e6f5b42945d35fa7c92125006589fc17c)
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+---
+ include/configs/verdin-imx8mm.h | 4 ++--
+ include/configs/verdin-imx8mp.h | 2 +-
+ 2 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/include/configs/verdin-imx8mm.h b/include/configs/verdin-imx8mm.h
+index 17583c0a6af..7ed1f13b716 100644
+--- a/include/configs/verdin-imx8mm.h
++++ b/include/configs/verdin-imx8mm.h
+@@ -64,8 +64,8 @@
+ 	"nfsboot=run netargs; dhcp ${loadaddr} ${boot_file}; " \
+ 		"tftp ${fdt_addr} verdin/${fdtfile}; " \
+ 		"booti ${loadaddr} - ${fdt_addr}\0" \
+-	"setup=setenv setupargs console=${console},${baudrate} " \
+-		"console=tty1 consoleblank=0 earlycon\0" \
++	"setup=setenv setupargs console=tty1 console=${console},${baudrate} " \
++		"consoleblank=0 earlycon\0" \
+ 	"update_uboot=askenv confirm Did you load flash.bin (y/N)?; " \
+ 		"if test \"$confirm\" = \"y\"; then " \
+ 		"setexpr blkcnt ${filesize} + 0x1ff && setexpr blkcnt " \
+diff --git a/include/configs/verdin-imx8mp.h b/include/configs/verdin-imx8mp.h
+index f8b4bf2df9b..299b09411e5 100644
+--- a/include/configs/verdin-imx8mp.h
++++ b/include/configs/verdin-imx8mp.h
+@@ -90,7 +90,7 @@
+ 	"nfsboot=run netargs; dhcp ${loadaddr} ${boot_file}; " \
+ 		"tftp ${fdt_addr} verdin/${fdtfile}; " \
+ 		"booti ${loadaddr} - ${fdt_addr}\0" \
+-	"setup=setenv setupargs console=${console},${baudrate} console=tty1 " \
++	"setup=setenv setupargs console=tty1 console=${console},${baudrate} " \
+ 		"consoleblank=0 earlycon\0" \
+ 	"update_uboot=askenv confirm Did you load flash.bin (y/N)?; " \
+ 		"if test \"$confirm\" = \"y\"; then " \
+-- 
+2.40.1
+

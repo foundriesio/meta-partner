@@ -1,0 +1,152 @@
+From ecf676ab8635c06f5623aceec2151cd3ebf36e62 Mon Sep 17 00:00:00 2001
+From: Oleksandr Suvorov <oleksandr.suvorov@toradex.com>
+Date: Wed, 13 Apr 2022 11:33:29 +0200
+Subject: [PATCH 173/233] [FIO fromtree] configs: toradex: enable missing fit
+ options
+
+commit 877347b5589bb9beac381d5f69413d361181cc7f upstream.
+
+Add missing support of FIT-images and enable a verbosity for
+this feature.
+
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@toradex.com>
+Signed-off-by: Marcel Ziswiler <marcel.ziswiler@toradex.com>
+(cherry picked from commit 139728968fba852a97827638c064c83d76871d07)
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+---
+ configs/apalis-imx8_defconfig          | 1 +
+ configs/apalis-tk1_defconfig           | 1 +
+ configs/apalis_imx6_defconfig          | 1 +
+ configs/colibri-imx6ull-emmc_defconfig | 1 +
+ configs/colibri-imx6ull_defconfig      | 1 +
+ configs/colibri-imx8x_defconfig        | 1 +
+ configs/colibri_imx6_defconfig         | 1 +
+ configs/colibri_imx7_defconfig         | 2 ++
+ configs/colibri_imx7_emmc_defconfig    | 1 +
+ configs/verdin-imx8mm_defconfig        | 1 +
+ 10 files changed, 11 insertions(+)
+
+diff --git a/configs/apalis-imx8_defconfig b/configs/apalis-imx8_defconfig
+index f19aa97acd5..36e0b797cb5 100644
+--- a/configs/apalis-imx8_defconfig
++++ b/configs/apalis-imx8_defconfig
+@@ -27,6 +27,7 @@ CONFIG_DISTRO_DEFAULTS=y
+ CONFIG_REMAKE_ELF=y
+ CONFIG_SYS_LOAD_ADDR=0x80280000
+ CONFIG_FIT=y
++CONFIG_FIT_VERBOSE=y
+ CONFIG_OF_SYSTEM_SETUP=y
+ CONFIG_LOG=y
+ # CONFIG_DISPLAY_BOARDINFO is not set
+diff --git a/configs/apalis-tk1_defconfig b/configs/apalis-tk1_defconfig
+index 9645c2f2108..e098b1171ee 100644
+--- a/configs/apalis-tk1_defconfig
++++ b/configs/apalis-tk1_defconfig
+@@ -12,6 +12,7 @@ CONFIG_TEGRA124=y
+ CONFIG_TARGET_APALIS_TK1=y
+ CONFIG_SYS_LOAD_ADDR=0x81000000
+ CONFIG_FIT=y
++CONFIG_FIT_VERBOSE=y
+ CONFIG_OF_SYSTEM_SETUP=y
+ CONFIG_BOOTDELAY=1
+ CONFIG_BOOTCOMMAND="setenv fdtfile ${soc}-${fdt_module}-${fdt_board}.dtb && run distro_bootcmd"
+diff --git a/configs/apalis_imx6_defconfig b/configs/apalis_imx6_defconfig
+index bd71e4c32aa..13fdfca923e 100644
+--- a/configs/apalis_imx6_defconfig
++++ b/configs/apalis_imx6_defconfig
+@@ -26,6 +26,7 @@ CONFIG_CMD_HDMIDETECT=y
+ CONFIG_AHCI=y
+ CONFIG_DISTRO_DEFAULTS=y
+ CONFIG_FIT=y
++CONFIG_FIT_VERBOSE=y
+ CONFIG_BOOTDELAY=1
+ CONFIG_BOOTCOMMAND="run distro_bootcmd; usb start; setenv stdout serial,vidconsole; setenv stdin serial,usbkbd"
+ CONFIG_SYS_CONSOLE_OVERWRITE_ROUTINE=y
+diff --git a/configs/colibri-imx6ull-emmc_defconfig b/configs/colibri-imx6ull-emmc_defconfig
+index e7dba8ec6d1..c8bd4ad432b 100644
+--- a/configs/colibri-imx6ull-emmc_defconfig
++++ b/configs/colibri-imx6ull-emmc_defconfig
+@@ -13,6 +13,7 @@ CONFIG_TARGET_COLIBRI_IMX6ULL_EMMC=y
+ CONFIG_DEFAULT_DEVICE_TREE="imx6ull-colibri-emmc"
+ CONFIG_DISTRO_DEFAULTS=y
+ CONFIG_FIT=y
++CONFIG_FIT_VERBOSE=y
+ CONFIG_BOOTDELAY=1
+ CONFIG_USE_PREBOOT=y
+ CONFIG_PREBOOT="setenv fdtfile imx6ull-colibri${variant}-${fdt_board}.dtb"
+diff --git a/configs/colibri-imx6ull_defconfig b/configs/colibri-imx6ull_defconfig
+index 2b9d318f709..a50c17881e8 100644
+--- a/configs/colibri-imx6ull_defconfig
++++ b/configs/colibri-imx6ull_defconfig
+@@ -14,6 +14,7 @@ CONFIG_TARGET_COLIBRI_IMX6ULL_NAND=y
+ CONFIG_DEFAULT_DEVICE_TREE="imx6ull-colibri"
+ CONFIG_DISTRO_DEFAULTS=y
+ CONFIG_FIT=y
++CONFIG_FIT_VERBOSE=y
+ CONFIG_BOOTDELAY=1
+ CONFIG_BOOTCOMMAND="run ubiboot || run distro_bootcmd;"
+ CONFIG_USE_PREBOOT=y
+diff --git a/configs/colibri-imx8x_defconfig b/configs/colibri-imx8x_defconfig
+index 04f7f5b0fde..645ddcef536 100644
+--- a/configs/colibri-imx8x_defconfig
++++ b/configs/colibri-imx8x_defconfig
+@@ -15,6 +15,7 @@ CONFIG_DISTRO_DEFAULTS=y
+ CONFIG_REMAKE_ELF=y
+ CONFIG_SYS_LOAD_ADDR=0x80280000
+ CONFIG_FIT=y
++CONFIG_FIT_VERBOSE=y
+ CONFIG_LOG=y
+ # CONFIG_DISPLAY_BOARDINFO is not set
+ CONFIG_DISPLAY_BOARDINFO_LATE=y
+diff --git a/configs/colibri_imx6_defconfig b/configs/colibri_imx6_defconfig
+index 43c3b04e312..e5671773f20 100644
+--- a/configs/colibri_imx6_defconfig
++++ b/configs/colibri_imx6_defconfig
+@@ -25,6 +25,7 @@ CONFIG_SPL=y
+ CONFIG_CMD_HDMIDETECT=y
+ CONFIG_DISTRO_DEFAULTS=y
+ CONFIG_FIT=y
++CONFIG_FIT_VERBOSE=y
+ CONFIG_BOOTDELAY=1
+ CONFIG_BOOTCOMMAND="run distro_bootcmd; usb start; setenv stdout serial,vidconsole; setenv stdin serial,usbkbd"
+ CONFIG_SYS_CONSOLE_OVERWRITE_ROUTINE=y
+diff --git a/configs/colibri_imx7_defconfig b/configs/colibri_imx7_defconfig
+index 52518128e6c..a81f345bad6 100644
+--- a/configs/colibri_imx7_defconfig
++++ b/configs/colibri_imx7_defconfig
+@@ -13,6 +13,8 @@ CONFIG_IMX_RDC=y
+ CONFIG_IMX_BOOTAUX=y
+ CONFIG_IMX_HAB=y
+ CONFIG_DISTRO_DEFAULTS=y
++CONFIG_FIT=y
++CONFIG_FIT_VERBOSE=y
+ CONFIG_BOOTDELAY=1
+ CONFIG_BOOTCOMMAND="run ubiboot ; echo ; echo ubiboot failed ; run distro_bootcmd;"
+ CONFIG_USE_PREBOOT=y
+diff --git a/configs/colibri_imx7_emmc_defconfig b/configs/colibri_imx7_emmc_defconfig
+index e22278a7bcf..c69be9110c8 100644
+--- a/configs/colibri_imx7_emmc_defconfig
++++ b/configs/colibri_imx7_emmc_defconfig
+@@ -15,6 +15,7 @@ CONFIG_IMX_BOOTAUX=y
+ CONFIG_IMX_HAB=y
+ CONFIG_DISTRO_DEFAULTS=y
+ CONFIG_FIT=y
++CONFIG_FIT_VERBOSE=y
+ CONFIG_BOOTDELAY=1
+ CONFIG_USE_PREBOOT=y
+ CONFIG_PREBOOT="setenv fdtfile ${soc}-colibri-emmc-${fdt_board}.dtb"
+diff --git a/configs/verdin-imx8mm_defconfig b/configs/verdin-imx8mm_defconfig
+index f2da12e92f6..731fb3dccb7 100644
+--- a/configs/verdin-imx8mm_defconfig
++++ b/configs/verdin-imx8mm_defconfig
+@@ -22,6 +22,7 @@ CONFIG_DISTRO_DEFAULTS=y
+ CONFIG_SYS_LOAD_ADDR=0x40480000
+ CONFIG_FIT=y
+ CONFIG_FIT_EXTERNAL_OFFSET=0x3000
++CONFIG_FIT_VERBOSE=y
+ CONFIG_SPL_LOAD_FIT=y
+ # CONFIG_USE_SPL_FIT_GENERATOR is not set
+ CONFIG_OF_SYSTEM_SETUP=y
+-- 
+2.25.1
+

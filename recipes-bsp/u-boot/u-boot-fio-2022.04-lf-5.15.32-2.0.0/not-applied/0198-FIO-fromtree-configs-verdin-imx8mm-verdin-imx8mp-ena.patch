@@ -1,0 +1,46 @@
+From 3605db447f588da71afba01103d649359a5b4040 Mon Sep 17 00:00:00 2001
+From: Marcel Ziswiler <marcel.ziswiler@toradex.com>
+Date: Fri, 8 Apr 2022 10:06:57 +0200
+Subject: [PATCH 198/233] [FIO fromtree] configs: verdin-imx8mm: verdin-imx8mp:
+ enable dm serial
+
+Enable driver model for serial.
+
+Upstream-Status: Backport [4551e1898769a618510feb3b524cd56645208d78]
+
+Signed-off-by: Marcel Ziswiler <marcel.ziswiler@toradex.com>
+(cherry picked from commit 4551e1898769a618510feb3b524cd56645208d78)
+(cherry picked from commit 220322b5497702d18a8609035a8de640ac9f8465)
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+---
+ configs/verdin-imx8mm_defconfig | 1 +
+ configs/verdin-imx8mp_defconfig | 1 +
+ 2 files changed, 2 insertions(+)
+
+diff --git a/configs/verdin-imx8mm_defconfig b/configs/verdin-imx8mm_defconfig
+index f723121ae1c..aa89738b44a 100644
+--- a/configs/verdin-imx8mm_defconfig
++++ b/configs/verdin-imx8mm_defconfig
+@@ -98,6 +98,7 @@ CONFIG_DM_PMIC_PFUZE100=y
+ CONFIG_DM_REGULATOR=y
+ CONFIG_DM_REGULATOR_FIXED=y
+ CONFIG_DM_REGULATOR_GPIO=y
++CONFIG_DM_SERIAL=y
+ CONFIG_MXC_UART=y
+ CONFIG_SYSRESET=y
+ CONFIG_SPL_SYSRESET=y
+diff --git a/configs/verdin-imx8mp_defconfig b/configs/verdin-imx8mp_defconfig
+index 2bcdbc17e3e..50729d0be6d 100644
+--- a/configs/verdin-imx8mp_defconfig
++++ b/configs/verdin-imx8mp_defconfig
+@@ -120,6 +120,7 @@ CONFIG_DM_REGULATOR=y
+ CONFIG_DM_REGULATOR_FIXED=y
+ CONFIG_DM_REGULATOR_GPIO=y
+ CONFIG_SPL_POWER_I2C=y
++CONFIG_DM_SERIAL=y
+ CONFIG_MXC_UART=y
+ CONFIG_SYSRESET=y
+ CONFIG_SPL_SYSRESET=y
+-- 
+2.40.1
+

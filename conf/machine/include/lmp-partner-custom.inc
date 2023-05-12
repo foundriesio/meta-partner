@@ -1,41 +1,50 @@
 # LMP partner specific customizations (either replace or extend options as defined by meta-lmp)
 
-# TODO: upstream to meta-lmp
-# i.MX8M Nano settings
-UBOOT_SIGN_ENABLE_sota_mx8mn = "1"
-IMX_DEFAULT_BOOTLOADER_mx8mn ?= "u-boot-fio"
-UBOOT_DTB_LOADADDRESS_mx8mn = "0x43000000"
-PREFERRED_PROVIDER_virtual/trusted-firmware-a_mx8mn ?= "imx-atf"
-EXTRA_IMAGEDEPENDS_append_mx8mn = "virtual/trusted-firmware-a"
-UBOOT_CLASSES_mx8mn = "uboot-fitimage"
-ATF_BINARY_mx8mn = "arm-trusted-firmware.bin"
-UBOOT_CONFIG_mx8mn = ""
-LMP_BOOT_FIRMWARE_FILES_mx8mn = "imx-boot u-boot.itb"
-IMAGE_BOOT_FILES_mx8mn = "imx-boot u-boot.itb ${KERNEL_IMAGETYPE} ${@make_dtb_boot_files(d)} boot.scr uEnv.txt"
-IMAGE_BOOT_FILES_sota_mx8mn = "boot.itb"
-WKS_FILE_DEPENDS_append_mx8mn = " u-boot-default-script"
-PREFERRED_PROVIDER_u-boot-default-script_mx8mn = "u-boot-base-scr"
-PREFERRED_PROVIDER_u-boot-default-script_sota_mx8mn = "u-boot-ostree-scr-fit"
-KERNEL_IMAGETYPE_sota_mx8mn = "fitImage"
-KERNEL_CLASSES_sota_mx8mn = " kernel-lmp-fitimage "
-## iMX8: Use latest NXP BSP downstream kernel
-PREFERRED_PROVIDER_virtual/kernel_mx8mn ?= "linux-lmp-fslc-imx"
-MACHINE_FIRMWARE_mx8mn = "linux-firmware-imx-sdma-imx7d"
-WKS_FILE_sota_mx8mn = "sdimage-imx8-spl-sota.wks.in"
-IMXBOOT_TARGETS_mx8mn = "flash_evk_spl"
+# TODO: nothing seems to provide this
+MACHINE_EXTRA_RDEPENDS:remove = " \
+        bluealsa \
+"
 
-# Variscite settings
-BOOTSCR_LOAD_ADDR_mx8m-var = "0x44800000"
-PREFERRED_PROVIDER_virtual/dtb_mx8m-var = "lmp-device-tree"
-SOTA_CLIENT_FEATURES_append_mx8m-var = " ubootenv"
-KERNEL_MODULE_AUTOLOAD_mx8m-var = "i2c-dev"
+# Mask missing / broken recipes
+BBMASK += " \
+    /meta-variscite-bsp/recipes-bsp/imx-mkimage/imx-boot_1.0.bbappend \
+    /meta-variscite-bsp/recipes-connectivity/bluealsa/bluealsa_git.bbappend \
+    /meta-variscite-bsp/recipes-core/systemd/systemd_%.bbappend \
+    /meta-variscite-bsp/recipes-libraries/arm-compute-library/arm-compute-library_22.05.bbappend \
+"
 
-# iMX8M Mini Var DART/Symphony
-OSTREE_KERNEL_ARGS_imx8mm-var-som-symphony = "console=tty1 console=ttymxc3,115200 earlycon=ec_imx6q,0x30a60000,115200 root=/dev/mmcblk2p2 rootfstype=ext4"
-UBOOT_MACHINE_imx8mm-var-som-symphony = "imx8mm_var_dart_defconfig"
-IMAGE_BOOT_FILES_imx8mm-var-som-symphony = "imx-boot u-boot.itb ${KERNEL_IMAGETYPE} boot.scr uEnv.txt devicetree/*"
+# General Variscite settings
+PREFERRED_PROVIDER_virtual/bootloader:mx8m-var ?= "u-boot-fio"
+PREFERRED_PROVIDER_u-boot:mx8m-var ?= "u-boot-fio"
+PREFERRED_PROVIDER_virtual/kernel:mx8m-var = "linux-lmp-fslc-imx"
+BOOTSCR_LOAD_ADDR:mx8m-var = "0x44800000"
+SOTA_CLIENT_FEATURES:append:mx8m-var = " ubootenv"
+KERNEL_MODULE_AUTOLOAD:mx8m-var = "i2c-dev"
 
-# iMX8M Nano Var Symphony
-OSTREE_KERNEL_ARGS_imx8mn-var-som = "console=tty1 console=ttymxc3,115200 earlycon=ec_imx6q,0x30a60000,115200 root=/dev/mmcblk2p2 rootfstype=ext4"
-UBOOT_MACHINE_imx8mn-var-som = "imx8mn_var_som_defconfig"
-IMAGE_BOOT_FILES_append_lmp-base_imx8mn-var-som = " devicetree/variscite_imx8mn-var-som-symphony.dtb;imx8mn-var-som-symphony.dtb"
+# VAR-SOM-MX8M-MINI (DDR4)
+OSTREE_KERNEL_ARGS:imx8mm-var-som-symphony = "console=tty1 console=ttymxc3,115200 earlycon=ec_imx6q,0x30a60000,115200 root=/dev/mmcblk2p2 rootfstype=ext4"
+UBOOT_MACHINE:imx8mm-var-som-symphony = "imx8mm_var_dart_defconfig"
+UBOOT_MAKE_TARGET:imx8mm-var-som-symphony = ""
+OPTEE_BIN_EXT:imx8mm-var-som-symphony = "8mm"
+IMXBOOT_TARGETS:imx8mm-var-som-symphony = "flash_evk_spl_ddr4"
+MACHINE_FEATURES:append:imx8mm-var-som-symphony = " optee bcm4339 bcm43430"
+ATF_BOOT_UART_BASE:imx8mm-var-som-symphony = "0x30a60000"
+
+# VAR-SOM-MX8M-NANO
+OSTREE_KERNEL_ARGS:fio-imx8mn-var-som = "console=tty1 console=ttymxc3,115200 earlycon=ec_imx6q,0x30a60000,115200 root=/dev/mmcblk2p2 rootfstype=ext4"
+UBOOT_MACHINE:fio-imx8mn-var-som = "imx8mn_var_som_defconfig"
+UBOOT_MAKE_TARGET:fio-imx8mn-var-som = ""
+OPTEE_BIN_EXT:fio-imx8mn-var-som = "8mn"
+IMXBOOT_TARGETS:fio-imx8mn-var-som ?= "flash_evk_spl_ddr4"
+MACHINE_FEATURES:append:fio-imx8mn-var-som = " optee bcm4339 bcm43430"
+ATF_BOOT_UART_BASE:fio-imx8mn-var-som = "0x30a60000"
+TEE_LOAD_ADDR:fio-imx8mn-var-som ?= "0x56000000"
+
+# VAR-SOM-MX8M-PLUS
+OSTREE_KERNEL_ARGS:fio-imx8mp-var-som = "console=tty1 console=ttymxc1,115200 earlycon=ec_imx6q,0x30890000,115200 root=/dev/mmcblk2p2 rootfstype=ext4"
+UBOOT_MACHINE:fio-imx8mp-var-som = "imx8mp_var_dart_defconfig"
+UBOOT_MAKE_TARGET:fio-imx8mp-var-som = ""
+OPTEE_BIN_EXT:fio-imx8mp-var-som = "8mp"
+IMXBOOT_TARGETS:fio-imx8mp-var-som ?= "flash_evk_spl"
+MACHINE_FEATURES:append:fio-imx8mp-var-som = " optee bcm4339 bcm43430"
+TEE_LOAD_ADDR:fio-imx8mp-var-som ?= "0x56000000"

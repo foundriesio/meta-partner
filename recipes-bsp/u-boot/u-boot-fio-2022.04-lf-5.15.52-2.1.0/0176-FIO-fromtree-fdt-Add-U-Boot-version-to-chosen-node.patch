@@ -1,0 +1,51 @@
+From 6e386c18ae862727734b4cf80f0c8965cfdfc91c Mon Sep 17 00:00:00 2001
+From: Francesco Dolcini <francesco.dolcini@toradex.com>
+Date: Thu, 19 May 2022 16:22:26 +0200
+Subject: [PATCH 176/233] [FIO fromtree] fdt: Add U-Boot version to chosen node
+
+commit 622ecee93a604c017aca23906c5cc903b4002b78 upstream.
+
+Add a new device tree property "u-boot,version" in the chosen node to
+pass the U-Boot version to the operating system.
+This can be useful to implement a firmware upgrade procedure from the
+operating system.
+
+Signed-off-by: Francesco Dolcini <francesco.dolcini@toradex.com>
+Reviewed-by: Tom Rini <trini@konsulko.com>
+(cherry picked from commit e8c43103b6df581cdd24a0b97ccfed99b30436ef)
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+---
+ common/fdt_support.c | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
+
+diff --git a/common/fdt_support.c b/common/fdt_support.c
+index ea18ea3f045..f08915c2c66 100644
+--- a/common/fdt_support.c
++++ b/common/fdt_support.c
+@@ -19,6 +19,7 @@
+ #include <fdt_support.h>
+ #include <exports.h>
+ #include <fdtdec.h>
++#include <version.h>
+ 
+ /**
+  * fdt_getprop_u32_default_node - Return a node's property or a default
+@@ -305,6 +306,15 @@ int fdt_chosen(void *fdt)
+ 		}
+ 	}
+ 
++	/* add u-boot version */
++	err = fdt_setprop(fdt, nodeoffset, "u-boot,version", PLAIN_VERSION,
++			  strlen(PLAIN_VERSION) + 1);
++	if (err < 0) {
++		printf("WARNING: could not set u-boot,version %s.\n",
++		       fdt_strerror(err));
++		return err;
++	}
++
+ 	return fdt_fixup_stdout(fdt, nodeoffset);
+ }
+ 
+-- 
+2.25.1
+
