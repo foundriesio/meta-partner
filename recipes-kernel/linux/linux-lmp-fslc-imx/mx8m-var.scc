@@ -1,0 +1,7 @@
+include cfg/dmaengine.scc
+include features/tee/tee.scc
+
+# Exclude x86/ACPI features
+include cfg/non-x86.cfg
+
+kconf hardware mx8m-var.cfg

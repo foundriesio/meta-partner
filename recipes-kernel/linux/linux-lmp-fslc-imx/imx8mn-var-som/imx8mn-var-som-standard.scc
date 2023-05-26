@@ -4,4 +4,4 @@ define KTYPE standard
 
 include ktypes/standard/standard.scc
 
-include imx8mn-var-som.scc
+include mx8m-var.scc

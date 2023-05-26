@@ -13,21 +13,20 @@ KERNEL_BRANCH:imx8mp-var-dart = "lf-5.15.y_var01"
 SRCREV_machine:imx8mp-var-dart = "289a927366f57435d24b41dc641eaeffb1e0de80"
 LINUX_VERSION:imx8mp-var-dart = "5.15.71"
 
+SRC_URI:append:mx8m-var = " \
+        file://mx8m-var.cfg \
+        file://mx8m-var.scc   \
+"
+
 SRC_URI:append:imx8mm-var-som-symphony = " \
-        file://imx8mm_var_som_symphony.cfg \
-        file://imx8mm_var_som_symphony.scc   \
         file://imx8mm_var_som_symphony-standard.scc \
 "
 
 SRC_URI:append:imx8mn-var-som = " \
-        file://imx8mn-var-som.cfg \
-        file://imx8mn-var-som.scc   \
         file://imx8mn-var-som-standard.scc \
 "
 
 SRC_URI:append:imx8mp-var-dart = " \
-        file://imx8mp-var-dart.cfg \
-        file://imx8mp-var-dart.scc   \
         file://imx8mp-var-dart-standard.scc \
 "
 

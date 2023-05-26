@@ -4,4 +4,4 @@ define KTYPE standard
 
 include ktypes/standard/standard.scc
 
-include imx8mp-var-dart.scc
+include mx8m-var.scc
