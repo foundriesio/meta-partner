@@ -19,8 +19,8 @@ SRC_URI:append:mx8m-var = " \
         file://mx8m-var-standard.scc   \
 "
 
-SRC_URI:append:imx8mm-var-som-symphony = " \
-        file://imx8mm_var_som_symphony-standard.scc \
+SRC_URI:append:imx8mm-var-dart = " \
+        file://imx8mm-var-dart-standard.scc \
 "
 
 SRC_URI:append:imx8mn-var-som = " \

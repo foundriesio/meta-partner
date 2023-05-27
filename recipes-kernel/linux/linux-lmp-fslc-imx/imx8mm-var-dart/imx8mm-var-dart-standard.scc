@@ -1,4 +1,4 @@
-define KMACHINE imx8mm-var-som-symphony
+define KMACHINE imx8mm-var-dart
 define KARCH aarch64
 define KTYPE standard
 
