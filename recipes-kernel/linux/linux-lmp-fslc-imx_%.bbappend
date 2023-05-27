@@ -16,6 +16,7 @@ LINUX_VERSION:imx8mp-var-dart = "5.15.71"
 SRC_URI:append:mx8m-var = " \
         file://mx8m-var.cfg \
         file://mx8m-var.scc   \
+        file://mx8m-var-standard.scc   \
 "
 
 SRC_URI:append:imx8mm-var-som-symphony = " \
