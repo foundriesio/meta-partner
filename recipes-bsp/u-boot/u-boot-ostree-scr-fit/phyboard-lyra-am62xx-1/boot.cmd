@@ -11,7 +11,7 @@ setenv bootcmd_load_f 'ext4load ${devtype} ${devnum}:2 ${loadaddr} "/boot"${kern
 setenv bootcmd_run 'bootm ${loadaddr}#conf-ti_${fdtfile}'
 setenv bootcmd_rollbackenv 'setenv kernel_image ${kernel_image2}; setenv bootargs ${bootargs2}'
 setenv bootcmd_set_rollback 'if test ! "${rollback}" = "1"; then setenv rollback 1; setenv upgrade_available 0; saveenv; fi'
-setenv bootostree 'run bootcmd_load_f; run findfdt; run bootcmd_run'
+setenv bootostree 'run bootcmd_load_f; run bootcmd_run'
 setenv altbootcmd 'run bootcmd_otenv; run bootcmd_set_rollback; if test -n "${kernel_image2}"; then run bootcmd_rollbackenv; fi; run bootostree; reset'
 
 if test ! -e ${devtype} ${devnum}:1 uboot.env; then saveenv; fi
