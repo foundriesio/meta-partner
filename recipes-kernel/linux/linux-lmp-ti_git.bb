@@ -2,9 +2,9 @@ FILESEXTRAPATHS:prepend := "${THISDIR}/${PN}:"
 
 include recipes-kernel/linux/kmeta-linux-lmp-5.10.y.inc
 
-LINUX_VERSION ?= "5.10.153"
-KBRANCH = "v5.10.153-phy"
-SRCREV_machine = "b4b038f737ecead2ab766e0efd551a8b3eb6c00f"
+LINUX_VERSION ?= "5.10.158"
+KBRANCH = "v5.10.158-phy"
+SRCREV_machine = "03a24981623edfac65342dd2ceec2a12cdf66a7e"
 SRCREV_meta = "${KERNEL_META_COMMIT}"
 
 LIC_FILES_CHKSUM = "file://COPYING;md5=6bc538ed5bd9a7fc9398086aedcd7e46"
@@ -36,6 +36,12 @@ SRC_URI:append:phyboard-lyra-am62xx-1 = " \
     file://phyboard-lyra-am62xx-1-standard.scc \
     file://phyboard-lyra-am62xx-1.cfg \
 "
+
+# Special configuration for remoteproc/rpmsg IPC modules
+module_conf_rpmsg_client_sample = "blacklist rpmsg_client_sample"
+module_conf_ti_k3_r5_remoteproc = "softdep ti_k3_r5_remoteproc pre: virtio_rpmsg_bus"
+module_conf_ti_k3_dsp_remoteproc = "softdep ti_k3_dsp_remoteproc pre: virtio_rpmsg_bus"
+KERNEL_MODULE_PROBECONF += "rpmsg_client_sample ti_k3_r5_remoteproc ti_k3_dsp_remoteproc"
 
 KMETA = "kernel-meta"
 
