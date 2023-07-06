@@ -1,0 +1,35 @@
+From 57a29d901c11df089364f38ccc21b41117cfb9f3 Mon Sep 17 00:00:00 2001
+From: Igor Opaniuk <igor.opaniuk@foundries.io>
+Date: Sat, 26 Nov 2022 19:14:00 +0200
+Subject: [PATCH 230/233] [FIO internal] ARM: dts: fsl-imx8qm-apalis-u-boot:
+ add optee node
+
+Add optee firmware node with rpmb-dev pointing to eMMC.
+
+Signed-off-by: Igor Opaniuk <igor.opaniuk@foundries.io>
+---
+ arch/arm/dts/fsl-imx8qm-apalis-u-boot.dtsi | 8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+diff --git a/arch/arm/dts/fsl-imx8qm-apalis-u-boot.dtsi b/arch/arm/dts/fsl-imx8qm-apalis-u-boot.dtsi
+index 770dd7dbdb9..dfa2e1a48c4 100644
+--- a/arch/arm/dts/fsl-imx8qm-apalis-u-boot.dtsi
++++ b/arch/arm/dts/fsl-imx8qm-apalis-u-boot.dtsi
+@@ -22,6 +22,14 @@
+ 		status = "okay";
+ 		u-boot,dm-spl;
+ 	};
++
++	firmware {
++		optee {
++			compatible = "linaro,optee-tz";
++			method = "smc";
++			rpmb-dev = <&usdhc1>;
++		};
++	};
+ };
+ 
+ &{/imx8qm-pm} {
+-- 
+2.25.1
+

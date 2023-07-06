@@ -1,0 +1,48 @@
+From 3f87747ea1e92dfcef6c7bb3d3ffb913164b2843 Mon Sep 17 00:00:00 2001
+From: Michael Scott <mike@foundries.io>
+Date: Sun, 24 Jul 2022 18:22:00 +0300
+Subject: [PATCH 103/233] [FIO toup] apalis-imx8: sync config with Kconfig
+ defaults
+
+Update the apalis-imx8 defconfig for new Kconfig changes
+
+Signed-off-by: Michael Scott <mike@foundries.io>
+---
+ configs/apalis-imx8_defconfig | 14 ++------------
+ 1 file changed, 2 insertions(+), 12 deletions(-)
+
+diff --git a/configs/apalis-imx8_defconfig b/configs/apalis-imx8_defconfig
+index 79a50fa8863..c62059abf3c 100644
+--- a/configs/apalis-imx8_defconfig
++++ b/configs/apalis-imx8_defconfig
+@@ -20,9 +20,9 @@ CONFIG_DEFAULT_DEVICE_TREE="fsl-imx8qm-apalis"
+ CONFIG_BOOTAUX_RESERVED_MEM_BASE=0x88000000
+ CONFIG_BOOTAUX_RESERVED_MEM_SIZE=0x08000000
+ CONFIG_TARGET_APALIS_IMX8=y
+-CONFIG_SPL_MMC_SUPPORT=y
+-CONFIG_SPL_SERIAL_SUPPORT=y
+-CONFIG_SPL_DRIVERS_MISC_SUPPORT=y
++CONFIG_SPL_MMC=y
++CONFIG_SPL_SERIAL=y
++CONFIG_SPL_DRIVERS_MISC=y
+ CONFIG_SPL=y
+ CONFIG_IMX_SNVS_SEC_SC=y
+ CONFIG_IMX_BOOTAUX=y
+@@ -42,12 +42,11 @@ CONFIG_BOARD_EARLY_INIT_F=y
+ CONFIG_SPL_BOARD_INIT=y
+ CONFIG_SPL_SEPARATE_BSS=y
+ CONFIG_SYS_MMCSD_FS_BOOT_PARTITION=0
+-CONFIG_SPL_POWER_SUPPORT=y
++CONFIG_SPL_POWER=y
+ CONFIG_SPL_POWER_DOMAIN=y
+ CONFIG_SPL_USB_GADGET=y
+ CONFIG_SPL_USB_SDP_SUPPORT=y
+-CONFIG_SPL_SDP_USB_DEV=1
+-CONFIG_SPL_WATCHDOG_SUPPORT=y
++CONFIG_SPL_WATCHDOG=y
+ CONFIG_SYS_PROMPT="Apalis iMX8 # "
+ CONFIG_CMD_CPU=y
+ # CONFIG_BOOTM_NETBSD is not set
+-- 
+2.25.1
+

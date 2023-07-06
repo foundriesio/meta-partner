@@ -1,0 +1,33 @@
+From 9c310eddb87f003457334f70ea1dec2536f79594 Mon Sep 17 00:00:00 2001
+From: Michael Scott <mike@foundries.io>
+Date: Thu, 13 Aug 2020 16:10:02 -0700
+Subject: [PATCH 014/233] [FIO extras] arm: apalis_imx6: simplify boot targets
+
+Fixes a compile issue with removing USB support.
+
+Signed-off-by: Michael Scott <mike@foundries.io>
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+---
+ include/configs/apalis_imx6.h | 6 +-----
+ 1 file changed, 1 insertion(+), 5 deletions(-)
+
+diff --git a/include/configs/apalis_imx6.h b/include/configs/apalis_imx6.h
+index d4b8390c9d9..d91ae826238 100644
+--- a/include/configs/apalis_imx6.h
++++ b/include/configs/apalis_imx6.h
+@@ -56,11 +56,7 @@
+ 
+ #ifndef CONFIG_SPL_BUILD
+ #define BOOT_TARGET_DEVICES(func) \
+-	func(MMC, mmc, 1) \
+-	func(MMC, mmc, 2) \
+-	func(MMC, mmc, 0) \
+-	func(USB, usb, 0) \
+-	func(DHCP, dhcp, na)
++	func(MMC, mmc, 0)
+ #include <config_distro_bootcmd.h>
+ #undef BOOTENV_RUN_NET_USB_START
+ #define BOOTENV_RUN_NET_USB_START ""
+-- 
+2.25.1
+
