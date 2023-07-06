@@ -1,5 +1,10 @@
 # LMP partner specific customizations (either replace or extend options as defined by meta-lmp)
 
+# Mask missing / broken recipes
+BBMASK += " \
+    /meta-toradex-bsp-common/recipes-bsp/u-boot/libubootenv_%.bbappend \
+"
+
 # Toradex Apalis iMX6
 UBOOT_SIGN_ENABLE:sota:apalis-imx6 = "1"
 PREFERRED_PROVIDER_u-boot-default-script:apalis-imx6 = "u-boot-base-scr"
