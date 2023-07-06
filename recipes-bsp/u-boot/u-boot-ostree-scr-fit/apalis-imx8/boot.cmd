@@ -24,6 +24,10 @@ setenv bootcmd_load_m4_0 'if imxtract ${ramdisk_addr_r}#conf@@FIT_NODE_SEPARATOR
 setenv bootcmd_load_m4_1 'if imxtract ${ramdisk_addr_r}#conf@@FIT_NODE_SEPARATOR@@freescale_${fdt_file} loadable@@FIT_NODE_SEPARATOR@@${m4_1_image} ${loadaddr}; then run bootcmd_boot_m4_1; fi;'
 setenv bootcmd_load_fw 'run bootcmd_load_hdmi; run bootcmd_load_m4_0; run bootcmd_load_m4_1;'
 
+# enable overlays
+setenv dtoverlay "#conf-apalis-imx8_hdmi_overlay.dtbo"
+setenv bootcmd_custom_run 'bootm ${fit_addr}#conf@@FIT_NODE_SEPARATOR@@${fdt_file_final}${dtoverlay};'
+
 # Boot firmware updates
 
 # Offsets are in blocks (512 bytes each)
