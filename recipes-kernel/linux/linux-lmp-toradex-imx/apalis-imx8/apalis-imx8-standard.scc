@@ -1,0 +1,7 @@
+define KMACHINE apalis-imx8
+define KARCH aarch64
+define KTYPE standard
+
+include ktypes/standard/standard.scc
+
+include apalis-imx8.scc
