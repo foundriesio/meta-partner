@@ -1,0 +1,42 @@
+From a9efb83e5caa879a5558fe963181d2e88dbffa5a Mon Sep 17 00:00:00 2001
+From: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+Date: Mon, 4 Oct 2021 17:02:27 +0300
+Subject: [PATCH 107/233] [FIO internal] imx8mm_evk: fix looking for undeclared
+ setup_fec()
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+If CONFIG_FEC_MXC is undefined, setup_fec() is not declared. Remove
+calling this function in preprocessor fixes a compiler warning [1].
+
+[1]
+board/freescale/imx8mm_evk/imx8mm_evk.c: In function ‘board_init’:
+board/freescale/imx8mm_evk/imx8mm_evk.c:334:3: warning: implicit declaration of function ‘setup_fec’; did you mean ‘setup_i2c’? [-Wimplicit-function-declaration]
+  334 |   setup_fec();
+      |   ^~~~~~~~~
+
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+---
+ board/freescale/imx8mm_evk/imx8mm_evk.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/board/freescale/imx8mm_evk/imx8mm_evk.c b/board/freescale/imx8mm_evk/imx8mm_evk.c
+index d972b5aa56c..565683c54ac 100644
+--- a/board/freescale/imx8mm_evk/imx8mm_evk.c
++++ b/board/freescale/imx8mm_evk/imx8mm_evk.c
+@@ -348,8 +348,9 @@ int board_init(void)
+ 	setup_typec();
+ #endif
+ 
+-	if (IS_ENABLED(CONFIG_FEC_MXC))
+-		setup_fec();
++#if IS_ENABLED(CONFIG_FEC_MXC)
++	setup_fec();
++#endif
+ 
+ 	arm_smccc_smc(IMX_SIP_GPC, IMX_SIP_GPC_PM_DOMAIN,
+ 		      DISPMIX, true, 0, 0, 0, 0, &res);
+-- 
+2.25.1
+

@@ -1,0 +1,31 @@
+From 01fe708a5c6a8cdfdb81d04d7a6741332ac90a09 Mon Sep 17 00:00:00 2001
+From: Michael Scott <mike@foundries.io>
+Date: Thu, 16 Dec 2021 16:26:50 -0800
+Subject: [PATCH 131/233] [FIO extras] board: imx6ul_14x14_evk: OP-TEE lower
+ ram_size by OPTEE_TZDRAM_SIZE
+
+Signed-off-by: Michael Scott <mike@foundries.io>
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+---
+ board/freescale/mx6ul_14x14_evk/mx6ul_14x14_evk.c | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/board/freescale/mx6ul_14x14_evk/mx6ul_14x14_evk.c b/board/freescale/mx6ul_14x14_evk/mx6ul_14x14_evk.c
+index 221a1ba791e..1101eeea78e 100644
+--- a/board/freescale/mx6ul_14x14_evk/mx6ul_14x14_evk.c
++++ b/board/freescale/mx6ul_14x14_evk/mx6ul_14x14_evk.c
+@@ -142,6 +142,11 @@ int dram_init(void)
+ {
+ 	gd->ram_size = imx_ddr_size();
+ 
++	/* Subtract the defined OPTEE runtime firmware length */
++#ifdef CONFIG_OPTEE_TZDRAM_SIZE
++	gd->ram_size -= CONFIG_OPTEE_TZDRAM_SIZE;
++#endif
++
+ 	return 0;
+ }
+ 
+-- 
+2.25.1
+

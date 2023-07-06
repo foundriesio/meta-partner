@@ -1,0 +1,111 @@
+From 785038f53d1daba5184f0ede5da39167d530e8ac Mon Sep 17 00:00:00 2001
+From: Ricardo Salveti <ricardo@foundries.io>
+Date: Thu, 16 Sep 2021 16:09:58 +0300
+Subject: [PATCH 038/233] [FIO fromlist] cmd: Add CONFIG_FIT_SIGNATURE_STRICT
+
+Add CONFIG_FIT_SIGNATURE_STRICT to require a valid FIT configuration
+signature for each command that is able to manipulate FIT images.
+
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+Co-developed-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+---
+ boot/Kconfig |  4 ++++
+ cmd/fpga.c   | 14 ++++++++++++++
+ cmd/source.c | 14 ++++++++++++++
+ cmd/ximg.c   | 14 ++++++++++++++
+ 4 files changed, 46 insertions(+)
+
+diff --git a/boot/Kconfig b/boot/Kconfig
+index 2722a27ffdf..008ea3d55f9 100644
+--- a/boot/Kconfig
++++ b/boot/Kconfig
+@@ -95,6 +95,10 @@ config FIT_RSASSA_PSS
+ 	  Enable this to support the pss padding algorithm as described
+ 	  in the rfc8017 (https://tools.ietf.org/html/rfc8017).
+ 
++config FIT_SIGNATURE_STRICT
++	bool "Requires a valid FIT configuration signature for every image"
++	select FIT_SIGNATURE
++
+ config FIT_CIPHER
+ 	bool "Enable ciphering data in a FIT uImages"
+ 	depends on DM
+diff --git a/cmd/fpga.c b/cmd/fpga.c
+index 3fdd0b35e80..16d329590fa 100644
+--- a/cmd/fpga.c
++++ b/cmd/fpga.c
+@@ -335,6 +335,20 @@ static int do_fpga_loadmk(struct cmd_tbl *cmdtp, int flag, int argc,
+ 			return CMD_RET_FAILURE;
+ 		}
+ 
++		if (CONFIG_IS_ENABLED(FIT_SIGNATURE_STRICT)) {
++			/* validate required fit config entry */
++			noffset = fit_conf_get_node(fit_hdr, NULL);
++			if (noffset >= 0) {
++				if (fit_config_verify(fit_hdr, noffset)) {
++					puts("Cannot verify FIT config node\n");
++					return CMD_RET_FAILURE;
++				}
++			} else {
++				puts("FIT_SIGNATURE_STRICT requires a config node\n");
++				return CMD_RET_FAILURE;
++			}
++		}
++
+ 		/* get fpga component image node offset */
+ 		noffset = fit_image_get_node(fit_hdr, fit_uname);
+ 		if (noffset < 0) {
+diff --git a/cmd/source.c b/cmd/source.c
+index 81e015b64ef..b08406dfcbf 100644
+--- a/cmd/source.c
++++ b/cmd/source.c
+@@ -112,6 +112,20 @@ int image_source_script(ulong addr, const char *fit_uname)
+ 			return 1;
+ 		}
+ 
++		if (CONFIG_IS_ENABLED(FIT_SIGNATURE_STRICT)) {
++			/* validate required fit config entry */
++			noffset = fit_conf_get_node(fit_hdr, NULL);
++			if (noffset >= 0) {
++				if (fit_config_verify(fit_hdr, noffset)) {
++					puts("Cannot verify FIT config node\n");
++					return 1;
++				}
++			} else {
++				puts("FIT_SIGNATURE_STRICT requires a config node\n");
++				return 1;
++			}
++		}
++
+ 		if (!fit_uname)
+ 			fit_uname = get_default_image(fit_hdr);
+ 
+diff --git a/cmd/ximg.c b/cmd/ximg.c
+index 65ba41320a0..39fccd8179c 100644
+--- a/cmd/ximg.c
++++ b/cmd/ximg.c
+@@ -141,6 +141,20 @@ do_imgextract(struct cmd_tbl *cmdtp, int flag, int argc, char *const argv[])
+ 			return 1;
+ 		}
+ 
++		if (CONFIG_IS_ENABLED(FIT_SIGNATURE_STRICT)) {
++			/* validate required fit config entry */
++			noffset = fit_conf_get_node(fit_hdr, NULL);
++			if (noffset >= 0) {
++				if (fit_config_verify(fit_hdr, noffset)) {
++					puts("Cannot verify FIT config node\n");
++					return 1;
++				}
++			} else {
++				puts("FIT_SIGNATURE_STRICT requires a config node\n");
++				return 1;
++			}
++		}
++
+ 		/* get subimage node offset */
+ 		noffset = fit_image_get_node(fit_hdr, uname);
+ 		if (noffset < 0) {
+-- 
+2.25.1
+

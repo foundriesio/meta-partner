@@ -1,0 +1,44 @@
+From e4bd47f552bf8667f0967136d8634bd1ec915f30 Mon Sep 17 00:00:00 2001
+From: Igor Opaniuk <igor.opaniuk@foundries.io>
+Date: Wed, 23 Nov 2022 22:44:54 +0200
+Subject: [PATCH 225/233] [FIO tonxp] imx8qm_mek: don't re-define
+ SYS_MMC_ENV_DEV
+
+Don't re-define CONFIG_SYS_MMC_ENV_DEV, if it's already set in
+defconfig.
+
+Signed-off-by: Igor Opaniuk <igor.opaniuk@foundries.io>
+---
+ include/configs/imx8qm_mek.h | 8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
+
+diff --git a/include/configs/imx8qm_mek.h b/include/configs/imx8qm_mek.h
+index 68005cb24a1..45425648bf5 100644
+--- a/include/configs/imx8qm_mek.h
++++ b/include/configs/imx8qm_mek.h
+@@ -275,17 +275,19 @@
+ 	#define FDT_FILE	"fdt_file=undefined\0"
+ #endif
+ 
++#if !defined(CONFIG_SYS_MMC_ENV_DEV)
+ /* On LPDDR4 board, USDHC1 is for eMMC, USDHC2 is for SD on CPU board */
+ #if defined(CONFIG_TARGET_IMX8QM_MEK_A72_ONLY)
+ 	#define CONFIG_SYS_MMC_ENV_DEV		0  /* USDHC1 */
+-	#define CONFIG_MMCROOT			"/dev/mmcblk0p2"  /* USDHC1 */
+ #elif defined(CONFIG_TARGET_IMX8QM_MEK_A53_ONLY)
+ 	#define CONFIG_SYS_MMC_ENV_DEV		1  /* USDHC2 */
+-	#define CONFIG_MMCROOT			"/dev/mmcblk1p2"  /* USDHC2 */
+ #else
+ 	#define CONFIG_SYS_MMC_ENV_DEV		1  /* USDHC2 */
+-	#define CONFIG_MMCROOT			"/dev/mmcblk1p2"  /* USDHC2 */
+ #endif
++#endif
++
++#define CONFIG_MMCROOT		"/dev/mmcblk" CONFIG_SYS_MMC_ENV_DEV "p2"
++
+ #define CONFIG_SYS_FSL_USDHC_NUM	2
+ 
+ #if defined(CONFIG_TARGET_IMX8QM_MEK_A72_ONLY)
+-- 
+2.25.1
+

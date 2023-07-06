@@ -1,0 +1,65 @@
+From 16049c154a9097d71488ef3d51ee6e4cbf7d789f Mon Sep 17 00:00:00 2001
+From: Igor Opaniuk <igor.opaniuk@foundries.io>
+Date: Mon, 15 Feb 2021 19:48:15 +0200
+Subject: [PATCH 113/233] [FIO internal] imx8mp_evk: runtime detection raw
+ sector offsets
+
+Add runtime detection for the next boot image (U-Boot proper FIT) SD/MMC
+sector offset.
+
+Signed-off-by: Igor Opaniuk <igor.opaniuk@foundries.io>
+Signed-off-by: Tim Anderson <tim.anderson@foundries.io>
+Signed-off-by: Michael Scott <mike@foundries.io>
+(cherry-picked from commit d9578c7d3d0a65c4b73863d2a257acf76425ffc1)
+Co-developed-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+---
+ arch/arm/mach-imx/Kconfig    | 4 ++--
+ include/configs/imx8mp_evk.h | 9 +++++++++
+ 2 files changed, 11 insertions(+), 2 deletions(-)
+
+diff --git a/arch/arm/mach-imx/Kconfig b/arch/arm/mach-imx/Kconfig
+index 4f15af66010..748a6e0c085 100644
+--- a/arch/arm/mach-imx/Kconfig
++++ b/arch/arm/mach-imx/Kconfig
+@@ -26,7 +26,7 @@ config GPT_TIMER
+ config SECONDARY_BOOT_RUNTIME_DETECTION
+ 	bool "SD/MMC sector offset runtime detection"
+ 	default n
+-	depends on (IMX8MQ || IMX8MM || MX6ULL || MX6UL || MX6 || MX7 || MX7ULP) && SPL_MMC_SUPPORT
++	depends on (IMX8MQ || IMX8MM || IMX8MP || MX6ULL || MX6UL || MX6 || MX7 || MX7ULP) && SPL_MMC_SUPPORT
+ 	help
+ 	  Detect correct sector offset in SPL for the next boot image
+ 	  in runtime.
+@@ -34,7 +34,7 @@ config SECONDARY_BOOT_RUNTIME_DETECTION
+ config SECONDARY_BOOT_SECTOR_OFFSET
+ 	hex "SD/MMC sector offset used for ROM secondary boot"
+ 	default 0x0
+-	depends on IMX8MQ || IMX8MM || MX6ULL || MX6UL || MX6 || MX7 || MX7ULP
++	depends on IMX8MQ || IMX8MM || IMX8MP || MX6ULL || MX6UL || MX6 || MX7 || MX7ULP
+ 	help
+ 	  Set the sector offset to non-zero value in SPL used for
+ 	  secondary boot image. This value should be same as the
+diff --git a/include/configs/imx8mp_evk.h b/include/configs/imx8mp_evk.h
+index a26c651dcf5..913540988b1 100644
+--- a/include/configs/imx8mp_evk.h
++++ b/include/configs/imx8mp_evk.h
+@@ -15,6 +15,15 @@
+ 
+ #define CONFIG_SPL_MAX_SIZE		(176 * 1024)
+ #define CONFIG_SYS_MONITOR_LEN		(512 * 1024)
++/*
++ * CONFIG_SECONDARY_BOOT_SECTOR_OFFSET was intended to be used as a compile time setting.
++ * If CONFIG_SECONDARY_BOOT_RUNTIME_DETECTION is defined, then only use the base offset of 0x300 here.
++ * CONFIG_SECONDARY_BOOT_SECTOR_OFFSET will be added dynamically if needed.
++ */
++#ifndef CONFIG_SECONDARY_BOOT_RUNTIME_DETECTION
++#undef CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_SECTOR
++#define CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_SECTOR	(0x300 + CONFIG_SECONDARY_BOOT_SECTOR_OFFSET)
++#endif
+ #define CONFIG_SYS_UBOOT_BASE	(QSPI0_AMBA_BASE + CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_SECTOR * 512)
+ 
+ #ifdef CONFIG_SPL_BUILD
+-- 
+2.25.1
+

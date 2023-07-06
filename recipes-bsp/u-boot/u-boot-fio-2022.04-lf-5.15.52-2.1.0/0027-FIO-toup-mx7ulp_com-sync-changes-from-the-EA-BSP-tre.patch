@@ -1,0 +1,385 @@
+From dc146a0c42983fe8f00c6feb806d3f03bdfbf3e9 Mon Sep 17 00:00:00 2001
+From: Ricardo Salveti <ricardo@foundries.io>
+Date: Tue, 1 Sep 2020 12:04:01 -0300
+Subject: [PATCH 027/233] [FIO toup] mx7ulp_com: sync changes from the EA BSP
+ tree
+
+Sync board changes from the EA BSP changes into the upstream port to
+avoid incompatibilities during update.
+
+We still need to break this down into smaller patches for upstream
+inclusion.
+
+Note: CONFIG_SYS_FSL_QSPI_AHB is removed in order to fix building
+error. Need to investigate what else should we forward port to
+support the board properly (if needed).
+
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+Co-developed-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+---
+ arch/arm/dts/imx7ulp-com.dts     | 46 +++++++++++++++--
+ board/ea/mx7ulp_com/imximage.cfg | 36 ++++++-------
+ board/ea/mx7ulp_com/mx7ulp_com.c | 89 ++++++++++++++++++++++++++++++++
+ include/configs/mx7ulp_com.h     | 38 +++++++++++++-
+ 4 files changed, 184 insertions(+), 25 deletions(-)
+
+diff --git a/arch/arm/dts/imx7ulp-com.dts b/arch/arm/dts/imx7ulp-com.dts
+index 82e37b67b39..a02fb7b5c46 100644
+--- a/arch/arm/dts/imx7ulp-com.dts
++++ b/arch/arm/dts/imx7ulp-com.dts
+@@ -10,15 +10,44 @@
+ 
+ / {
+ 	model = "Embedded Artists i.MX7ULP COM";
+-	compatible = "ea,imx7ulp-com", "fsl,imx7ulp";
++	compatible = "ea,imx7ulp-com", "fsl,imx7ulpea-ucom", "fsl,imx7ulp";
+ 
+ 	chosen {
+-		stdout-path = &lpuart4;
++		bootargs = "console=ttyLP0,115200 earlycon=lpuart32,0x402D0000,115200";
++		stdout-path = "serial0:115200n8";
+ 	};
+ 
+ 	memory {
+ 		device_type = "memory";
+-		reg = <0x60000000 0x8000000>;
++		reg = <0x60000000 0x40000000>;
++	};
++
++	regulators {
++		compatible = "simple-bus";
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		reg_usb_otg1_vbus: regulator@0 {
++			compatible = "regulator-fixed";
++			reg = <0>;
++			pinctrl-names = "default";
++			pinctrl-0 = <&pinctrl_usbotg1_vbus>;
++			regulator-name = "usb_otg1_vbus";
++			regulator-min-microvolt = <5000000>;
++			regulator-max-microvolt = <5000000>;
++			gpio = <&gpio0 0 GPIO_ACTIVE_HIGH>;
++			enable-active-high;
++		};
++
++		reg_vsd_3v3: regulator@1 {
++			compatible = "regulator-fixed";
++			reg = <1>;
++			regulator-name = "VSD_3V3";
++			regulator-min-microvolt = <3300000>;
++			regulator-max-microvolt = <3300000>;
++			gpio = <&gpio1 0 GPIO_ACTIVE_HIGH>;
++			enable-active-high;
++		};
+ 	};
+ };
+ 
+@@ -28,7 +57,12 @@
+ 	status = "okay";
+ };
+ 
++&rpmsg {
++	status = "okay";
++};
++
+ &usbotg1 {
++	vbus-supply = <&reg_usb_otg1_vbus>;
+ 	pinctrl-names = "default";
+ 	pinctrl-0 = <&pinctrl_usbotg1_id>;
+ 	srp-disable;
+@@ -110,6 +144,12 @@
+ 		>;
+ 	};
+ 
++	pinctrl_usbotg1_vbus: otg1vbusgrp {
++		fsl,pins = <
++			IMX7ULP_PAD_PTC0__PTC0		0x20000
++		>;
++	};
++
+ 	pinctrl_usbotg1_id: otg1idgrp {
+ 		fsl,pins = <
+ 			IMX7ULP_PAD_PTC13__USB0_ID	0x10003
+diff --git a/board/ea/mx7ulp_com/imximage.cfg b/board/ea/mx7ulp_com/imximage.cfg
+index 1731da814d0..4236b966bb2 100644
+--- a/board/ea/mx7ulp_com/imximage.cfg
++++ b/board/ea/mx7ulp_com/imximage.cfg
+@@ -70,8 +70,8 @@ DATA 4   0x40B300AC 0x40000000
+ DATA 4   0x40AD0128 0x00040000
+ DATA 4   0x40AD00F8 0x00000000
+ DATA 4   0x40AD00D8 0x00000180
+-DATA 4   0x40AD0104 0x00000180
+ DATA 4   0x40AD0108 0x00000180
++DATA 4   0x40AD0104 0x00000180
+ DATA 4   0x40AD0124 0x00010000
+ DATA 4   0x40AD0080 0x0000018C
+ DATA 4   0x40AD0084 0x0000018C
+@@ -92,45 +92,39 @@ DATA 4   0x40AD00E0 0x00040000
+ DATA 4   0x40AD00E4 0x00040000
+ 
+ DATA 4   0x40AB001C 0x00008000
+-DATA 4   0x40AB085C 0x0D3900A0
++DATA 4   0x40AB085C 0x1B4380BD
+ DATA 4   0x40AB0800 0xA1390003
+-DATA 4   0x40AB0890 0x00400000
++DATA 4   0x40AB0890 0x00480000
+ DATA 4   0x40AB081C 0x33333333
+ DATA 4   0x40AB0820 0x33333333
+ DATA 4   0x40AB0824 0x33333333
+ DATA 4   0x40AB0828 0x33333333
+ DATA 4   0x40AB08C0 0x24922492
+-DATA 4   0x40AB0848 0x3A3E3838
+-DATA 4   0x40AB0850 0x28282C2A
+-DATA 4   0x40AB083C 0x20000000
++DATA 4   0x40AB0848 0x3A3C3A3A
++DATA 4   0x40AB0850 0x2C303030
+ DATA 4   0x40AB0840 0x00000000
+ DATA 4   0x40AB08B8 0x00000800
+-DATA 4   0x40AB000C 0x292C40F5
+-DATA 4   0x40AB0004 0x00020064
+-DATA 4   0x40AB0010 0xB6AD0A83
+-DATA 4   0x40AB0014 0x00C70093
+-DATA 4   0x40AB0018 0x00211708
++DATA 4   0x40AB000C 0x4F534335
++DATA 4   0x40AB0004 0x00020024
++DATA 4   0x40AB0010 0xB6AF0B23
++DATA 4   0x40AB0014 0x00C700DB
++DATA 4   0x40AB0018 0x00201718
+ DATA 4   0x40AB002C 0x0F9F26D2
+ DATA 4   0x40AB0030 0x009F0E10
+-DATA 4   0x40AB0038 0x00130556
++DATA 4   0x40AB0038 0x00160667
+ DATA 4   0x40AB0008 0x12272000
+-DATA 4   0x40AB0040 0x0000003F
+-DATA 4   0x40AB0000 0xC3110000
++DATA 4   0x40AB0040 0x0000004F
++DATA 4   0x40AB0000 0x84190000
+ DATA 4   0x40AB001C 0x00008010
+-DATA 4   0x40AB001C 0x00008018
+ DATA 4   0x40AB001C 0x003F8030
+ DATA 4   0x40AB001C 0xFF0A8030
+-DATA 4   0x40AB001C 0x82018030
++DATA 4   0x40AB001C 0x83018030
+ DATA 4   0x40AB001C 0x06028030
+ DATA 4   0x40AB001C 0x01038030
+-DATA 4   0x40AB001C 0x003F8038
+-DATA 4   0x40AB001C 0xFF0A8038
+-DATA 4   0x40AB001C 0x82018038
+-DATA 4   0x40AB001C 0x06028038
+-DATA 4   0x40AB001C 0x01038038
+ DATA 4   0x40AB083C 0xA0000000
+ DATA 4   0x40AB083C 0xA0000000
+ DATA 4   0x40AB0020 0x00001800
+ DATA 4   0x40AB0800 0xA1310003
++DATA 4   0x40AB0404 0x00010106
+ DATA 4   0x40AB001C 0x00000000
+ #endif
+diff --git a/board/ea/mx7ulp_com/mx7ulp_com.c b/board/ea/mx7ulp_com/mx7ulp_com.c
+index c45155a2140..672c89075ac 100644
+--- a/board/ea/mx7ulp_com/mx7ulp_com.c
++++ b/board/ea/mx7ulp_com/mx7ulp_com.c
+@@ -1,6 +1,7 @@
+ // SPDX-License-Identifier: GPL-2.0+
+ /*
+  * Copyright (C) 2016 Freescale Semiconductor, Inc.
++ * Copyright (C) 2020 Foundries.IO
+  */
+ 
+ #include <common.h>
+@@ -10,12 +11,17 @@
+ #include <asm/arch/sys_proto.h>
+ #include <asm/arch/mx7ulp-pins.h>
+ #include <asm/arch/iomux.h>
++#include <asm/mach-imx/boot_mode.h>
+ #include <asm/gpio.h>
++#include <fdt_support.h>
+ #include <linux/delay.h>
++#include <usb.h>
++#include <dm.h>
+ 
+ DECLARE_GLOBAL_DATA_PTR;
+ 
+ #define UART_PAD_CTRL		(PAD_CTL_PUS_UP)
++#define QSPI_PAD_CTRL1		(PAD_CTL_PUS_UP | PAD_CTL_DSE)
+ 
+ int dram_init(void)
+ {
+@@ -39,6 +45,40 @@ static void setup_iomux_uart(void)
+ 					 ARRAY_SIZE(lpuart4_pads));
+ }
+ 
++#ifdef CONFIG_FSL_QSPI
++#ifndef CONFIG_DM_SPI
++static iomux_cfg_t const quadspi_pads[] = {
++	MX7ULP_PAD_PTB8__QSPIA_SS0_B | MUX_PAD_CTRL(QSPI_PAD_CTRL1),
++	MX7ULP_PAD_PTB15__QSPIA_SCLK  | MUX_PAD_CTRL(QSPI_PAD_CTRL1),
++	MX7ULP_PAD_PTB16__QSPIA_DATA3 | MUX_PAD_CTRL(QSPI_PAD_CTRL1),
++	MX7ULP_PAD_PTB17__QSPIA_DATA2 | MUX_PAD_CTRL(QSPI_PAD_CTRL1),
++	MX7ULP_PAD_PTB18__QSPIA_DATA1 | MUX_PAD_CTRL(QSPI_PAD_CTRL1),
++	MX7ULP_PAD_PTB19__QSPIA_DATA0 | MUX_PAD_CTRL(QSPI_PAD_CTRL1),
++};
++#endif
++
++int board_qspi_init(void)
++{
++	u32 val;
++#ifndef CONFIG_DM_SPI
++	mx7ulp_iomux_setup_multiple_pads(quadspi_pads, ARRAY_SIZE(quadspi_pads));
++#endif
++
++	/* enable clock */
++	val = readl(PCC1_RBASE + 0x94);
++
++	if (!(val & 0x20000000)) {
++		writel(0x03000003, (PCC1_RBASE + 0x94));
++		writel(0x43000003, (PCC1_RBASE + 0x94));
++	}
++
++	/* Enable QSPI as a wakeup source on B0 */
++	if (soc_rev() >= CHIP_REV_2_0)
++		setbits_le32(SIM0_RBASE + WKPU_WAKEUP_EN, WKPU_QSPI_CHANNEL);
++	return 0;
++}
++#endif
++
+ int board_early_init_f(void)
+ {
+ 	setup_iomux_uart();
+@@ -63,6 +103,10 @@ int board_init(void)
+ 	/* address of boot parameters */
+ 	gd->bd->bi_boot_params = PHYS_SDRAM + 0x100;
+ 
++#ifdef CONFIG_FSL_QSPI
++	board_qspi_init();
++#endif
++
+ 	return 0;
+ }
+ 
+@@ -91,3 +135,48 @@ void board_init_f(ulong dummy)
+ 	board_early_init_f();
+ }
+ #endif
++
++#if IS_ENABLED(CONFIG_OF_BOARD_SETUP)
++int ft_board_setup(void *blob, struct bd_info *bd)
++{
++	const char *path;
++	int rc, nodeoff;
++
++	if (get_boot_device() == USB_BOOT) {
++		path = fdt_get_alias(blob, "mmc0");
++		if (!path) {
++			puts("Not found mmc0\n");
++			return 0;
++		}
++
++		nodeoff = fdt_path_offset(blob, path);
++		if (nodeoff < 0)
++			return 0;
++
++		printf("Found usdhc0 node\n");
++		if (fdt_get_property(blob, nodeoff, "vqmmc-supply",
++		    NULL) != NULL) {
++			rc = fdt_delprop(blob, nodeoff, "vqmmc-supply");
++			if (!rc) {
++				puts("Removed vqmmc-supply property\n");
++add:
++				rc = fdt_setprop(blob, nodeoff,
++						 "no-1-8-v", NULL, 0);
++				if (rc == -FDT_ERR_NOSPACE) {
++					rc = fdt_increase_size(blob, 32);
++					if (!rc)
++						goto add;
++				} else if (rc) {
++					printf("Failed to add no-1-8-v property, %d\n", rc);
++				} else {
++					puts("Added no-1-8-v property\n");
++				}
++			} else {
++				printf("Failed to remove vqmmc-supply property, %d\n", rc);
++			}
++		}
++	}
++
++	return 0;
++}
++#endif
+diff --git a/include/configs/mx7ulp_com.h b/include/configs/mx7ulp_com.h
+index 75f5cf0b6de..4c4363b110a 100644
+--- a/include/configs/mx7ulp_com.h
++++ b/include/configs/mx7ulp_com.h
+@@ -18,6 +18,8 @@
+ #define CONFIG_BOARD_POSTCLK_INIT
+ #define CONFIG_SYS_BOOTM_LEN		0x1000000
+ 
++#define CONFIG_SERIAL_TAG
++
+ /*
+  * Detect overlap between U-Boot image and environment area in build-time
+  *
+@@ -38,18 +40,44 @@
+ /* UART */
+ #define LPUART_BASE			LPUART4_RBASE
+ 
++/* allow to overwrite serial and ethaddr */
++#define CONFIG_BAUDRATE			115200
++
++#define CONFIG_SYS_CACHELINE_SIZE      64
++
++/* Miscellaneous configurable options */
++#define CONFIG_SYS_PROMPT		"=> "
++#define CONFIG_SYS_CBSIZE		512
++
++#define CONFIG_SYS_MAXARGS		256
++
+ /* Physical Memory Map */
+ 
+-#define PHYS_SDRAM			0x60000000
++#define PHYS_SDRAM			0x60000000ul
++#define PHYS_SDRAM_SIZE			SZ_1G
++#define CONFIG_SYS_MEMTEST_START	PHYS_SDRAM
+ #define CONFIG_SYS_SDRAM_BASE		PHYS_SDRAM
+ 
++#define CONFIG_SYS_MEMTEST_END		(CONFIG_SYS_MEMTEST_START + (PHYS_SDRAM_SIZE >> 1))
++
++#define CONFIG_MFG_ENV_SETTINGS \
++	"mfgtool_args=setenv bootargs console=${console},${baudrate} " \
++		"rdinit=/linuxrc " \
++		"clk_ignore_unused "\
++		"\0" \
++	"bootcmd_mfg=run mfgtool_args; echo \"Run fastboot ...\";" \
++		"fastboot 0;\0"
++
+ #define CONFIG_EXTRA_ENV_SETTINGS \
++	CONFIG_MFG_ENV_SETTINGS \
+ 	"image=zImage\0" \
+ 	"console=ttyLP0\0" \
+ 	"fdt_high=0xffffffff\0" \
++	"initrd_addr=0x63800000\0" \
+ 	"initrd_high=0xffffffff\0" \
+ 	"fdt_file=imx7ulp-com.dtb\0" \
+ 	"fdt_addr=0x63000000\0" \
++	"earlycon=lpuart32,0x402D0010\0" \
+ 	"mmcdev="__stringify(CONFIG_SYS_MMC_ENV_DEV)"\0" \
+ 	"mmcpart=1\0" \
+ 	"mmcroot=" CONFIG_MMCROOT " rootwait rw\0" \
+@@ -73,5 +101,13 @@
+ 
+ #define CONFIG_ARMV7_SECURE_BASE	0x2F000000
+ 
++/* QSPI configs */
++#ifdef CONFIG_FSL_QSPI
++#define FSL_QSPI_FLASH_NUM              1
++#define FSL_QSPI_FLASH_SIZE             SZ_8M
++#define QSPI0_BASE_ADDR                 0x410A5000
++#define QSPI0_AMBA_BASE                 0xC0000000
++#endif
++
+ #define CONFIG_MXC_USB_PORTSC		(PORT_PTS_UTMI | PORT_PTS_PTW)
+ #endif	/* __CONFIG_H */
+-- 
+2.25.1
+

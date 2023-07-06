@@ -1,0 +1,98 @@
+From 13e0396ed1830b3af45bafec065d7965097481a6 Mon Sep 17 00:00:00 2001
+From: Igor Opaniuk <igor.opaniuk@foundries.io>
+Date: Wed, 1 Dec 2021 19:39:32 +0200
+Subject: [PATCH 128/233] [FIO toup] imx8: ahab: refactor do_ahab_close command
+
+Refactor do_ahab_close() implementation.
+
+Signed-off-by: Igor Opaniuk <igor.opaniuk@foundries.io>
+Co-developed-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+---
+ arch/arm/include/asm/arch-imx8/sys_proto.h |  1 +
+ arch/arm/mach-imx/imx8/ahab.c              | 45 ++++++++++++++--------
+ 2 files changed, 30 insertions(+), 16 deletions(-)
+
+diff --git a/arch/arm/include/asm/arch-imx8/sys_proto.h b/arch/arm/include/asm/arch-imx8/sys_proto.h
+index 45b9acca1dc..ddc2158c901 100644
+--- a/arch/arm/include/asm/arch-imx8/sys_proto.h
++++ b/arch/arm/include/asm/arch-imx8/sys_proto.h
+@@ -32,6 +32,7 @@ void build_info(void);
+ enum boot_device get_boot_device(void);
+ int boot_mode_getprisec(void);
+ int boot_mode_is_closed(void);
++int ahab_close(void);
+ void boot_mode_enable_secondary(bool enable);
+ int print_bootinfo(void);
+ int sc_pm_setup_uart(sc_rsrc_t uart_rsrc, sc_pm_clock_rate_t clk_rate);
+diff --git a/arch/arm/mach-imx/imx8/ahab.c b/arch/arm/mach-imx/imx8/ahab.c
+index 1056a8755ec..58826b06cb0 100644
+--- a/arch/arm/mach-imx/imx8/ahab.c
++++ b/arch/arm/mach-imx/imx8/ahab.c
+@@ -339,6 +339,32 @@ int boot_mode_is_closed(void)
+ 	return 0;
+ }
+ 
++int ahab_close(void)
++{
++	int err;
++	u16 lc;
++
++	err = sc_seco_chip_info(-1, &lc, NULL, NULL, NULL);
++	if (err != SC_ERR_NONE) {
++		printf("Error in get lifecycle\n");
++		return -EIO;
++	}
++
++	if (lc != 0x20) {
++		puts("Current lifecycle is NOT NXP closed, can't move to OEM closed\n");
++		display_life_cycle(lc);
++		return -EPERM;
++	}
++
++	err = sc_seco_forward_lifecycle(-1, 16);
++	if (err != SC_ERR_NONE) {
++		printf("Error in forward lifecycle to OEM closed\n");
++		return -EIO;
++	}
++
++	return 0;
++}
++
+ static int confirm_close(void)
+ {
+ 	puts("Warning: Please ensure your sample is in NXP closed state, "
+@@ -360,27 +386,14 @@ static int do_ahab_close(struct cmd_tbl *cmdtp, int flag, int argc,
+ {
+ 	int confirmed = argc >= 2 && !strcmp(argv[1], "-y");
+ 	int err;
+-	u16 lc;
+ 
+ 	if (!confirmed && !confirm_close())
+ 		return -EACCES;
+ 
+-	err = sc_seco_chip_info(-1, &lc, NULL, NULL, NULL);
+-	if (err) {
+-		printf("Error in get lifecycle\n");
+-		return -EIO;
+-	}
+-
+-	if (lc != 0x20) {
+-		puts("Current lifecycle is NOT NXP closed, can't move to OEM closed\n");
+-		display_life_cycle(lc);
+-		return -EPERM;
+-	}
+-
+-	err = sc_seco_forward_lifecycle(-1, 16);
++	err = ahab_close();
+ 	if (err) {
+-		printf("Error in forward lifecycle to OEM closed\n");
+-		return -EIO;
++		printf("Change to OEM closed failed\n");
++		return err;
+ 	}
+ 
+ 	printf("Change to OEM closed successfully\n");
+-- 
+2.25.1
+

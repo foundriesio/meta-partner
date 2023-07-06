@@ -1,0 +1,49 @@
+From 66fd067adf28ea9f59620527bf6eae2ad14c6cd3 Mon Sep 17 00:00:00 2001
+From: Igor Opaniuk <igor.opaniuk@foundries.io>
+Date: Wed, 1 Dec 2021 20:23:39 +0200
+Subject: [PATCH 129/233] [FIO internal] misc: imx8: always include fuse logic
+
+Build internal fuse functions, even if CONFIG_CMD_FUSE is not set.
+
+Signed-off-by: Igor Opaniuk <igor.opaniuk@foundries.io>
+(cherry-picked from commit 29525bba8ca0cd144bd4384c1cb13d5219c7ab77)
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+---
+ drivers/misc/imx8/Makefile | 5 ++++-
+ drivers/misc/imx8/fuse.c   | 2 ++
+ 2 files changed, 6 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/misc/imx8/Makefile b/drivers/misc/imx8/Makefile
+index 48fdb5b61c2..bce97d9540b 100644
+--- a/drivers/misc/imx8/Makefile
++++ b/drivers/misc/imx8/Makefile
+@@ -1,4 +1,7 @@
+ # SPDX-License-Identifier: GPL-2.0+
+ 
+ obj-y += scu_api.o scu.o
+-obj-$(CONFIG_CMD_FUSE) += fuse.o
++
++ifndef CONFIG_SPL_BUILD
++obj-y += fuse.o
++endif
+diff --git a/drivers/misc/imx8/fuse.c b/drivers/misc/imx8/fuse.c
+index 9de05914284..d36a955568d 100644
+--- a/drivers/misc/imx8/fuse.c
++++ b/drivers/misc/imx8/fuse.c
+@@ -53,6 +53,7 @@ int fuse_sense(u32 bank, u32 word, u32 *val)
+ 	return res.a0;
+ }
+ 
++#if defined(CONFIG_CMD_FUSE)
+ int fuse_prog(u32 bank, u32 word, u32 val)
+ {
+ 	struct arm_smccc_res res;
+@@ -98,3 +99,4 @@ int fuse_override(u32 bank, u32 word, u32 val)
+ 	printf("Override fuse to i.MX8 in u-boot is forbidden\n");
+ 	return -EPERM;
+ }
++#endif /* defined(CONFIG_CMD_FUSE) */
+\ No newline at end of file
+-- 
+2.25.1
+

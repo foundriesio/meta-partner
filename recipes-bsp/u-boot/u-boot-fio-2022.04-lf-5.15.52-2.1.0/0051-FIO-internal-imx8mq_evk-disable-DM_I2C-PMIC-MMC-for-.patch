@@ -1,0 +1,38 @@
+From 1e0fb2def8eca5bf6178003a48d56f450524941d Mon Sep 17 00:00:00 2001
+From: Igor Opaniuk <igor.opaniuk@foundries.io>
+Date: Mon, 22 Feb 2021 23:06:55 +0200
+Subject: [PATCH 051/233] [FIO internal] imx8mq_evk: disable DM_I2C/PMIC/MMC
+ for SPL build
+
+Workaround: Force disable DM_I2C/PMIC/MMC for the SPL build.
+It is needed to reduce SPL size.
+
+Signed-off-by: Igor Opaniuk <igor.opaniuk@foundries.io>
+Co-developed-by: Ricardo Salveti <ricardo@foundries.io>
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+Co-developed-by: Igor Opaniuk <igor.opaniuk@foundries.io>
+Signed-off-by: Igor Opaniuk <igor.opaniuk@foundries.io>
+Co-developed-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+---
+ include/configs/imx8mq_evk.h | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/include/configs/imx8mq_evk.h b/include/configs/imx8mq_evk.h
+index 96f72fdbe47..27d4163f025 100644
+--- a/include/configs/imx8mq_evk.h
++++ b/include/configs/imx8mq_evk.h
+@@ -30,7 +30,9 @@
+ /* For RAW image gives a error info not panic */
+ #define CONFIG_SPL_ABORT_ON_RAW_IMAGE
+ 
+-#undef CONFIG_DM_MMC
++#undef CONFIG_DM_PMIC
++#undef CONFIG_DM_PMIC_PFUZE100
++#undef CONFIG_SPL_DM_I2C
+ 
+ #define CONFIG_POWER_PFUZE100
+ #define CONFIG_POWER_PFUZE100_I2C_ADDR 0x08
+-- 
+2.25.1
+

@@ -1,0 +1,41 @@
+From c54a2c51835552f6f655c3b0adc7a93f7ee7641e Mon Sep 17 00:00:00 2001
+From: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+Date: Sun, 26 Sep 2021 18:09:17 +0300
+Subject: [PATCH 046/233] [FIO internal] Kconfig: fix recursive dependency
+
+The commit 6bf8ec82d33 ("[FIO internal] imx8m: don't enable CAAM if OP-TEE is used")
+introduces the recursive dependency error [1]. CAAM should be
+disabled in favor to use in from OP-TEE, so this commit shouldn't
+be reverted. Instead, remove the implying of CMD_DEKBLOB by IMX_HAB
+option - it is not strictly required and can be enabled separately.
+
+[1]
+drivers/tee/optee/Kconfig:2:error: recursive dependency detected!
+drivers/tee/optee/Kconfig:2:	symbol OPTEE depends on TEE
+drivers/tee/Kconfig:2:	symbol TEE is selected by IMX_OPTEE_DEK_ENCAP
+arch/arm/mach-imx/Kconfig:129:	symbol IMX_OPTEE_DEK_ENCAP is selected by CMD_DEKBLOB
+arch/arm/mach-imx/Kconfig:112:	symbol CMD_DEKBLOB is implied by HAS_CAAM
+arch/arm/mach-imx/Kconfig:1:	symbol HAS_CAAM is selected by OPTEE
+
+Fixes: 6bf8ec82d33 ("[FIO internal] imx8m: don't enable CAAM if OP-TEE is used")
+Fixes: d569c95ec0 ("Convert CONFIG_CMD_DEKBLOB to Kconfig")
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+---
+ arch/arm/mach-imx/Kconfig | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/arch/arm/mach-imx/Kconfig b/arch/arm/mach-imx/Kconfig
+index ca3fde380b3..d2eb9834f16 100644
+--- a/arch/arm/mach-imx/Kconfig
++++ b/arch/arm/mach-imx/Kconfig
+@@ -75,7 +75,6 @@ config IMX_HAB
+ 	bool "Support i.MX HAB features"
+ 	depends on ARCH_MX7 || ARCH_MX6 || ARCH_MX5 || ARCH_IMX8M || ARCH_MX7ULP
+ 	select FSL_CAAM if HAS_CAAM
+-	imply CMD_DEKBLOB if HAS_CAAM
+ 	imply CMD_PROVISION_KEY if HAS_CAAM
+ 	help
+ 	  This option enables the support for secure boot (HAB).
+-- 
+2.25.1
+

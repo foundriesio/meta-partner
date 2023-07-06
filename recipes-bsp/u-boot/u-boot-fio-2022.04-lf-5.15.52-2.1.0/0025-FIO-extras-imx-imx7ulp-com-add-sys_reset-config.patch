@@ -1,0 +1,42 @@
+From 794b8a5e05768b90f75607917e1d26685f19746c Mon Sep 17 00:00:00 2001
+From: Ricardo Salveti <ricardo@foundries.io>
+Date: Mon, 31 Aug 2020 19:54:39 -0300
+Subject: [PATCH 025/233] [FIO extras] imx: imx7ulp-com: add sys_reset config
+
+- Add PTC10 GPIO for use as a system reset line
+
+NOTE: This only works for specific HW that has the line connected.
+
+Signed-off-by: Michael Scott <mike@foundries.io>
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+---
+ arch/arm/dts/imx7ulp-com.dts | 8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
+
+diff --git a/arch/arm/dts/imx7ulp-com.dts b/arch/arm/dts/imx7ulp-com.dts
+index 6ffced02bce..82e37b67b39 100644
+--- a/arch/arm/dts/imx7ulp-com.dts
++++ b/arch/arm/dts/imx7ulp-com.dts
+@@ -79,7 +79,7 @@
+ 
+ &iomuxc1 {
+ 	pinctrl-names = "default";
+-	pinctrl-0 = <&pinctrl_hog_1>;
++	pinctrl-0 = <&pinctrl_hog_1 &pinctrl_sys_reset>;
+ 
+ 	pinctrl_hog_1: hoggrp-1 {
+ 		fsl,pins = <
+@@ -115,4 +115,10 @@
+ 			IMX7ULP_PAD_PTC13__USB0_ID	0x10003
+ 		>;
+ 	};
++
++	pinctrl_sys_reset: sysrstgrp {
++		fsl,pins = <
++			IMX7ULP_PAD_PTC10__PTC10        0x20000 /* SYS_RESET */
++		>;
++	};
+ };
+-- 
+2.25.1
+

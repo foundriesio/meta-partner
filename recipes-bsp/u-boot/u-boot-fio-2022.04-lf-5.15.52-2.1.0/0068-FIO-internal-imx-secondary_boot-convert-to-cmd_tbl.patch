@@ -1,0 +1,48 @@
+From 13d202108982d4423a7ca3a80f5104037c8df02b Mon Sep 17 00:00:00 2001
+From: Ricardo Salveti <ricardo@foundries.io>
+Date: Mon, 27 Sep 2021 21:30:26 -0300
+Subject: [PATCH 068/233] [FIO internal] imx: secondary_boot: convert to
+ cmd_tbl
+
+Commit 091401131085 removed the cmd_tbl_t typedef, so update
+secondary boot commands to use struct cmd_tbl instead.
+
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+---
+ arch/arm/mach-imx/imx_secondary_boot.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/arch/arm/mach-imx/imx_secondary_boot.c b/arch/arm/mach-imx/imx_secondary_boot.c
+index 05f1a7f25ef..4eb5c14e747 100644
+--- a/arch/arm/mach-imx/imx_secondary_boot.c
++++ b/arch/arm/mach-imx/imx_secondary_boot.c
+@@ -15,7 +15,7 @@
+ #include <linux/compiler.h>
+ #include <cpu_func.h>
+ 
+-static int do_imx_secondary_boot(cmd_tbl_t *cmdtp, int flag,
++static int do_imx_secondary_boot(struct cmd_tbl *cmdtp, int flag,
+ 				 int argc, char * const argv[])
+ {
+ 	u32 secondary = 0;
+@@ -62,7 +62,7 @@ U_BOOT_CMD(
+ 	"   1 - set secondary image\n"
+ );
+ 
+-static int do_imx_is_closed(cmd_tbl_t *cmdtp, int flag,
++static int do_imx_is_closed(struct cmd_tbl *cmdtp, int flag,
+ 			    int argc, char * const argv[])
+ {
+ 	int ret;
+@@ -85,7 +85,7 @@ U_BOOT_CMD(
+ 	"Check if the board is closed", ""
+ );
+ 
+-static int do_warm_reset(cmd_tbl_t *cmdtp, int flag,
++static int do_warm_reset(struct cmd_tbl *cmdtp, int flag,
+ 			 int argc, char * const argv[])
+ {
+ 	arm_smccc_smc(IMX_SIP_WARM_RESET, 0, 0, 0, 0, 0, 0, 0, NULL);
+-- 
+2.25.1
+

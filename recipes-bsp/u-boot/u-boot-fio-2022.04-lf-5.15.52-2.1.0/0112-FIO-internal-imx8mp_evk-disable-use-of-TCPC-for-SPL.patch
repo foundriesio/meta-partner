@@ -1,0 +1,83 @@
+From d1066fe2a0f42eec267b2f4b31e609976259a616 Mon Sep 17 00:00:00 2001
+From: Igor Opaniuk <igor.opaniuk@foundries.io>
+Date: Fri, 29 Jan 2021 22:37:35 +0200
+Subject: [PATCH 112/233] [FIO internal] imx8mp_evk: disable use of TCPC for
+ SPL
+
+Disable usage of TCPC from the board file for the SPL build, as
+from board/freescale/common/Makefile:
+
+ifndef CONFIG_SPL_BUILD
+obj-$(CONFIG_USB_TCPC) += tcpc.o
+endif
+
+Signed-off-by: Igor Opaniuk <igor.opaniuk@foundries.io>
+Signed-off-by: Tim Anderson <tim.anderson@foundries.io>
+Signed-off-by: Michael Scott <mike@foundries.io>
+(cherry-picked from commit c06d7e9458b32b0b793d0f8477749d512f1006cb)
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+---
+ board/freescale/imx8mp_evk/imx8mp_evk.c | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
+
+diff --git a/board/freescale/imx8mp_evk/imx8mp_evk.c b/board/freescale/imx8mp_evk/imx8mp_evk.c
+index c183dc9f4bb..6671ee70168 100644
+--- a/board/freescale/imx8mp_evk/imx8mp_evk.c
++++ b/board/freescale/imx8mp_evk/imx8mp_evk.c
+@@ -129,7 +129,7 @@ int ft_board_setup(void *blob, struct bd_info *bd)
+ }
+ #endif
+ 
+-#ifdef CONFIG_USB_TCPC
++#if defined(CONFIG_USB_TCPC) && !defined(CONFIG_SPL_BUILD)
+ struct tcpc_port port1;
+ struct tcpc_port port2;
+ 
+@@ -359,7 +359,7 @@ int board_usb_init(int index, enum usb_init_type init)
+ 	imx8m_usb_power(index, true);
+ 
+ 	if (index == 0 && init == USB_INIT_DEVICE) {
+-#ifdef CONFIG_USB_TCPC
++#if defined(CONFIG_USB_TCPC) && !defined(CONFIG_SPL_BUILD)
+ 		ret = tcpc_setup_ufp_mode(&port1);
+ 		if (ret)
+ 			return ret;
+@@ -367,7 +367,7 @@ int board_usb_init(int index, enum usb_init_type init)
+ 		dwc3_nxp_usb_phy_init(&dwc3_device_data);
+ 		return dwc3_uboot_init(&dwc3_device_data);
+ 	} else if (index == 0 && init == USB_INIT_HOST) {
+-#ifdef CONFIG_USB_TCPC
++#if defined(CONFIG_USB_TCPC) && !defined(CONFIG_SPL_BUILD)
+ 		ret = tcpc_setup_dfp_mode(&port1);
+ #endif
+ 		return ret;
+@@ -382,7 +382,7 @@ int board_usb_cleanup(int index, enum usb_init_type init)
+ 	if (index == 0 && init == USB_INIT_DEVICE) {
+ 		dwc3_uboot_exit(index);
+ 	} else if (index == 0 && init == USB_INIT_HOST) {
+-#ifdef CONFIG_USB_TCPC
++#if defined(CONFIG_USB_TCPC) && !defined(CONFIG_SPL_BUILD)
+ 		ret = tcpc_disable_src_vbus(&port1);
+ #endif
+ 	}
+@@ -392,7 +392,7 @@ int board_usb_cleanup(int index, enum usb_init_type init)
+ 	return ret;
+ }
+ 
+-#ifdef CONFIG_USB_TCPC
++#if defined(CONFIG_USB_TCPC) && !defined(CONFIG_SPL_BUILD)
+ /* Not used so far */
+ int board_typec_get_mode(int index)
+ {
+@@ -455,7 +455,7 @@ int board_init(void)
+ {
+ 	struct arm_smccc_res res;
+ 
+-#ifdef CONFIG_USB_TCPC
++#if defined(CONFIG_USB_TCPC) && !defined(CONFIG_SPL_BUILD)
+ 	setup_typec();
+ 
+ 	/* Enable USB power default */
+-- 
+2.25.1
+

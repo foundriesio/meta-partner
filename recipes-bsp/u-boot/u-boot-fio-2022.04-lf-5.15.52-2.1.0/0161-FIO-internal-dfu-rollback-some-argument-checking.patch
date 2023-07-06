@@ -1,0 +1,44 @@
+From 65f81fa48a43617a3c4aec86d65ec3de05066d58 Mon Sep 17 00:00:00 2001
+From: Michael Scott <mike@foundries.io>
+Date: Thu, 18 Aug 2022 13:00:09 +0300
+Subject: [PATCH 161/233] [FIO internal] dfu: rollback some argument checking
+
+A previous commit added some argument validation which is
+breaking the passed in values with semi-colons(;) on the end.
+
+Let's drop that portion of the validation to restore stm32cube
+programmer functionality.
+
+Tested with STM32_Programmer_CLI 2.11.0
+
+Signed-off-by: Michael Scott <mike@foundries.io>
+Signed-off-by: Igor Opaniuk <igor.opaniuk@foundries.io>
+---
+ drivers/dfu/dfu_mmc.c | 11 ++++++++---
+ 1 file changed, 8 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/dfu/dfu_mmc.c b/drivers/dfu/dfu_mmc.c
+index a91da972d46..1771193831b 100644
+--- a/drivers/dfu/dfu_mmc.c
++++ b/drivers/dfu/dfu_mmc.c
+@@ -362,9 +362,14 @@ int dfu_fill_entity_mmc(struct dfu_entity *dfu, char *devstr, char **argv, int a
+ 	second_arg = simple_strtol(argv[1], &s, 0);
+ 	if (*s)
+ 		return -EINVAL;
+-	third_arg = simple_strtoul(argv[2], &s, 0);
+-	if (*s)
+-		return -EINVAL;
++	/*
++	 * The last parameter here can have a semi-colon(;) which luckily
++	 * worked with the old code, but this means the endp pointer returned
++	 * by simple_strtoul will be NULL.
++	 * TL;DR: Let's not validate the last parameter. It was working before:
++	 * u-boot commit 53b406369e9d0ba2da1df9b2488976c41acc6332
++	 */
++	third_arg = simple_strtoul(argv[2], NULL, 0);
+ 
+ 	mmc = find_mmc_device(dfu->data.mmc.dev_num);
+ 	if (mmc == NULL) {
+-- 
+2.25.1
+

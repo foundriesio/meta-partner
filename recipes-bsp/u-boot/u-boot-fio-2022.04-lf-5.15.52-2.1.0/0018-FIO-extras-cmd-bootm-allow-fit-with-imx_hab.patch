@@ -1,0 +1,33 @@
+From d29ba0ea94e5d4104eb648c0d68961e34d75c532 Mon Sep 17 00:00:00 2001
+From: Ricardo Salveti <ricardo@foundries.io>
+Date: Thu, 20 Aug 2020 23:30:02 -0300
+Subject: [PATCH 018/233] [FIO extras] cmd: bootm: allow fit with imx_hab
+
+IMX_HAB assumes that the only authentication method supported is via
+HAB, which is now what we always want necessarily, specially since FIT
+signature checks is also another valid secure boot method.
+
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+---
+ cmd/bootm.c | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/cmd/bootm.c b/cmd/bootm.c
+index 0c5585b123a..9d544aac8b4 100644
+--- a/cmd/bootm.c
++++ b/cmd/bootm.c
+@@ -178,6 +178,11 @@ int do_bootm(struct cmd_tbl *cmdtp, int flag, int argc, char *const argv[])
+ 	case IMAGE_FORMAT_ANDROID:
+ 		/* Do this authentication in boota command */
+ 		break;
++#endif
++#if defined(CONFIG_FIT) && defined(CONFIG_FIT_SIGNATURE)
++	case IMAGE_FORMAT_FIT:
++		/* Assume authentication is done by fit signature */
++		break;
+ #endif
+ 	default:
+ 		printf("Not valid image format for Authentication, Please check\n");
+-- 
+2.25.1
+

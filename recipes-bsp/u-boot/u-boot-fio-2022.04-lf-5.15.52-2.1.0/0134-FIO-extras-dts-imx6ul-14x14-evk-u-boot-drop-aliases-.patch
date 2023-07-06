@@ -1,0 +1,29 @@
+From 72a69a5ae970e43e0f67795a96a15ba9564fa70e Mon Sep 17 00:00:00 2001
+From: Michael Scott <mike@foundries.io>
+Date: Thu, 16 Dec 2021 17:44:19 -0800
+Subject: [PATCH 134/233] [FIO extras] dts: imx6ul-14x14-evk-u-boot: drop
+ aliases in SPL dts
+
+This saves over 2k in DTB size for SPL, and the aliases aren't needed.
+
+Signed-off-by: Michael Scott <mike@foundries.io>
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+---
+ arch/arm/dts/imx6ul-14x14-evk-u-boot.dtsi | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/arch/arm/dts/imx6ul-14x14-evk-u-boot.dtsi b/arch/arm/dts/imx6ul-14x14-evk-u-boot.dtsi
+index 25e54b0582a..b4e15ecb702 100644
+--- a/arch/arm/dts/imx6ul-14x14-evk-u-boot.dtsi
++++ b/arch/arm/dts/imx6ul-14x14-evk-u-boot.dtsi
+@@ -4,7 +4,6 @@
+  */
+ 
+ &{/aliases} {
+-	u-boot,dm-pre-reloc;
+ 	display0 = &lcdif;
+ };
+ 
+-- 
+2.25.1
+
