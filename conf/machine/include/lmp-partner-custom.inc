@@ -34,9 +34,18 @@ BOOTSCR_LOAD_ADDR:apalis-imx6 = "0x15000000"
 ## Toradex Apalis iMX8QM
 OSTREE_KERNEL_ARGS:apalis-imx8 ?= "pci=nomsi console=tty1 console=ttyLP1,115200 earlycon ${OSTREE_KERNEL_ARGS_COMMON}"
 PREFERRED_PROVIDER_virtual/kernel:apalis-imx8 ?= "linux-lmp-toradex-imx"
+PREFERRED_PROVIDER_virtual/bootloader:apalis-imx8 = "u-boot-fio"
+PREFERRED_PROVIDER_u-boot:apalis-imx8 = "u-boot-fio"
 UBOOT_CONFIG:apalis-imx8 = ""
 UBOOT_SUFFIX:apalis-imx8 = "bin"
 UBOOT_MACHINE:apalis-imx8 = "apalis-imx8_defconfig"
+SPL_BINARY:apalis-imx8 = "spl/u-boot-spl.bin"
+IMAGE_FSTYPES:remove:apalis-imx8 = "teziimg"
+IMAGE_CLASSES:remove:apalis-imx8 = "image_type_tezi"
+MACHINE_FEATURES:append:apalis-imx8 = " optee"
+IMAGE_BOOT_FILES:remove:apalis-imx8 = "boot.scr-${MACHINE};boot.scr"
+MACHINE_EXTRA_RRECOMMENDS:append:apalis-imx8 = " device-tree-overlays"
+EXTERNAL_KERNEL_DEVICETREE:sota:apalis-imx8 = "${DEPLOY_DIR_IMAGE}/overlays/"
 
 # Toradex Apalis iMX6 with secure boot support
 SOTA_CLIENT_FEATURES:remove:sota:apalis-imx6-sec = "ubootenv"
