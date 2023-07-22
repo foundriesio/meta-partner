@@ -1,0 +1,53 @@
+From 30e6a51d9e203b7509f3bbb144366e9d2ebf8bb9 Mon Sep 17 00:00:00 2001
+From: Ricardo Salveti <ricardo@foundries.io>
+Date: Thu, 4 May 2023 00:48:18 -0300
+Subject: [PATCH] [FIO backport] ARM: dts: imx6-apalis: sync mmc aliases with
+ kernel
+
+Latest kernel has a different mmc alias order from what is currently
+available in u-boot, so sync in order for the mmc device to be the same
+on both u-boot and kernel.
+
+This is not required upstream as dtb kernel sync was done as part of
+the 2022.07 release.
+
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+---
+ arch/arm/dts/imx6-apalis-u-boot.dtsi | 2 +-
+ arch/arm/dts/imx6-apalis.dts         | 7 ++++---
+ 2 files changed, 5 insertions(+), 4 deletions(-)
+
+diff --git a/arch/arm/dts/imx6-apalis-u-boot.dtsi b/arch/arm/dts/imx6-apalis-u-boot.dtsi
+index 81cfb267fea..3c1950960ad 100644
+--- a/arch/arm/dts/imx6-apalis-u-boot.dtsi
++++ b/arch/arm/dts/imx6-apalis-u-boot.dtsi
+@@ -8,7 +8,7 @@
+ / {
+ 
+ 	aliases {
+-		mmc0 = &usdhc3;
++		mmc2 = &usdhc3;
+ 	};
+ 
+ 	reg_module_3v3: regulator-module-3v3 {
+diff --git a/arch/arm/dts/imx6-apalis.dts b/arch/arm/dts/imx6-apalis.dts
+index 676767d6a26..7342096835f 100644
+--- a/arch/arm/dts/imx6-apalis.dts
++++ b/arch/arm/dts/imx6-apalis.dts
+@@ -12,9 +12,10 @@
+ 	compatible = "toradex,apalis_imx6q", "fsl,imx6q";
+ 
+ 	aliases {
+-		mmc0 = &usdhc3;
+-		mmc1 = &usdhc1;
+-		mmc2 = &usdhc2;
++		mmc0 = &usdhc1;
++		mmc1 = &usdhc2;
++		mmc2 = &usdhc3;
++		mmc3 = &usdhc4;
+ 		usb0 = &usbotg; /* required for ums */
+ 		ethernet0 = &fec;
+ 	};
+-- 
+2.41.0
+

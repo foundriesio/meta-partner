@@ -15,6 +15,7 @@ SRC_URI:append = " \
     file://0121-FIO-toup-apalis-imx8-allow-dropping-CONFIG_CMD_USB-r.patch \
     file://0142-FIO-toup-ARM-dts-imx6-apalis-remove-stub-for-memory-.patch \
     file://0230-FIO-internal-ARM-dts-fsl-imx8qm-apalis-u-boot-add-op.patch \
+    file://9999-FIO-backport-ARM-dts-imx6-apalis-sync-mmc-aliases-wi.patch \
 "
 
 # UNSURE
