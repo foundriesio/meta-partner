@@ -46,5 +46,5 @@ include features/tee/tee.scc
 
 include cfg/usb-mass-storage.scc
 
-kconf hardware imx6x.cfg
+kconf hardware bsp/imx/imx6x.cfg
 kconf hardware apalis-imx6.cfg
