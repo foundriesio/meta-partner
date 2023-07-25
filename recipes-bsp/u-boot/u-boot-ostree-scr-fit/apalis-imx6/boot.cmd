@@ -14,6 +14,10 @@ setenv fdt_addr 0x15800000
 setenv optee_ovl_addr 0x16000000
 setenv fit_addr ${loadaddr}
 
+# enable overlays
+setenv dtoverlay "#conf-apalis-imx6_hdmi_overlay.dtbo"
+setenv bootcmd_custom_run 'bootm ${fit_addr}#conf@@FIT_NODE_SEPARATOR@@${fdt_file_final}${dtoverlay};'
+
 # Boot firmware updates
 
 # Offsets are in blocks (512 bytes each)
