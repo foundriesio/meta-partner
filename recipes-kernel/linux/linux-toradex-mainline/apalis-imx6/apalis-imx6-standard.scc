@@ -1,0 +1,7 @@
+define KMACHINE apalis-imx6
+define KARCH arm
+define KTYPE standard
+
+include ktypes/standard/standard.scc
+
+include apalis-imx6.scc
