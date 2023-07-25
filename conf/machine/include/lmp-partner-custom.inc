@@ -5,6 +5,10 @@ BBMASK += " \
     /meta-toradex-bsp-common/recipes-bsp/u-boot/libubootenv_%.bbappend \
 "
 
+# non-clangable settings
+OBJCOPY:pn-linux-toradex-mainline:toolchain-clang = "${HOST_PREFIX}objcopy"
+STRIP:pn-linux-toradex-mainline:toolchain-clang = "${HOST_PREFIX}strip"
+
 # Toradex Apalis iMX6
 UBOOT_SIGN_ENABLE:sota:apalis-imx6 = "1"
 PREFERRED_PROVIDER_u-boot-default-script:apalis-imx6 = "u-boot-base-scr"
@@ -15,9 +19,11 @@ IMAGE_BOOT_FILES:remove:apalis-imx6 = "boot.scr-${MACHINE};boot.scr"
 IMAGE_BOOT_FILES:sota:apalis-imx6 = "boot.itb"
 KERNEL_IMAGETYPE:sota:apalis-imx6 = "fitImage"
 KERNEL_CLASSES:sota:apalis-imx6 = " kernel-lmp-fitimage "
-OSTREE_KERNEL_ARGS:apalis-imx6 ?= "console=tty1 console=ttymxc0,115200 rootfstype=ext4"
-PREFERRED_PROVIDER_virtual/kernel:apalis-imx6 ?= "linux-lmp-toradex-imx"
-KBUILD_DEFCONFIG:apalis-imx6 = ""
+OSTREE_KERNEL_ARGS:apalis-imx6 ?= " \
+    enable_wait_mode=off vmalloc=400M mxc_hdmi.only_cea=1 fbmem=32M \
+    consoleblank=0 no_console_suspend=1 console=tty1 console=ttymxc0,115200 rootfstype=ext4 \
+"
+PREFERRED_PROVIDER_virtual/kernel:apalis-imx6 ?= "linux-toradex-mainline"
 KERNEL_DEVICETREE:remove:apalis-imx6 = "imx6q-apalis-ixora-v1.2.dtb"
 IMX_DEFAULT_BOOTLOADER:apalis-imx6 ?= "u-boot-fio"
 SOTA_CLIENT_FEATURES:append:apalis-imx6 = " ubootenv"
@@ -31,6 +37,12 @@ WKS_FILE:apalis-imx6 = "sdimage-imx6dq-spl-fit.wks"
 WKS_FILES:sota:apalis-imx6 = "sdimage-imx6dq-spl-fit-sota.wks"
 MACHINE_FEATURES:append:apalis-imx6 = " optee"
 BOOTSCR_LOAD_ADDR:apalis-imx6 = "0x15000000"
+PREFERRED_PROVIDER_virtual/dtb:use-mainline-bsp = "device-tree-overlays-mainline"
+MACHINE_EXTRA_RRECOMMENDS:append:apalis-imx6 = " device-tree-overlays-mainline"
+EXTERNAL_KERNEL_DEVICETREE:sota:apalis-imx6 = "${DEPLOY_DIR_IMAGE}/overlays/"
+MACHINE_FIRMWARE:remove:apalis-imx6 = "firmware-imx-epdc"
+IMX_DEFAULT_BSP:apalis-imx6 = "mainline"
+TORADEX_PRODUCT_IDS:apalis-imx6 = "0027 0028 0029 0035"
 
 ## Toradex Apalis iMX8QM
 OSTREE_KERNEL_ARGS:apalis-imx8 ?= "pci=nomsi console=tty1 console=ttyLP1,115200 earlycon ${OSTREE_KERNEL_ARGS_COMMON}"
