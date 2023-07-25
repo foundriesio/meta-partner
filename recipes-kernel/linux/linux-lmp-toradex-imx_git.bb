@@ -19,12 +19,6 @@ SRC_URI = "${KERNEL_REPO};protocol=${KERNEL_REPO_PROTOCOL};branch=${KERNEL_BRANC
     file://0001-arm64-dts-imx8mq-drop-cpu-idle-states.patch \
 "
 
-SRC_URI:append:apalis-imx6 = " \
-    file://apalis-imx6-standard.scc \
-    file://apalis-imx6.scc \
-    file://apalis-imx6.cfg \
-"
-
 SRC_URI:append:apalis-imx8 = " \
     file://apalis-imx8-standard.scc \
     file://apalis-imx8.scc \
