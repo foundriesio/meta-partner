@@ -26,6 +26,10 @@ TOOLCHAIN:pn-lk-prebuilt = "gcc"
 TOOLCHAIN:pn-bl2 = "gcc"
 TOOLCHAIN:pn-bl2-prebuilt = "gcc"
 
+## non-clangable changes
+OBJCOPY:pn-linux-lmp-mtk:toolchain-clang = "${HOST_PREFIX}objcopy"
+STRIP:pn-linux-lmp-mtk:toolchain-clang = "${HOST_PREFIX}strip"
+
 # Mask TI recipe with missing include file
 # Mask STM recipe which doesn't exist when meta layer is dropped
 BBMASK += " \
