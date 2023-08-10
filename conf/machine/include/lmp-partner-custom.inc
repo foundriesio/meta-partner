@@ -25,3 +25,10 @@ TOOLCHAIN:pn-lk = "gcc"
 TOOLCHAIN:pn-lk-prebuilt = "gcc"
 TOOLCHAIN:pn-bl2 = "gcc"
 TOOLCHAIN:pn-bl2-prebuilt = "gcc"
+
+# Mask TI recipe with missing include file
+# Mask STM recipe which doesn't exist when meta layer is dropped
+BBMASK += " \
+    /meta-lmp-bsp/recipes-kernel/linux/linux-lmp-ti-staging_git.bb \
+    /meta-lmp-bsp/recipes-bsp/alsa/alsa-state-stm32mp1.bbappend \
+"
