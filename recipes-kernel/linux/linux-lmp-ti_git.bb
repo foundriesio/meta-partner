@@ -37,6 +37,17 @@ SRC_URI:append:phyboard-lyra-am62xx-1 = " \
     file://phytec-ti.cfg \
 "
 
+SRC_URI:append:phyboard-lyra-am62xx-2 = " \
+    file://phyboard-lyra-am62xx-2-standard.scc \
+    file://phytec-ti.cfg \
+"
+
+SRC_URI:append:phyboard-lyra-am62xx-3 = " \
+    file://phyboard-lyra-am62xx-3-standard.scc \
+    file://phytec-ti.cfg \
+    file://phytec-disable-rti-wdt.cfg \
+"
+
 # Special configuration for remoteproc/rpmsg IPC modules
 module_conf_rpmsg_client_sample = "blacklist rpmsg_client_sample"
 module_conf_ti_k3_r5_remoteproc = "softdep ti_k3_r5_remoteproc pre: virtio_rpmsg_bus"

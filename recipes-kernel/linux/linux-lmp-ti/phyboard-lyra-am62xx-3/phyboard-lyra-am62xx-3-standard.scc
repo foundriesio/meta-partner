@@ -1,0 +1,7 @@
+define KMACHINE phyboard-lyra-am62xx-3
+define KARCH aarch64
+define KTYPE standard
+
+include ktypes/standard/standard.scc
+
+include bsp/ti/ti-arm64-common.scc
