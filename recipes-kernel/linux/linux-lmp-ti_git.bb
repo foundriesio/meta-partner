@@ -34,7 +34,7 @@ SRC_URI_JAILHOUSE = " \
 
 SRC_URI:append:phyboard-lyra-am62xx-1 = " \
     file://phyboard-lyra-am62xx-1-standard.scc \
-    file://phyboard-lyra-am62xx-1.cfg \
+    file://phytec-ti.cfg \
 "
 
 # Special configuration for remoteproc/rpmsg IPC modules
