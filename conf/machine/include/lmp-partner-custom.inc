@@ -90,5 +90,5 @@ OSTREE_KERNEL_ARGS:phyboard-lyra-am62xx-3 ?= "console=ttyS2,115200n8 ${OSTREE_KE
 
 # Fix do_deploy error
 # Adjust lines from: meta-phytec/conf/machine/include/phyk3.inc
-do_image_wic[mcdepends] = "mc::lmp-k3r5:ti-sci-fw:do_deploy"
-do_image_tar[mcdepends] = "mc::lmp-k3r5:ti-sci-fw:do_deploy"
+do_image_wic[mcdepends] = "${@bb.utils.contains('MACHINE', 'phyboard-lyra-am62xx', 'mc::lmp-k3r5:ti-sci-fw:do_deploy', '', d)}"
+do_image_tar[mcdepends] = "${@bb.utils.contains('MACHINE', 'phyboard-lyra-am62xx', 'mc::lmp-k3r5:ti-sci-fw:do_deploy', '', d)}"
