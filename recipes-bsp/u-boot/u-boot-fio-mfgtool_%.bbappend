@@ -1,4 +1,4 @@
-FILESEXTRAPATHS:prepend := "${THISDIR}/${PN}:${THISDIR}/u-boot-fio:"
+FILESEXTRAPATHS:prepend := "${THISDIR}/${PN}:"
 
 include u-boot-fio-toradex.inc
 
