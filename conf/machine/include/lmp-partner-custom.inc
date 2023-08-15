@@ -65,3 +65,5 @@ SOTA_CLIENT_FEATURES:remove:sota:apalis-imx6-sec = "ubootenv"
 
 # Toradex Apalis iMX8 with secure boot support
 SOTA_CLIENT_FEATURES:remove:sota:apalis-imx8-sec = "ubootenv"
+# Set correct machine name for device-tree-overlays
+MACHINE_PREFIX:apalis-imx8-sec = "apalis-imx8"
