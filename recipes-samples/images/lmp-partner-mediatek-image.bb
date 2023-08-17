@@ -33,3 +33,48 @@ CORE_IMAGE_BASE_INSTALL += " \
     packagegroup-core-full-cmdline-extended \
     ${@bb.utils.contains('LMP_DISABLE_GPLV3', '1', '', '${CORE_IMAGE_BASE_INSTALL_GPLV3}', d)} \
 "
+
+## MEDIATEK BSP IMAGE ADDITIONS
+
+NDA_IMAGE_INSTALL += " \
+    packagegroup-rity-audio \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'opengl', 'packagegroup-rity-display', '', d)} \
+    ${@bb.utils.contains("LICENSE_FLAGS_ACCEPTED", "commercial", "packagegroup-rity-multimedia", "", d)} \
+    packagegroup-rity-net \
+    packagegroup-rity-tools \
+    packagegroup-rity-zeroconf \
+    packagegroup-tools-bluetooth \
+    gstreamer1.0-meta-base \
+    gstreamer1.0-meta-audio \
+    gstreamer1.0-meta-debug \
+    gstreamer1.0-meta-video \
+    gstreamer1.0-python \
+    e2fsprogs-resize2fs \
+    iproute2 \
+    can-utils \
+"
+
+NDA_IMAGE_INSTALL:append:genio-700 = " \
+    packagegroup-rity-mtk-video \
+"
+
+NDA_IMAGE_INSTALL:remove:i300b = " \
+    packagegroup-display \
+    packagegroup-multimedia \
+"
+
+NDA_IMAGE_INSTALL:append:i1200 = " \
+    packagegroup-rity-mtk-video \
+    ${@bb.utils.contains("DISTRO_FEATURES", "nda-mtk", "packagegroup-rity-mtk-neuropilot", "", d)} \
+    ${@bb.utils.contains("DISTRO_FEATURES", "nda-mtk", "packagegroup-rity-mtk-camisp", "", d)} \
+"
+
+NDA_IMAGE_INSTALL:append:i350 = " \
+    packagegroup-rity-mtk-video \
+"
+
+NDA_IMAGE_INSTALL:append:genio-700 = " \
+    ${@bb.utils.contains("DISTRO_FEATURES", "nda-mtk", "packagegroup-rity-mtk-neuropilot", "", d)} \
+"
+
+CORE_IMAGE_BASE_INSTALL += " ${@bb.utils.contains('NDA_BUILD', '1', '${NDA_IMAGE_INSTALL}', '', d)}"
