@@ -1,7 +1,5 @@
-define KMACHINE i350-evk
+define KMACHINE i350-pumpkin
 define KARCH aarch64
 define KTYPE standard
 
 include ktypes/standard/standard.scc
-
-include i350-evk.scc

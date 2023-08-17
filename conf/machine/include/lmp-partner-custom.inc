@@ -1,7 +1,7 @@
 # LMP partner specific customizations (either replace or extend options as defined by meta-lmp)
 
 # Customizations for the mediatek BSP
-PREFERRED_PROVIDER_virtual/kernel:mtk = "linux-lmp-mtk"
+PREFERRED_PROVIDER_virtual/kernel:mtk = "linux-mtk"
 KERNEL_CLASSES:mtk = "kernel-lmp-fitimage"
 WKS_FILE_DEPENDS:append:mtk = " u-boot-default-script"
 PREFERRED_PROVIDER_u-boot-default-script:mtk = "u-boot-ostree-scr-fit"
@@ -25,10 +25,15 @@ TOOLCHAIN:pn-lk = "gcc"
 TOOLCHAIN:pn-lk-prebuilt = "gcc"
 TOOLCHAIN:pn-bl2 = "gcc"
 TOOLCHAIN:pn-bl2-prebuilt = "gcc"
+TOOLCHAIN:pn-mtk-mdpd = "gcc"
+TOOLCHAIN:pn-optee-examples = "gcc"
+
+# Set for libmali builds
+DISTRO_CODENAME = "kirkstone"
 
 ## non-clangable changes
-OBJCOPY:pn-linux-lmp-mtk:toolchain-clang = "${HOST_PREFIX}objcopy"
-STRIP:pn-linux-lmp-mtk:toolchain-clang = "${HOST_PREFIX}strip"
+#OBJCOPY:pn-linux-mtk:toolchain-clang = "${HOST_PREFIX}objcopy"
+#STRIP:pn-linux-mtk:toolchain-clang = "${HOST_PREFIX}strip"
 
 # Mask TI recipe with missing include file
 # Mask STM recipe which doesn't exist when meta layer is dropped
