@@ -3,10 +3,12 @@ setenv bootlimit 3
 setenv devtype mmc
 setenv devnum 0
 
+setenv dtoverlays '#conf-video.dtbo#conf-gpu-mali.dtbo'
+
 setenv bootcmd_resetvars 'setenv kernel_image; setenv bootargs; setenv kernel_image2; setenv bootargs2'
 setenv bootcmd_otenv 'run bootcmd_resetvars; ext4load ${devtype} ${devnum}:3 ${scriptaddr} /boot/loader/uEnv.txt; env import -t ${scriptaddr} ${filesize} kernel_image bootargs kernel_image2 bootargs2'
 setenv bootcmd_load_f 'ext4load ${devtype} ${devnum}:3 ${loadaddr} "/boot"${kernel_image}'
-setenv bootcmd_run 'bootm ${loadaddr}#conf-mediatek_${fdtfile}'
+setenv bootcmd_run 'bootm ${loadaddr}#conf-mediatek_${fdtfile}${dtoverlays}'
 setenv bootcmd_rollbackenv 'setenv kernel_image ${kernel_image2}; setenv bootargs ${bootargs2}'
 setenv bootcmd_set_rollback 'if test ! "${rollback}" = "1"; then setenv rollback 1; setenv upgrade_available 0; saveenv; fi'
 setenv bootostree 'run bootcmd_load_f; run bootcmd_run'
