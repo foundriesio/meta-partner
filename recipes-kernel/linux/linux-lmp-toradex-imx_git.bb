@@ -30,4 +30,4 @@ KMETA = "kernel-meta"
 include recipes-kernel/linux/linux-lmp.inc
 
 # make sure overlays are built
-do_deploy:append[depends] = "device-tree-overlays:do_deploy"
+do_deploy:append[depends] = "virtual/dtb:do_deploy"
