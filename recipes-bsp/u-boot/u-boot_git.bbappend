@@ -11,6 +11,9 @@ SRC_URI:append = " \
     file://0002-GENIO-arm-mediatek-mt8195-support-CONFIG_SYSRESET.patch \
     file://0003-GENIO-arm-dts-mt8195-demo-add-psci-node.patch \
     file://0004-GENIO-mt8195-board-use-fixed-fw_images-definition.patch \
+"
+
+SRC_URI:append:i1200-demo-ebbr = " \
     file://capsule_key.patch \
 "
 
