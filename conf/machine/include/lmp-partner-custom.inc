@@ -58,6 +58,8 @@ MACHINE_FEATURES:append:apalis-imx8 = " optee"
 IMAGE_BOOT_FILES:remove:apalis-imx8 = "boot.scr-${MACHINE};boot.scr"
 PREFERRED_PROVIDER_virtual/dtb:apalis-imx8 ?= "device-tree-overlays"
 EXTERNAL_KERNEL_DEVICETREE:sota:apalis-imx8 = "${DEPLOY_DIR_IMAGE}/overlays/"
+MACHINE_FEATURES:remove:apalis-imx8 = "linux-firmware-pcie8997"
+MACHINE_FEATURES:append:apalis-imx8 = " nxp8997-pcie mxm-mwifiex-load"
 
 # Toradex Apalis iMX6 with secure boot support
 SOTA_CLIENT_FEATURES:remove:sota:apalis-imx6-sec = "ubootenv"
