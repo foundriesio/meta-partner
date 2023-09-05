@@ -1,0 +1,46 @@
+From 4617ed9902c1936e77578373987f8b2c554ac728 Mon Sep 17 00:00:00 2001
+From: Ricardo Salveti <ricardo@foundries.io>
+Date: Thu, 17 Jun 2021 22:37:32 -0300
+Subject: [PATCH 132/322] [FIO extras] imx: fiohab: add support for IMX8MM
+
+Add fuse list and banks used by IMX8MM.
+
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+---
+ arch/arm/mach-imx/Makefile | 2 +-
+ arch/arm/mach-imx/fiohab.c | 6 ++++++
+ 2 files changed, 7 insertions(+), 1 deletion(-)
+
+diff --git a/arch/arm/mach-imx/Makefile b/arch/arm/mach-imx/Makefile
+index 7f674802b3f..895dd00adf6 100644
+--- a/arch/arm/mach-imx/Makefile
++++ b/arch/arm/mach-imx/Makefile
+@@ -68,7 +68,7 @@ ifeq ($(SOC),$(filter $(SOC),mx7ulp))
+ obj-y  += cache.o mmdc_size.o
+ obj-$(CONFIG_$(SPL_)IMX_HAB) += hab.o
+ endif
+-ifeq ($(SOC),$(filter $(SOC),mx6 mx7ulp))
++ifeq ($(SOC),$(filter $(SOC),mx6 mx7ulp imx8m))
+ obj-$(CONFIG_$(SPL_)IMX_HAB) += fiohab.o
+ endif
+ ifeq ($(SOC),$(filter $(SOC),vf610))
+diff --git a/arch/arm/mach-imx/fiohab.c b/arch/arm/mach-imx/fiohab.c
+index e5ffc5ae317..ac3d79c4a65 100644
+--- a/arch/arm/mach-imx/fiohab.c
++++ b/arch/arm/mach-imx/fiohab.c
+@@ -93,6 +93,12 @@ static int fiovb_provisioned(void)
+ #define SECURE_FUSE_BANK	(0)
+ #define SECURE_FUSE_WORD	(6)
+ #define SECURE_FUSE_VALUE	(0x00000002)
++#elif CONFIG_IMX8MM
++#define SRK_FUSE_LIST								\
++{ 6, 0 }, { 6, 1 }, { 6, 2 }, { 6, 3 }, { 7, 0 }, { 7, 1 }, { 7, 2 }, { 7 , 3 },
++#define SECURE_FUSE_BANK	(1)
++#define SECURE_FUSE_WORD	(3)
++#define SECURE_FUSE_VALUE	(0x2000000)
+ #else
+ #error "SoC not supported"
+ #endif
+-- 
+2.34.1
+

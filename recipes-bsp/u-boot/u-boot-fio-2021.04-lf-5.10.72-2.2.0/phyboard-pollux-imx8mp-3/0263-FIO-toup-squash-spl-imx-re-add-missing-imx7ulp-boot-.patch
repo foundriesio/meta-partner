@@ -1,0 +1,36 @@
+From 687400e0697966bae5103fa50d3c6b246ae77b91 Mon Sep 17 00:00:00 2001
+From: Michael Scott <mike@foundries.io>
+Date: Fri, 17 Sep 2021 00:06:44 -0700
+Subject: [PATCH 263/322] [FIO toup-squash] spl: imx: re-add missing imx7ulp
+ boot devices
+
+If SPL is not loaded via USB, the boot device fro iMX7ULP should be
+MMC1. This was lost during the rebase to imx_5.4.70_2.3.0.
+Return back the feature.
+
+Fixes: babfb7d1aa ("[FIO fromlist] mx7ulp: add base SPL support for mx7ulp")
+Signed-off-by: Michael Scott <mike@foundries.io>
+(cherry-picked from commit a37100c494aec23deae27cf68d815a4cff4c4c6f)
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+---
+ arch/arm/mach-imx/spl.c | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/arch/arm/mach-imx/spl.c b/arch/arm/mach-imx/spl.c
+index c2f0992a562..7686eeeb042 100644
+--- a/arch/arm/mach-imx/spl.c
++++ b/arch/arm/mach-imx/spl.c
+@@ -35,6 +35,10 @@ __weak int spl_board_boot_device(enum boot_device boot_dev_spl)
+ 	case SD3_BOOT:
+ 	case MMC3_BOOT:
+ 		return BOOT_DEVICE_MMC1;
++#elif defined(CONFIG_MX7ULP)
++        case SD1_BOOT:
++        case MMC1_BOOT:
++                return BOOT_DEVICE_MMC1;
+ #elif defined(CONFIG_IMX8)
+ 	case MMC1_BOOT:
+ 		return BOOT_DEVICE_MMC1;
+-- 
+2.34.1
+

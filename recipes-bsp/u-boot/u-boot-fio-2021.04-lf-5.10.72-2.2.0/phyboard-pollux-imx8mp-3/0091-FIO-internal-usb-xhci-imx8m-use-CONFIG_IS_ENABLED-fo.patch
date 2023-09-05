@@ -1,0 +1,35 @@
+From f2d4a31918f47352573841bbdb5c846b76b33f88 Mon Sep 17 00:00:00 2001
+From: Igor Opaniuk <igor.opaniuk@foundries.io>
+Date: Tue, 23 Feb 2021 00:11:12 +0200
+Subject: [PATCH 091/322] [FIO internal] usb: xhci-imx8m: use CONFIG_IS_ENABLED
+ for DM_USB checks
+
+Use CONFIG_IS_ENABLED() macro, which provides more convenient
+way to check $(SPL)DM_USB config for both SPL and U-Boot proper.
+
+CONFIG_IS_ENABLED(DM_USB) expands to:
+- 1 if CONFIG_SPL_BUILD is undefined and CONFIG_DM_USB is set to 'y',
+- 1 if CONFIG_SPL_BUILD is defined and CONFIG_SPL_DM_USB is set to 'y',
+- 0 otherwise.
+
+Signed-off-by: Igor Opaniuk <igor.opaniuk@foundries.io>
+---
+ drivers/usb/host/xhci-imx8m.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/usb/host/xhci-imx8m.c b/drivers/usb/host/xhci-imx8m.c
+index 5756a967ad5..069ab2c47c0 100644
+--- a/drivers/usb/host/xhci-imx8m.c
++++ b/drivers/usb/host/xhci-imx8m.c
+@@ -137,7 +137,7 @@ static int imx8m_xhci_core_init(struct imx8m_xhci *imx8m_xhci)
+ 	return ret;
+ }
+ 
+-#ifdef CONFIG_DM_USB
++#if CONFIG_IS_ENABLED(DM_USB)
+ static int xhci_imx8m_probe(struct udevice *dev)
+ {
+ 	struct xhci_hccr *hccr;
+-- 
+2.34.1
+

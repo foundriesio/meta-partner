@@ -1,0 +1,50 @@
+From d2f714c9ad887f6b845701cbfa12af7c262fa6f6 Mon Sep 17 00:00:00 2001
+From: Michael Scott <mike@foundries.io>
+Date: Tue, 3 Nov 2020 00:25:47 -0800
+Subject: [PATCH 072/322] [FIO toup] imx6: fiohab: add handling for imx6
+
+All of the i.MX6 processors use the same SRK_HASH and
+SEC_CONFIG[1] fuses to support secure boot.
+
+Signed-off-by: Michael Scott <mike@foundries.io>
+---
+ arch/arm/mach-imx/Makefile | 5 ++++-
+ arch/arm/mach-imx/fiohab.c | 6 ++++++
+ 2 files changed, 10 insertions(+), 1 deletion(-)
+
+diff --git a/arch/arm/mach-imx/Makefile b/arch/arm/mach-imx/Makefile
+index 0b42bf716b9..74ba0d9ba9c 100644
+--- a/arch/arm/mach-imx/Makefile
++++ b/arch/arm/mach-imx/Makefile
+@@ -66,7 +66,10 @@ obj-$(CONFIG_IMX_TRUSTY_OS) += trusty.o
+ endif
+ ifeq ($(SOC),$(filter $(SOC),mx7ulp))
+ obj-y  += cache.o mmdc_size.o
+-obj-$(CONFIG_IMX_HAB) += hab.o fiohab.o
++obj-$(CONFIG_IMX_HAB) += hab.o
++endif
++ifeq ($(SOC),$(filter $(SOC),mx6 mx7ulp))
++obj-$(CONFIG_IMX_HAB) += fiohab.o
+ endif
+ ifeq ($(SOC),$(filter $(SOC),vf610))
+ obj-y += ddrmc-vf610.o
+diff --git a/arch/arm/mach-imx/fiohab.c b/arch/arm/mach-imx/fiohab.c
+index 4accc2f07f8..1616d6c7e04 100644
+--- a/arch/arm/mach-imx/fiohab.c
++++ b/arch/arm/mach-imx/fiohab.c
+@@ -81,6 +81,12 @@ static int fiovb_provisioned(void)
+ #define SECURE_FUSE_BANK	(29)
+ #define SECURE_FUSE_WORD	(6)
+ #define SECURE_FUSE_VALUE	(0x80000000)
++#elif CONFIG_ARCH_MX6
++#define SRK_FUSE_LIST								\
++{ 3, 0 }, { 3, 1 }, { 3, 2}, { 3, 3 }, { 3, 4 }, { 3, 5}, { 3, 6 }, { 3 ,7 },
++#define SECURE_FUSE_BANK	(0)
++#define SECURE_FUSE_WORD	(6)
++#define SECURE_FUSE_VALUE	(0x00000002)
+ #else
+ #error "SoC not supported"
+ #endif
+-- 
+2.34.1
+

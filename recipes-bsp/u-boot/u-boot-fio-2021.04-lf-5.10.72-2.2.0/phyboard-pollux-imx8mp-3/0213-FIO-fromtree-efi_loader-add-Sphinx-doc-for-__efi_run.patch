@@ -1,0 +1,65 @@
+From bc5561955a87a32b7c29fc978d4430aecefd6d2e Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Marek=20Beh=C3=BAn?= <marek.behun@nic.cz>
+Date: Thu, 20 May 2021 13:23:57 +0200
+Subject: [PATCH 213/322] [FIO fromtree] efi_loader: add Sphinx doc for
+ __efi_runtime and __efi_runtime_data
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Document the macros __efi_runtime and __efi_runtime_data in Sphinx
+style.
+
+Signed-off-by: Marek Behún <marek.behun@nic.cz>
+Reviewed-by: Heinrich Schuchardt <xypron.glpk@gmx.de>
+(cherry picked from commit 82836973115171d1d8ff5fa874b075672ac08f58)
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+---
+ include/efi_loader.h | 29 ++++++++++++++++++++++++++---
+ 1 file changed, 26 insertions(+), 3 deletions(-)
+
+diff --git a/include/efi_loader.h b/include/efi_loader.h
+index 921f7bd816e..0ea01c90d98 100644
+--- a/include/efi_loader.h
++++ b/include/efi_loader.h
+@@ -680,11 +680,34 @@ ssize_t efi_dp_check_length(const struct efi_device_path *dp,
+ 	(((_dp)->type == DEVICE_PATH_TYPE_##_type) && \
+ 	 ((_dp)->sub_type == DEVICE_PATH_SUB_TYPE_##_subtype))
+ 
+-/*
+- * Use these to indicate that your code / data should go into the EFI runtime
+- * section and thus still be available when the OS is running
++/**
++ * __efi_runtime_data - declares a non-const variable for EFI runtime section
++ *
++ * This macro indicates that a variable is non-const and should go into the
++ * EFI runtime section, and thus still be available when the OS is running.
++ *
++ * Only use on variables not declared const.
++ *
++ * Example:
++ *
++ * ::
++ *
++ *   static __efi_runtime_data my_computed_table[256];
+  */
+ #define __efi_runtime_data __attribute__ ((section (".data.efi_runtime")))
++
++/**
++ * __efi_runtime - declares a function for EFI runtime section
++ *
++ * This macro indicates that a function should go into the EFI runtime section,
++ * and thus still be available when the OS is running.
++ *
++ * Example:
++ *
++ * ::
++ *
++ *   static __efi_runtime compute_my_table(void);
++ */
+ #define __efi_runtime __attribute__ ((section (".text.efi_runtime")))
+ 
+ /* Indicate supported runtime services */
+-- 
+2.34.1
+

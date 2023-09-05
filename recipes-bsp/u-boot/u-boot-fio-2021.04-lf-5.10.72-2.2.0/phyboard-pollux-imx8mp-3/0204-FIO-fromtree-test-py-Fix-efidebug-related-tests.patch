@@ -1,0 +1,213 @@
+From 59758464df28086f24c44d68808f00965a2df619 Mon Sep 17 00:00:00 2001
+From: Ilias Apalodimas <ilias.apalodimas@linaro.org>
+Date: Fri, 23 Apr 2021 16:24:13 +0300
+Subject: [PATCH 204/322] [FIO fromtree] test/py: Fix efidebug related tests
+
+commit cbea241e935e("efidebug: add multiple device path instances on Boot####")
+slightly tweaked the efidebug syntax adding -b, -i and -s for the boot
+image, initrd and optional data.
+The pytests using this command were adapted as well. However I completely
+missed the last "" argument, which at the time indicated the optional data
+and needed conversion as well.  This patch is adding the missing -s flag
+and the tests are back to normal.
+
+Fixes: cbea241e935e("efidebug: add multiple device path instances on Boot####")
+Signed-off-by: Ilias Apalodimas <ilias.apalodimas@linaro.org>
+Reviwed-by: Heinrich Schuchardt <xypron.glpk@gmx.de>
+(cherry picked from commit ce62b0f8f45f1b71fc03ddee84c0529cea228e24)
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+---
+ .../test_efi_capsule/test_capsule_firmware.py    |  6 +++---
+ test/py/tests/test_efi_secboot/test_signed.py    | 16 ++++++++--------
+ .../tests/test_efi_secboot/test_signed_intca.py  |  8 ++++----
+ test/py/tests/test_efi_secboot/test_unsigned.py  |  8 ++++----
+ 4 files changed, 19 insertions(+), 19 deletions(-)
+
+diff --git a/test/py/tests/test_efi_capsule/test_capsule_firmware.py b/test/py/tests/test_efi_capsule/test_capsule_firmware.py
+index 160a64a14b4..4697ca6f1c5 100644
+--- a/test/py/tests/test_efi_capsule/test_capsule_firmware.py
++++ b/test/py/tests/test_efi_capsule/test_capsule_firmware.py
+@@ -39,7 +39,7 @@ class TestEfiCapsuleFirmwareFit(object):
+         with u_boot_console.log.section('Test Case 1-a, before reboot'):
+             output = u_boot_console.run_command_list([
+                 'host bind 0 %s' % disk_img,
+-                'efidebug boot add -b 1 TEST host 0:1 /helloworld.efi ""',
++                'efidebug boot add -b 1 TEST host 0:1 /helloworld.efi -s ""',
+                 'efidebug boot order 1',
+                 'env set -e OsIndications',
+                 'env set dfu_alt_info "sf 0:0=u-boot-bin raw 0x100000 0x50000;u-boot-env raw 0x150000 0x200000"',
+@@ -114,7 +114,7 @@ class TestEfiCapsuleFirmwareFit(object):
+         with u_boot_console.log.section('Test Case 2-a, before reboot'):
+             output = u_boot_console.run_command_list([
+                 'host bind 0 %s' % disk_img,
+-                'efidebug boot add -b 1 TEST host 0:1 /helloworld.efi ""',
++                'efidebug boot add -b 1 TEST host 0:1 /helloworld.efi -s ""',
+                 'efidebug boot order 1',
+                 'env set -e -nv -bs -rt OsIndications =0x0000000000000004',
+                 'env set dfu_alt_info "sf 0:0=u-boot-bin raw 0x100000 0x50000;u-boot-env raw 0x150000 0x200000"',
+@@ -188,7 +188,7 @@ class TestEfiCapsuleFirmwareFit(object):
+         with u_boot_console.log.section('Test Case 3-a, before reboot'):
+             output = u_boot_console.run_command_list([
+                 'host bind 0 %s' % disk_img,
+-                'efidebug boot add -b 1 TEST host 0:1 /helloworld.efi ""',
++                'efidebug boot add -b 1 TEST host 0:1 /helloworld.efi -s ""',
+                 'efidebug boot order 1',
+                 'env set -e -nv -bs -rt OsIndications =0x0000000000000004',
+                 'env set dfu_alt_info "sf 0:0=u-boot-bin raw 0x100000 0x50000;u-boot-env raw 0x150000 0x200000"',
+diff --git a/test/py/tests/test_efi_secboot/test_signed.py b/test/py/tests/test_efi_secboot/test_signed.py
+index 75f5ea77230..0aee34479f5 100644
+--- a/test/py/tests/test_efi_secboot/test_signed.py
++++ b/test/py/tests/test_efi_secboot/test_signed.py
+@@ -28,7 +28,7 @@ class TestEfiSignedImage(object):
+             # Test Case 1a, run signed image if no PK
+             output = u_boot_console.run_command_list([
+                 'host bind 0 %s' % disk_img,
+-                'efidebug boot add -b 1 HELLO1 host 0:1 /helloworld.efi.signed ""',
++                'efidebug boot add -b 1 HELLO1 host 0:1 /helloworld.efi.signed -s ""',
+                 'efidebug boot next 1',
+                 'bootefi bootmgr'])
+             assert 'Hello, world!' in ''.join(output)
+@@ -36,7 +36,7 @@ class TestEfiSignedImage(object):
+         with u_boot_console.log.section('Test Case 1b'):
+             # Test Case 1b, run unsigned image if no PK
+             output = u_boot_console.run_command_list([
+-                'efidebug boot add -b 2 HELLO2 host 0:1 /helloworld.efi ""',
++                'efidebug boot add -b 2 HELLO2 host 0:1 /helloworld.efi -s ""',
+                 'efidebug boot next 2',
+                 'bootefi bootmgr'])
+             assert 'Hello, world!' in ''.join(output)
+@@ -58,13 +58,13 @@ class TestEfiSignedImage(object):
+                 'setenv -e -nv -bs -rt -at -i 4000000:$filesize PK'])
+             assert 'Failed to set EFI variable' not in ''.join(output)
+             output = u_boot_console.run_command_list([
+-                'efidebug boot add -b 1 HELLO1 host 0:1 /helloworld.efi.signed ""',
++                'efidebug boot add -b 1 HELLO1 host 0:1 /helloworld.efi.signed -s ""',
+                 'efidebug boot next 1',
+                 'efidebug test bootmgr'])
+             assert('\'HELLO1\' failed' in ''.join(output))
+             assert('efi_start_image() returned: 26' in ''.join(output))
+             output = u_boot_console.run_command_list([
+-                'efidebug boot add -b 2 HELLO2 host 0:1 /helloworld.efi ""',
++                'efidebug boot add -b 2 HELLO2 host 0:1 /helloworld.efi -s ""',
+                 'efidebug boot next 2',
+                 'efidebug test bootmgr'])
+             assert '\'HELLO2\' failed' in ''.join(output)
+@@ -104,7 +104,7 @@ class TestEfiSignedImage(object):
+                 'setenv -e -nv -bs -rt -at -i 4000000:$filesize PK'])
+             assert 'Failed to set EFI variable' not in ''.join(output)
+             output = u_boot_console.run_command_list([
+-                'efidebug boot add -b 1 HELLO host 0:1 /helloworld.efi.signed ""',
++                'efidebug boot add -b 1 HELLO host 0:1 /helloworld.efi.signed -s ""',
+                 'efidebug boot next 1',
+                 'efidebug test bootmgr'])
+             assert '\'HELLO\' failed' in ''.join(output)
+@@ -142,7 +142,7 @@ class TestEfiSignedImage(object):
+                 'setenv -e -nv -bs -rt -at -i 4000000:$filesize PK'])
+             assert 'Failed to set EFI variable' not in ''.join(output)
+             output = u_boot_console.run_command_list([
+-                'efidebug boot add -b 1 HELLO host 0:1 /helloworld.efi.signed ""',
++                'efidebug boot add -b 1 HELLO host 0:1 /helloworld.efi.signed -s ""',
+                 'efidebug boot next 1',
+                 'efidebug test bootmgr'])
+             assert '\'HELLO\' failed' in ''.join(output)
+@@ -169,7 +169,7 @@ class TestEfiSignedImage(object):
+                 'setenv -e -nv -bs -rt -at -i 4000000:$filesize PK'])
+             assert 'Failed to set EFI variable' not in ''.join(output)
+             output = u_boot_console.run_command_list([
+-                'efidebug boot add -b 1 HELLO host 0:1 /helloworld.efi.signed_2sigs ""',
++                'efidebug boot add -b 1 HELLO host 0:1 /helloworld.efi.signed_2sigs -s ""',
+                 'efidebug boot next 1',
+                 'efidebug test bootmgr'])
+             assert 'Hello, world!' in ''.join(output)
+@@ -227,7 +227,7 @@ class TestEfiSignedImage(object):
+                 'setenv -e -nv -bs -rt -at -i 4000000:$filesize PK'])
+             assert 'Failed to set EFI variable' not in ''.join(output)
+             output = u_boot_console.run_command_list([
+-                'efidebug boot add -b 1 HELLO host 0:1 /helloworld.efi.signed ""',
++                'efidebug boot add -b 1 HELLO host 0:1 /helloworld.efi.signed -s ""',
+                 'efidebug boot next 1',
+                 'bootefi bootmgr'])
+             assert 'Hello, world!' in ''.join(output)
+diff --git a/test/py/tests/test_efi_secboot/test_signed_intca.py b/test/py/tests/test_efi_secboot/test_signed_intca.py
+index 0849572a514..d8d599d22f3 100644
+--- a/test/py/tests/test_efi_secboot/test_signed_intca.py
++++ b/test/py/tests/test_efi_secboot/test_signed_intca.py
+@@ -39,7 +39,7 @@ class TestEfiSignedImageIntca(object):
+             assert 'Failed to set EFI variable' not in ''.join(output)
+ 
+             output = u_boot_console.run_command_list([
+-                'efidebug boot add -b 1 HELLO_a host 0:1 /helloworld.efi.signed_a ""',
++                'efidebug boot add -b 1 HELLO_a host 0:1 /helloworld.efi.signed_a -s ""',
+                 'efidebug boot next 1',
+                 'efidebug test bootmgr'])
+             assert '\'HELLO_a\' failed' in ''.join(output)
+@@ -48,7 +48,7 @@ class TestEfiSignedImageIntca(object):
+         with u_boot_console.log.section('Test Case 1b'):
+             # Test Case 1b, signed and authenticated by root CA
+             output = u_boot_console.run_command_list([
+-                'efidebug boot add -b 2 HELLO_ab host 0:1 /helloworld.efi.signed_ab ""',
++                'efidebug boot add -b 2 HELLO_ab host 0:1 /helloworld.efi.signed_ab -s ""',
+                 'efidebug boot next 2',
+                 'bootefi bootmgr'])
+             assert 'Hello, world!' in ''.join(output)
+@@ -70,7 +70,7 @@ class TestEfiSignedImageIntca(object):
+             assert 'Failed to set EFI variable' not in ''.join(output)
+ 
+             output = u_boot_console.run_command_list([
+-                'efidebug boot add -b 1 HELLO_abc host 0:1 /helloworld.efi.signed_abc ""',
++                'efidebug boot add -b 1 HELLO_abc host 0:1 /helloworld.efi.signed_abc -s ""',
+                 'efidebug boot next 1',
+                 'efidebug test bootmgr'])
+             assert '\'HELLO_abc\' failed' in ''.join(output)
+@@ -116,7 +116,7 @@ class TestEfiSignedImageIntca(object):
+             assert 'Failed to set EFI variable' not in ''.join(output)
+ 
+             output = u_boot_console.run_command_list([
+-                'efidebug boot add -b 1 HELLO_abc host 0:1 /helloworld.efi.signed_abc ""',
++                'efidebug boot add -b 1 HELLO_abc host 0:1 /helloworld.efi.signed_abc -s ""',
+                 'efidebug boot next 1',
+                 'efidebug test bootmgr'])
+             assert 'Hello, world!' in ''.join(output)
+diff --git a/test/py/tests/test_efi_secboot/test_unsigned.py b/test/py/tests/test_efi_secboot/test_unsigned.py
+index 8e026f7566a..df63f0df081 100644
+--- a/test/py/tests/test_efi_secboot/test_unsigned.py
++++ b/test/py/tests/test_efi_secboot/test_unsigned.py
+@@ -35,7 +35,7 @@ class TestEfiUnsignedImage(object):
+             assert 'Failed to set EFI variable' not in ''.join(output)
+ 
+             output = u_boot_console.run_command_list([
+-                'efidebug boot add -b 1 HELLO host 0:1 /helloworld.efi ""',
++                'efidebug boot add -b 1 HELLO host 0:1 /helloworld.efi -s ""',
+                 'efidebug boot next 1',
+                 'bootefi bootmgr'])
+             assert '\'HELLO\' failed' in ''.join(output)
+@@ -64,7 +64,7 @@ class TestEfiUnsignedImage(object):
+             assert 'Failed to set EFI variable' not in ''.join(output)
+ 
+             output = u_boot_console.run_command_list([
+-                'efidebug boot add -b 1 HELLO host 0:1 /helloworld.efi ""',
++                'efidebug boot add -b 1 HELLO host 0:1 /helloworld.efi -s ""',
+                 'efidebug boot next 1',
+                 'bootefi bootmgr'])
+             assert 'Hello, world!' in ''.join(output)
+@@ -88,7 +88,7 @@ class TestEfiUnsignedImage(object):
+             assert 'Failed to set EFI variable' not in ''.join(output)
+ 
+             output = u_boot_console.run_command_list([
+-                'efidebug boot add -b 1 HELLO host 0:1 /helloworld.efi ""',
++                'efidebug boot add -b 1 HELLO host 0:1 /helloworld.efi -s ""',
+                 'efidebug boot next 1',
+                 'bootefi bootmgr'])
+             assert '\'HELLO\' failed' in ''.join(output)
+@@ -106,7 +106,7 @@ class TestEfiUnsignedImage(object):
+             assert 'Failed to set EFI variable' not in ''.join(output)
+ 
+             output = u_boot_console.run_command_list([
+-                'efidebug boot add -b 1 HELLO host 0:1 /helloworld.efi ""',
++                'efidebug boot add -b 1 HELLO host 0:1 /helloworld.efi -s ""',
+                 'efidebug boot next 1',
+                 'bootefi bootmgr'])
+             assert '\'HELLO\' failed' in ''.join(output)
+-- 
+2.34.1
+

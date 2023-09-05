@@ -1,0 +1,36 @@
+From 59c7a9760e7e17d49fc3d87d5ba0eab0080183c7 Mon Sep 17 00:00:00 2001
+From: Igor Opaniuk <igor.opaniuk@foundries.io>
+Date: Mon, 19 Apr 2021 23:58:51 +0300
+Subject: [PATCH 120/322] [FIO internal-squash] imx: secondary_boot: switch to
+ smccc calls for warm_reset
+
+Use new generic wrappers for doing SMC calls instead of old legacy
+NXP-specific call_imx_sip().
+
+Fixes: 06dd9179ee ("[FIO internal] imx: add imx_warm_reset cmd")
+Signed-off-by: Igor Opaniuk <igor.opaniuk@foundries.io>
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+---
+ arch/arm/mach-imx/imx_secondary_boot.c | 6 +-----
+ 1 file changed, 1 insertion(+), 5 deletions(-)
+
+diff --git a/arch/arm/mach-imx/imx_secondary_boot.c b/arch/arm/mach-imx/imx_secondary_boot.c
+index 48ea35d8817..4eb5c14e747 100644
+--- a/arch/arm/mach-imx/imx_secondary_boot.c
++++ b/arch/arm/mach-imx/imx_secondary_boot.c
+@@ -88,11 +88,7 @@ U_BOOT_CMD(
+ static int do_warm_reset(struct cmd_tbl *cmdtp, int flag,
+ 			 int argc, char * const argv[])
+ {
+-	unsigned long ret = 0;
+-
+-	ret = call_imx_sip(IMX_SIP_WARM_RESET, 0, 0, 0, 0);
+-	if (ret)
+-		return CMD_RET_FAILURE;
++	arm_smccc_smc(IMX_SIP_WARM_RESET, 0, 0, 0, 0, 0, 0, 0, NULL);
+ 
+ 	return CMD_RET_SUCCESS;
+ }
+-- 
+2.34.1
+

@@ -1,0 +1,52 @@
+From ddefdab88f5fdf9c7da967136185d5a6f992b2fa Mon Sep 17 00:00:00 2001
+From: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+Date: Thu, 25 Nov 2021 16:01:48 +0200
+Subject: [PATCH 292/322] [FIO temphack] apalis-imx8: disable fdt relocation
+
+The commit 756e067628 introduces a regression bug - it allows
+relocating FDT.
+Reverting commit 756e067628 brings a lot of conflicts, so it's better
+to refix a regression bug.
+
+Set fdt_high to 0xffffffffffffffff in order to avoid copying fdt
+during boot. It fixes allocation error [1].
+
+Note that such solution can't be upstreamed (see [2]) so remark it as
+temphack.
+
+[1]
+...
+   Loading fdt from 0x86dd0a38 to 0x83000000
+   Booting using the fdt blob at 0x83000000
+   Uncompressing Kernel Image
+   Loading Ramdisk to fb32c000, end fb67a669 ... OK
+ERROR: Failed to allocate 0x22ff9 bytes below 0xfe000000.
+device tree - allocation error
+FDT creation failed! hanging...### ERROR ### Please RESET the board ###
+...
+[2]
+  https://patchwork.ozlabs.org/project/uboot/patch/20210722154943.127775-2-oleksandr.suvorov@toradex.com/#2723077
+
+Fixes: 756e067628 ("[FIO fromtree] apalix-imx8: up-port initial implementation")
+
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+---
+ include/configs/apalis-imx8.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/include/configs/apalis-imx8.h b/include/configs/apalis-imx8.h
+index 7423eb046d1..e1e137ae768 100644
+--- a/include/configs/apalis-imx8.h
++++ b/include/configs/apalis-imx8.h
+@@ -102,7 +102,7 @@
+ 	"image=Image\0" \
+ 	"console=ttyLP1 earlycon\0" \
+ 	"fdt_addr=0x83000000\0"	\
+-	"fdt_high=\0" \
++	"fdt_high=0xffffffffffffffff\0" \
+ 	"boot_fdt=try\0" \
+ 	"fdtfile=" FDT_FILE "\0" \
+ 	"finduuid=part uuid mmc ${mmcdev}:2 uuid\0" \
+-- 
+2.34.1
+

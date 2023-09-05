@@ -1,0 +1,32 @@
+From 39cc7f42f49be9df1fdb7e76087ce846c299f622 Mon Sep 17 00:00:00 2001
+From: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+Date: Tue, 21 Dec 2021 19:41:31 +0200
+Subject: [PATCH 303/322] [FIO extras-squash] mx6ullevk: drop undefining
+ MODULE_FUSE
+
+In u-boot 2021.04 the selecting of IMX_MODULE_FUSE and OF_SYSTEM_SETUP
+was disabled on Kconfig level. Drop obsolete undefining.
+
+Fixes: 37f8fc5c10 ("[FIO extras] mx6ullevk: drop MODULE_FUSE and OF_SYSTEM_SETUP for SPL")
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+---
+ include/configs/mx6ullevk.h | 3 ---
+ 1 file changed, 3 deletions(-)
+
+diff --git a/include/configs/mx6ullevk.h b/include/configs/mx6ullevk.h
+index 48e03ef2429..4dad1b43e3c 100644
+--- a/include/configs/mx6ullevk.h
++++ b/include/configs/mx6ullevk.h
+@@ -293,9 +293,6 @@
+ #define CONFIG_VIDEO_BMP_RLE8
+ #define CONFIG_VIDEO_BMP_LOGO
+ #endif
+-#else /* for SPL_BUILD disable these subsystems */
+-#undef CONFIG_MODULE_FUSE
+-#undef CONFIG_OF_SYSTEM_SETUP
+ #endif
+ 
+ #endif
+-- 
+2.34.1
+

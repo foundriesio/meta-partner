@@ -1,0 +1,48 @@
+From 823035c12de88ee61afd0b53148539676b77c60c Mon Sep 17 00:00:00 2001
+From: Jorge Ramirez-Ortiz <jorge@foundries.io>
+Date: Wed, 8 Sep 2021 21:56:42 +0300
+Subject: [PATCH 041/322] [FIO fromlist] mmc: fsl_esdhc_imx: initialize data
+ for imx7ulp
+
+Import data for eSDHC driver for SoC iMX7ULP from the Linux kernel.
+Set supported by u-boot flags only.
+
+Signed-off-by: Jorge Ramirez-Ortiz <jorge@foundries.io>
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+Co-developed-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+Reviewed-by: Fabio Estevam <festevam@gmail.com>
+Reviewed-by: Jaehoon Chung <jh80.chung@samsung.com>
+Reviewed-by: Igor Opaniuk <igor.opaniuk@foundries.io>
+---
+ drivers/mmc/fsl_esdhc_imx.c | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/mmc/fsl_esdhc_imx.c b/drivers/mmc/fsl_esdhc_imx.c
+index bfaada06f27..806545a3410 100644
+--- a/drivers/mmc/fsl_esdhc_imx.c
++++ b/drivers/mmc/fsl_esdhc_imx.c
+@@ -1763,6 +1763,11 @@ static struct esdhc_soc_data usdhc_imx7d_data = {
+ 			| ESDHC_FLAG_HS400,
+ };
+ 
++static struct esdhc_soc_data usdhc_imx7ulp_data = {
++	.flags = ESDHC_FLAG_USDHC | ESDHC_FLAG_STD_TUNING
++			| ESDHC_FLAG_HAVE_CAP1 | ESDHC_FLAG_HS200,
++};
++
+ static struct esdhc_soc_data usdhc_imx8qm_data = {
+ 	.flags = ESDHC_FLAG_USDHC | ESDHC_FLAG_STD_TUNING |
+ 		ESDHC_FLAG_HAVE_CAP1 | ESDHC_FLAG_HS200 |
+@@ -1777,7 +1782,7 @@ static const struct udevice_id fsl_esdhc_ids[] = {
+ 	{ .compatible = "fsl,imx6sl-usdhc", },
+ 	{ .compatible = "fsl,imx6q-usdhc", },
+ 	{ .compatible = "fsl,imx7d-usdhc", .data = (ulong)&usdhc_imx7d_data,},
+-	{ .compatible = "fsl,imx7ulp-usdhc", },
++	{ .compatible = "fsl,imx7ulp-usdhc", .data = (ulong)&usdhc_imx7ulp_data,},
+ 	{ .compatible = "fsl,imx8qm-usdhc", .data = (ulong)&usdhc_imx8qm_data,},
+ 	{ .compatible = "fsl,imx8mm-usdhc", .data = (ulong)&usdhc_imx8qm_data,},
+ 	{ .compatible = "fsl,imx8mn-usdhc", .data = (ulong)&usdhc_imx8qm_data,},
+-- 
+2.34.1
+

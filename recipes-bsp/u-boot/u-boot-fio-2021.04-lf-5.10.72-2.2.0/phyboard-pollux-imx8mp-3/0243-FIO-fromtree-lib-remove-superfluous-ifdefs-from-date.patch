@@ -1,0 +1,47 @@
+From 0d4f59b6f51549b5882c84be9e95404b967392c7 Mon Sep 17 00:00:00 2001
+From: Heinrich Schuchardt <xypron.glpk@gmx.de>
+Date: Mon, 14 Jun 2021 18:47:09 +0200
+Subject: [PATCH 243/322] [FIO fromtree] lib: remove superfluous #ifdefs from
+ date.c
+
+We should avoid #ifdef in C modules. Unused functions are eliminated by the
+linker.
+
+Signed-off-by: Heinrich Schuchardt <xypron.glpk@gmx.de>
+(cherry picked from commit cbe3ab986bdd5301dd4cbfd50e316a063d17d7b8)
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+---
+ lib/date.c | 6 ------
+ 1 file changed, 6 deletions(-)
+
+diff --git a/lib/date.c b/lib/date.c
+index 0456de78ab1..c589d9ed3a2 100644
+--- a/lib/date.c
++++ b/lib/date.c
+@@ -10,8 +10,6 @@
+ #include <rtc.h>
+ #include <linux/time.h>
+ 
+-#if defined(CONFIG_LIB_DATE) || defined(CONFIG_TIMESTAMP)
+-
+ #define FEBRUARY		2
+ #define	STARTOFTIME		1970
+ #define SECDAY			86400L
+@@ -97,9 +95,6 @@ unsigned long rtc_mktime(const struct rtc_time *tm)
+ 	return (hours * 60 + tm->tm_min) * 60 + tm->tm_sec;
+ }
+ 
+-#endif /* CONFIG_LIB_DATE || CONFIG_TIMESTAMP */
+-
+-#ifdef CONFIG_LIB_DATE
+ /* for compatibility with linux code */
+ time64_t mktime64(const unsigned int year, const unsigned int mon,
+ 		  const unsigned int day, const unsigned int hour,
+@@ -116,4 +111,3 @@ time64_t mktime64(const unsigned int year, const unsigned int mon,
+ 
+ 	return (time64_t)rtc_mktime((const struct rtc_time *)&time);
+ }
+-#endif
+-- 
+2.34.1
+

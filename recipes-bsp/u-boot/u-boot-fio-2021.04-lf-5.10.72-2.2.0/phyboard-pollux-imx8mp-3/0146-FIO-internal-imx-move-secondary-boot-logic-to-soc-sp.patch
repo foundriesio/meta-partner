@@ -1,0 +1,76 @@
+From 228538ae6809c2ab76a8f966cfafca81a49598df Mon Sep 17 00:00:00 2001
+From: Igor Opaniuk <igor.opaniuk@foundries.io>
+Date: Wed, 28 Apr 2021 21:55:50 +0300
+Subject: [PATCH 146/322] [FIO internal] imx: move secondary boot logic to
+ soc-specific code
+
+Move spl_mmc_get_uboot_raw_sector to SoC-specific sources instead of
+board files.
+
+Signed-off-by: Igor Opaniuk <igor.opaniuk@foundries.io>
+---
+ arch/arm/mach-imx/spl.c      | 21 +++++++++++++++++++++
+ board/freescale/common/mmc.c | 21 ---------------------
+ 2 files changed, 21 insertions(+), 21 deletions(-)
+
+diff --git a/arch/arm/mach-imx/spl.c b/arch/arm/mach-imx/spl.c
+index a5b5c8b9faa..f3974f973b3 100644
+--- a/arch/arm/mach-imx/spl.c
++++ b/arch/arm/mach-imx/spl.c
+@@ -449,3 +449,24 @@ int mmc_image_load_late(struct mmc *mmc)
+ 	return check_rpmb_blob(mmc);
+ }
+ #endif
++
++#if defined(CONFIG_SECONDARY_BOOT_RUNTIME_DETECTION) && \
++    defined(CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_USE_SECTOR)
++unsigned long spl_mmc_get_uboot_raw_sector(struct mmc *mmc,
++					   unsigned long raw_sect)
++{
++	int boot_secondary = boot_mode_getprisec();
++	unsigned long offset = CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_SECTOR;
++
++	if (boot_secondary) {
++		offset += CONFIG_SECONDARY_BOOT_SECTOR_OFFSET;
++		printf("SPL: Booting secondary boot path: using 0x%lx offset "
++		       "for next boot image\n", offset);
++	} else {
++		printf("SPL: Booting primary boot path: using 0x%lx offset "
++		       "for next boot image\n", offset);
++	}
++
++	return offset;
++}
++#endif
+diff --git a/board/freescale/common/mmc.c b/board/freescale/common/mmc.c
+index 3877f0300ea..ab1652d6972 100644
+--- a/board/freescale/common/mmc.c
++++ b/board/freescale/common/mmc.c
+@@ -49,24 +49,3 @@ void board_late_mmc_env_init(void)
+ 	sprintf(cmd, "mmc dev %d", dev_no);
+ 	run_command(cmd, 0);
+ }
+-
+-#if defined(CONFIG_SECONDARY_BOOT_RUNTIME_DETECTION) && \
+-    defined(CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_USE_SECTOR)
+-unsigned long spl_mmc_get_uboot_raw_sector(struct mmc *mmc,
+-					   unsigned long raw_sect)
+-{
+-	int boot_secondary = boot_mode_getprisec();
+-	unsigned long offset = CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_SECTOR;
+-
+-	if (boot_secondary) {
+-		offset += CONFIG_SECONDARY_BOOT_SECTOR_OFFSET;
+-		printf("SPL: Booting secondary boot path: using 0x%lx offset "
+-		       "for next boot image\n", offset);
+-	} else {
+-		printf("SPL: Booting primary boot path: using 0x%lx offset "
+-		       "for next boot image\n", offset);
+-	}
+-
+-	return offset;
+-}
+-#endif
+-- 
+2.34.1
+

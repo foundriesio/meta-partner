@@ -1,0 +1,31 @@
+From e84068f9ed343781c52e1c4a2625e5724df939d7 Mon Sep 17 00:00:00 2001
+From: Igor Opaniuk <igor.opaniuk@foundries.io>
+Date: Wed, 3 Mar 2021 19:32:19 +0200
+Subject: [PATCH 097/322] [FIO internal] fastboot: fix length calculation for
+ imx-boot image
+
+Fix length calculation for imx-boot image, take into account additional
+offset to IVT.
+
+Signed-off-by: Igor Opaniuk <igor.opaniuk@foundries.io>
+Signed-off-by: Vanessa Maegima <vanessa.maegima@foundries.io>
+---
+ drivers/fastboot/fb_fsl/fb_fsl_partitions.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/fastboot/fb_fsl/fb_fsl_partitions.c b/drivers/fastboot/fb_fsl/fb_fsl_partitions.c
+index 17df0ccb5e0..69244b56450 100644
+--- a/drivers/fastboot/fb_fsl/fb_fsl_partitions.c
++++ b/drivers/fastboot/fb_fsl/fb_fsl_partitions.c
+@@ -258,7 +258,7 @@ static int _fastboot_parts_load_from_ptable(void)
+ 				/ dev_desc->blksz;
+ #else
+ 	ptable[PTN_BOOTLOADER_INDEX].length =
+-				 boot_loader_psize / dev_desc->blksz;
++				(boot_loader_psize - bootloader_mmc_offset()) / dev_desc->blksz;
+ #endif
+ 	ptable[PTN_BOOTLOADER_INDEX].partition_id = boot_partition;
+ 	ptable[PTN_BOOTLOADER_INDEX].flags = FASTBOOT_PTENTRY_FLAGS_UNERASEABLE;
+-- 
+2.34.1
+

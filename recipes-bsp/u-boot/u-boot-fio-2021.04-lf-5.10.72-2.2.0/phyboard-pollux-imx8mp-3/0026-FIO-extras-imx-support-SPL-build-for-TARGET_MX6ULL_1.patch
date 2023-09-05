@@ -1,0 +1,246 @@
+From 2582023ea703da5b1ca71a40b81cbd750f1e3940 Mon Sep 17 00:00:00 2001
+From: Michael Scott <mike@foundries.io>
+Date: Fri, 19 Jun 2020 14:49:42 -0700
+Subject: [PATCH 026/322] [FIO extras] imx: support SPL build for
+ TARGET_MX6ULL_14X14_EVK
+
+- source added for SPL build was gathered from similar SoC.
+- include u-boot DTS to enable SPL DM drivers
+
+Signed-off-by: Michael Scott <mike@foundries.io>
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+---
+ arch/arm/dts/imx6ull-14x14-evk-u-boot.dtsi | 55 ++++++++++++
+ arch/arm/mach-imx/mx6/Kconfig              |  1 +
+ board/freescale/mx6ullevk/Makefile         |  4 +
+ board/freescale/mx6ullevk/spl.c            | 98 ++++++++++++++++++++++
+ include/configs/mx6ullevk.h                |  8 ++
+ 5 files changed, 166 insertions(+)
+ create mode 100644 arch/arm/dts/imx6ull-14x14-evk-u-boot.dtsi
+ create mode 100644 board/freescale/mx6ullevk/spl.c
+
+diff --git a/arch/arm/dts/imx6ull-14x14-evk-u-boot.dtsi b/arch/arm/dts/imx6ull-14x14-evk-u-boot.dtsi
+new file mode 100644
+index 00000000000..e1a3a74e0cc
+--- /dev/null
++++ b/arch/arm/dts/imx6ull-14x14-evk-u-boot.dtsi
+@@ -0,0 +1,55 @@
++// SPDX-License-Identifier: GPL-2.0+
++/*
++ * Copyright 2020 Foundries.io
++ */
++
++&{/soc} {
++	u-boot,dm-pre-reloc;
++	u-boot,dm-spl;
++};
++
++&aips1 {
++	u-boot,dm-pre-reloc;
++	u-boot,dm-spl;
++
++	spba-bus@2000000 {
++		u-boot,dm-pre-reloc;
++		u-boot,dm-spl;
++	};
++};
++
++&aips2 {
++	u-boot,dm-pre-reloc;
++	u-boot,dm-spl;
++};
++
++&uart1 {
++	u-boot,dm-pre-reloc;
++	u-boot,dm-spl;
++};
++
++&iomuxc {
++	u-boot,dm-pre-reloc;
++	u-boot,dm-spl;
++};
++
++/* only enable the active boot device */
++&usdhc2 {
++        u-boot,dm-pre-reloc;
++        u-boot,dm-spl;
++};
++
++&gpio1 {
++        u-boot,dm-pre-reloc;
++        u-boot,dm-spl;
++};
++
++&gpio2 {
++        u-boot,dm-pre-reloc;
++        u-boot,dm-spl;
++};
++
++&reg_sd1_vmmc {
++        u-boot,dm-pre-reloc;
++        u-boot,dm-spl;
++};
+diff --git a/arch/arm/mach-imx/mx6/Kconfig b/arch/arm/mach-imx/mx6/Kconfig
+index 59a2c61ffd8..9af820f7e03 100644
+--- a/arch/arm/mach-imx/mx6/Kconfig
++++ b/arch/arm/mach-imx/mx6/Kconfig
+@@ -669,6 +669,7 @@ config TARGET_MX6ULL_14X14_EVK
+ 	select DM_THERMAL
+ 	select IMX_MODULE_FUSE
+ 	select OF_SYSTEM_SETUP
++	select SUPPORT_SPL
+ 	imply CMD_DM
+ 
+ config TARGET_MYS_6ULX
+diff --git a/board/freescale/mx6ullevk/Makefile b/board/freescale/mx6ullevk/Makefile
+index 1ff03b5f1cd..f74bc2ade54 100644
+--- a/board/freescale/mx6ullevk/Makefile
++++ b/board/freescale/mx6ullevk/Makefile
+@@ -2,3 +2,7 @@
+ # (C) Copyright 2016 Freescale Semiconductor, Inc.
+ 
+ obj-y  := mx6ullevk.o
++
++ifdef CONFIG_SPL_BUILD
++obj-y += spl.o
++endif
+diff --git a/board/freescale/mx6ullevk/spl.c b/board/freescale/mx6ullevk/spl.c
+new file mode 100644
+index 00000000000..9a0bafb3c85
+--- /dev/null
++++ b/board/freescale/mx6ullevk/spl.c
+@@ -0,0 +1,98 @@
++// SPDX-License-Identifier: GPL-2.0+
++/*
++ * Copyright 2020 Foundries.io
++ */
++
++#include <common.h>
++#include <spl.h>
++#include <asm/io.h>
++#include <asm/arch/clock.h>
++#include <asm/arch/crm_regs.h>
++#include <asm/arch/imx-regs.h>
++#include <asm/arch/mx6ull_pins.h>
++#include <asm/mach-imx/iomux-v3.h>
++
++DECLARE_GLOBAL_DATA_PTR;
++
++#include <asm/arch/mx6-ddr.h>
++
++#ifdef CONFIG_SPL_LOAD_FIT
++int board_fit_config_name_match(const char *name)
++{
++	if (!strcmp(name, "imx6ull-14x14-evk"))
++		return 0;
++
++	return -1;
++}
++#endif
++
++#ifdef CONFIG_FSL_ESDHC_IMX
++
++/* Values copied from imx6ul-14x14-evk.dtsi */
++static iomux_v3_cfg_t const usdhc2_pads[] = {
++	MX6_PAD_NAND_RE_B__USDHC2_CLK | MUX_PAD_CTRL(0x17059),
++	MX6_PAD_NAND_WE_B__USDHC2_CMD | MUX_PAD_CTRL(0x17059),
++	MX6_PAD_NAND_DATA00__USDHC2_DATA0 | MUX_PAD_CTRL(0x17059),
++	MX6_PAD_NAND_DATA01__USDHC2_DATA1 | MUX_PAD_CTRL(0x17059),
++	MX6_PAD_NAND_DATA02__USDHC2_DATA2 | MUX_PAD_CTRL(0x17059),
++	MX6_PAD_NAND_DATA03__USDHC2_DATA3 | MUX_PAD_CTRL(0x17059),
++};
++
++static void setup_iomux_mmc(void)
++{
++	imx_iomux_v3_setup_multiple_pads(
++		usdhc2_pads, ARRAY_SIZE(usdhc2_pads));
++}
++#endif
++
++static void ccgr_init(void)
++{
++	struct mxc_ccm_reg *ccm = (struct mxc_ccm_reg *)CCM_BASE_ADDR;
++
++	writel(0xFFFFFFFF, &ccm->CCGR0);
++	writel(0xFFFFFFFF, &ccm->CCGR1);
++	writel(0xFFFFFFFF, &ccm->CCGR2);
++	writel(0xFFFFFFFF, &ccm->CCGR3);
++	writel(0xFFFFFFFF, &ccm->CCGR4);
++	writel(0xFFFFFFFF, &ccm->CCGR5);
++	writel(0xFFFFFFFF, &ccm->CCGR6);
++	writel(0xFFFFFFFF, &ccm->CCGR7);
++}
++
++void board_init_f(ulong dummy)
++{
++	/* DDR initialization done via DCD */
++
++	ccgr_init();
++	enable_usdhc_clk(1, 0);
++	enable_usdhc_clk(1, 1);
++
++	/* setup AIPS and disable watchdog */
++	arch_cpu_init();
++
++	/* iomux and setup of i2c */
++	board_early_init_f();
++
++	/* setup GP timer */
++	timer_init();
++
++	/* UART clocks enabled and gd valid - init serial console */
++	preloader_console_init();
++
++	/* Clear the BSS. */
++	memset(__bss_start, 0, __bss_end - __bss_start);
++
++	get_clocks();
++
++#ifdef CONFIG_FSL_ESDHC_IMX
++	/* setup MMC pins */
++	setup_iomux_mmc();
++#endif
++
++	/* load/boot image from boot device */
++	board_init_r(NULL, 0);
++}
++
++void reset_cpu(ulong addr)
++{
++}
+diff --git a/include/configs/mx6ullevk.h b/include/configs/mx6ullevk.h
+index 6f53dc59ed0..26e86523ca6 100644
+--- a/include/configs/mx6ullevk.h
++++ b/include/configs/mx6ullevk.h
+@@ -16,6 +16,10 @@
+ #include <asm/mach-imx/gpio.h>
+ #include "imx_env.h"
+ 
++#ifdef CONFIG_SPL
++#include "imx6_spl.h"
++#endif
++
+ #define is_mx6ull_9x9_evk()	CONFIG_IS_ENABLED(TARGET_MX6ULL_9X9_EVK)
+ 
+ #ifdef CONFIG_TARGET_MX6ULL_9X9_EVK
+@@ -75,6 +79,7 @@
+ 	"mtdparts=" MFG_NAND_PARTITION \
+ 	"\0"\
+ 
++#ifndef CONFIG_SPL_BUILD
+ #if defined(CONFIG_NAND_BOOT)
+ #define CONFIG_EXTRA_ENV_SETTINGS \
+ 	CONFIG_MFG_ENV_SETTINGS \
+@@ -219,6 +224,9 @@
+ 		   "fi; " \
+ 	   "else run netboot; fi"
+ #endif
++#else
++#define CONFIG_EXTRA_ENV_SETTINGS
++#endif /* CONFIG_SPL_BUILD */
+ 
+ /* Miscellaneous configurable options */
+ 
+-- 
+2.34.1
+

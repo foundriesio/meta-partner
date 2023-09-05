@@ -1,0 +1,84 @@
+From 2c2705a618001b80ff42d331f75bef96d84fb60e Mon Sep 17 00:00:00 2001
+From: Ilias Apalodimas <ilias.apalodimas@linaro.org>
+Date: Tue, 22 Jun 2021 17:38:53 +0300
+Subject: [PATCH 237/322] [FIO fromtree] efi_loader: Always install FMPs
+
+We only install FMPs if a CapsuleUpdate is requested.  Since we now have an
+ESRT table which relies on FMPs to build the required information, it
+makes more sense to unconditionally install them. This will allow userspace
+applications (e.g fwupd) to make use of the ERST and provide us with files
+we can use to run CapsuleUpdate on-disk
+
+Signed-off-by: Ilias Apalodimas <ilias.apalodimas@linaro.org>
+Reviewed-by: Heinrich Schuchardt <xypron.glpk@gmx.de>
+(cherry picked from commit 6e0184b86f689045a0acc268e1899ce7757c65d0)
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+---
+ include/efi_loader.h         |  1 +
+ lib/efi_loader/efi_capsule.c | 11 +++--------
+ lib/efi_loader/efi_setup.c   |  6 ++++++
+ 3 files changed, 10 insertions(+), 8 deletions(-)
+
+diff --git a/include/efi_loader.h b/include/efi_loader.h
+index d728a67b148..dc49ab578cc 100644
+--- a/include/efi_loader.h
++++ b/include/efi_loader.h
+@@ -974,4 +974,5 @@ efi_status_t efi_esrt_register(void);
+  * - error code otherwise.
+  */
+ efi_status_t efi_esrt_populate(void);
++efi_status_t efi_load_capsule_drivers(void);
+ #endif /* _EFI_LOADER_H */
+diff --git a/lib/efi_loader/efi_capsule.c b/lib/efi_loader/efi_capsule.c
+index cc6ed453ed2..d7136035d8f 100644
+--- a/lib/efi_loader/efi_capsule.c
++++ b/lib/efi_loader/efi_capsule.c
+@@ -919,13 +919,13 @@ static void efi_capsule_scan_done(void)
+ }
+ 
+ /**
+- * arch_efi_load_capsule_drivers - initialize capsule drivers
++ * efi_load_capsule_drivers - initialize capsule drivers
+  *
+- * Architecture or board specific initialization routine
++ * Generic FMP drivers backed by DFU
+  *
+  * Return:	status code
+  */
+-efi_status_t __weak arch_efi_load_capsule_drivers(void)
++efi_status_t __weak efi_load_capsule_drivers(void)
+ {
+ 	__maybe_unused efi_handle_t handle;
+ 	efi_status_t ret = EFI_SUCCESS;
+@@ -976,11 +976,6 @@ efi_status_t efi_launch_capsules(void)
+ 
+ 	index = get_last_capsule();
+ 
+-	/* Load capsule drivers */
+-	ret = arch_efi_load_capsule_drivers();
+-	if (ret != EFI_SUCCESS)
+-		return ret;
+-
+ 	/*
+ 	 * Find capsules on disk.
+ 	 * All the capsules are collected at the beginning because
+diff --git a/lib/efi_loader/efi_setup.c b/lib/efi_loader/efi_setup.c
+index cea2b4cf390..a78b31f3791 100644
+--- a/lib/efi_loader/efi_setup.c
++++ b/lib/efi_loader/efi_setup.c
+@@ -325,6 +325,12 @@ efi_status_t efi_init_obj_list(void)
+ 	if (ret != EFI_SUCCESS)
+ 		goto out;
+ 
++	if (IS_ENABLED(CONFIG_EFI_HAVE_CAPSULE_SUPPORT)) {
++		ret = efi_load_capsule_drivers();
++		if (ret != EFI_SUCCESS)
++			goto out;
++	}
++
+ #if defined(CONFIG_LCD) || defined(CONFIG_DM_VIDEO)
+ 	ret = efi_gop_register();
+ 	if (ret != EFI_SUCCESS)
+-- 
+2.34.1
+

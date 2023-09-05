@@ -1,0 +1,114 @@
+From 86f79ff9cce2038d49b6645c55df901c8b228139 Mon Sep 17 00:00:00 2001
+From: Ilias Apalodimas <ilias.apalodimas@linaro.org>
+Date: Wed, 12 May 2021 00:03:41 +0300
+Subject: [PATCH 209/322] [FIO fromtree] efi_loader: Don't stop EFI subsystem
+ init if installing TCG2 fails
+
+Up to now we are stopping the EFI subsystem if a TPMv2 exists but the
+protocol fails to install.  Now that we've switched the config to 'default
+y' the sandbox TPM fails, since it doesn't support all the required
+capabilities of the protocol.
+
+Not installing the protocol is not catastrophic.  If the protocol fails
+to install the PCRs will never be extended to the expected values, so
+some other entity later in the boot flow will eventually figure it out
+and take the necessary actions.
+
+While at it fix a corner case were the user can see an invalid error
+message when the protocol failed to install.  We do have a tcg2_uninit()
+which we call when the protocol installation fails.  There are cases though
+that this might be called before the configuration table is installed (e.g
+probing the TPM for capabilities failed).  In that case the user will see
+"Failed to delete final events config table".  So stop printing it since it's
+not an actual failure , simply because the config table was never installed
+in the first place.
+
+In order to stop printing it make efi_init_event_log() and create_final_event()
+cleanup themselves and only call tcg2_uninit() when the protocol installation
+fails.
+
+Signed-off-by: Ilias Apalodimas <ilias.apalodimas@linaro.org>
+Reviewed-by: Heinrich Schuchardt <xypron.glpk@gmx.de>
+(cherry picked from commit 2052759a5e331376c037760a84d36280be0ef3e9)
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+---
+ lib/efi_loader/efi_tcg2.c | 33 ++++++++++++++++++++++++++++-----
+ 1 file changed, 28 insertions(+), 5 deletions(-)
+
+diff --git a/lib/efi_loader/efi_tcg2.c b/lib/efi_loader/efi_tcg2.c
+index c8616bf31e1..39ef250bf9c 100644
+--- a/lib/efi_loader/efi_tcg2.c
++++ b/lib/efi_loader/efi_tcg2.c
+@@ -999,6 +999,11 @@ static efi_status_t create_final_event(void)
+ 	event_log.final_pos = sizeof(*final_event);
+ 	ret = efi_install_configuration_table(&efi_guid_final_events,
+ 					      final_event);
++	if (ret != EFI_SUCCESS) {
++		efi_free_pool(event_log.final_buffer);
++		event_log.final_buffer = NULL;
++	}
++
+ out:
+ 	return ret;
+ }
+@@ -1047,15 +1052,22 @@ static efi_status_t efi_init_event_log(void)
+ 	ret = create_specid_event(dev, (void *)((uintptr_t)event_log.buffer + sizeof(*event_header)),
+ 				  &spec_event_size);
+ 	if (ret != EFI_SUCCESS)
+-		goto out;
++		goto free_pool;
+ 	put_unaligned_le32(spec_event_size, &event_header->event_size);
+ 	event_log.pos = spec_event_size + sizeof(*event_header);
+ 	event_log.last_event_size = event_log.pos;
+ 
+ 	ret = create_final_event();
++	if (ret != EFI_SUCCESS)
++		goto free_pool;
+ 
+ out:
+ 	return ret;
++
++free_pool:
++	efi_free_pool(event_log.buffer);
++	event_log.buffer = NULL;
++	return ret;
+ }
+ 
+ /**
+@@ -1111,18 +1123,29 @@ efi_status_t efi_tcg2_register(void)
+ 		goto fail;
+ 
+ 	ret = efi_append_scrtm_version(dev);
+-	if (ret != EFI_SUCCESS)
++	if (ret != EFI_SUCCESS) {
++		tcg2_uninit();
+ 		goto fail;
++	}
+ 
+ 	ret = efi_add_protocol(efi_root, &efi_guid_tcg2_protocol,
+ 			       (void *)&efi_tcg2_protocol);
+ 	if (ret != EFI_SUCCESS) {
+-		log_err("Cannot install EFI_TCG2_PROTOCOL\n");
++		tcg2_uninit();
+ 		goto fail;
+ 	}
+ 	return ret;
+ 
+ fail:
+-	tcg2_uninit();
+-	return ret;
++	log_err("Cannot install EFI_TCG2_PROTOCOL\n");
++	/*
++	 * Return EFI_SUCCESS and don't stop the EFI subsystem.
++	 * That's done for 2 reasons
++	 * - If the protocol is not installed the PCRs won't be extended.  So
++	 *   someone later in the boot flow will notice that and take the
++	 *   necessary actions.
++	 * - The TPM sandbox is limited and we won't be able to run any efi
++	 *   related tests with TCG2 enabled
++	 */
++	return EFI_SUCCESS;
+ }
+-- 
+2.34.1
+

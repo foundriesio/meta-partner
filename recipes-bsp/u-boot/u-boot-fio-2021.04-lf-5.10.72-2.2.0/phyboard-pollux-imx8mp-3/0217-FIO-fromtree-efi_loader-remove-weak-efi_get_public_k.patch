@@ -1,0 +1,42 @@
+From 27804e3679520aef0c8c11619345599d2dcd19a1 Mon Sep 17 00:00:00 2001
+From: Heinrich Schuchardt <xypron.glpk@gmx.de>
+Date: Thu, 20 May 2021 04:08:11 +0200
+Subject: [PATCH 217/322] [FIO fromtree] efi_loader: remove weak
+ efi_get_public_key_data()
+
+Configuring a system with CONFIG_EFI_CAPSULE_AUTHENTICATE=y but without a
+method to retrieve the public key data is a misconfiguration. We should get
+a build failure for it. Therefore remove the weak efi_get_public_key_data()
+implementation.
+
+Signed-off-by: Heinrich Schuchardt <xypron.glpk@gmx.de>
+(cherry picked from commit 6754e24b54da3229c37ae50526df0e79ba6e67fa)
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+---
+ lib/efi_loader/efi_capsule.c | 10 ----------
+ 1 file changed, 10 deletions(-)
+
+diff --git a/lib/efi_loader/efi_capsule.c b/lib/efi_loader/efi_capsule.c
+index 6ee883d5b11..9ead0d2c781 100644
+--- a/lib/efi_loader/efi_capsule.c
++++ b/lib/efi_loader/efi_capsule.c
+@@ -208,16 +208,6 @@ skip:
+ const efi_guid_t efi_guid_capsule_root_cert_guid =
+ 	EFI_FIRMWARE_MANAGEMENT_CAPSULE_ID_GUID;
+ 
+-__weak int efi_get_public_key_data(void **pkey, efi_uintn_t *pkey_len)
+-{
+-	/* The platform is supposed to provide
+-	 * a method for getting the public key
+-	 * stored in the form of efi signature
+-	 * list
+-	 */
+-	return 0;
+-}
+-
+ efi_status_t efi_capsule_authenticate(const void *capsule, efi_uintn_t capsule_size,
+ 				      void **image, efi_uintn_t *image_size)
+ {
+-- 
+2.34.1
+

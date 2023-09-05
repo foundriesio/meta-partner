@@ -1,0 +1,67 @@
+From 6548f86becc841b5571e229d6f4afb078808df5f Mon Sep 17 00:00:00 2001
+From: Michael Scott <mike@foundries.io>
+Date: Mon, 15 Nov 2021 00:51:10 -0800
+Subject: [PATCH 279/322] [FIO extras-squash] imx_env: fix set mfg to run
+ fastboot by default
+
+This fixes commit 6e15126624 ("[FIO extras] imx_env: set mfg to run
+fastboot by default").
+
+The original commit accidentally removed the needed env var from
+CONFIG_MFG_ENV_SETTINGS_DEFAULT:
+   "bootcmd_mfg=run mfgtool_args;" \
+and it doesn't make sure to add a NUL character to the end of
+FASTBOOT_CMD.
+
+This causes a default environment to look like this:
+    "mfgtool_args=setenv bootargs console=${console},${baudrate} " \
+        "rdinit=/linuxrc " \
+        "clk_ignore_unused "\
+        "\0" \
+    "echo \"Run fastboot ...\"; fastboot 0; " \
+
+The result of this, is the NEXT variable defined in
+include/configs/<board>.h gets eaten.
+
+In many cases, this is the initrd_addr variable:
+	CONFIG_MFG_ENV_SETTINGS_DEFAULT \
+	"initrd_addr=0x43800000\0" \
+	"initrd_high=0xffffffffffffffff\0" \
+	"emmc_dev=2\0"\
+	"sd_dev=1\0" \
+
+The default environment looks like this:
+    "mfgtool_args=setenv bootargs console=${console},${baudrate} " \
+        "rdinit=/linuxrc " \
+        "clk_ignore_unused "\
+        "\0" \
+    "echo \"Run fastboot ...\"; fastboot 0; initrd_addr=0x43800000\0" \
+    "initrd_high=0xffffffffffffffff\0" \
+    "emmc_dev=2\0"\
+    "sd_dev=1\0" \
+
+Fixup the original commit to avoid this.
+
+Signed-off-by: Michael Scott <mike@foundries.io>
+---
+ include/configs/imx_env.h | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/include/configs/imx_env.h b/include/configs/imx_env.h
+index ff405ac8aa8..7b0c04c8e5e 100644
+--- a/include/configs/imx_env.h
++++ b/include/configs/imx_env.h
+@@ -33,7 +33,9 @@
+ 		"rdinit=/linuxrc " \
+ 		"clk_ignore_unused "\
+ 		"\0" \
+-	MFG_NAND_FIT_PARTITION \
++	"bootcmd_mfg=run mfgtool_args;" \
+ 	FASTBOOT_CMD \
++	"\0" \
++	MFG_NAND_FIT_PARTITION \
+ 
+ #endif
+-- 
+2.34.1
+

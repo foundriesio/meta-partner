@@ -1,0 +1,51 @@
+From 059476fca936c3783d87f9cf0e919e0e988b84a0 Mon Sep 17 00:00:00 2001
+From: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+Date: Wed, 15 Sep 2021 18:43:33 +0300
+Subject: [PATCH 007/322] [FIO internal] ti: add default implementation of
+ mmc_map_to_kernel_blk()
+
+Add the simple mmc_map_to_kernel_blk() implementation to fix the
+compile-time error [1] for am335x-boneblack board supported by FIO.
+
+[1]
+common/built-in.o: in function `append_kernel_cmdline':
+common/image-android.c:118: undefined reference to `mmc_map_to_kernel_blk'
+
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+---
+ board/ti/common/Makefile |  1 +
+ board/ti/common/mmc.c    | 13 +++++++++++++
+ 2 files changed, 14 insertions(+)
+ create mode 100644 board/ti/common/mmc.c
+
+diff --git a/board/ti/common/Makefile b/board/ti/common/Makefile
+index cb97f226ae5..120c70559eb 100644
+--- a/board/ti/common/Makefile
++++ b/board/ti/common/Makefile
+@@ -2,3 +2,4 @@
+ # Copyright (C) 2015-2016 Texas Instruments Incorporated - http://www.ti.com/
+ 
+ obj-${CONFIG_TI_I2C_BOARD_DETECT} += board_detect.o
++obj-y += mmc.o
+diff --git a/board/ti/common/mmc.c b/board/ti/common/mmc.c
+new file mode 100644
+index 00000000000..f03444a80af
+--- /dev/null
++++ b/board/ti/common/mmc.c
+@@ -0,0 +1,13 @@
++// SPDX-License-Identifier: GPL-2.0+
++/*
++ * Copyright (c) 2021 Foundries.io Ltd
++ */
++
++#include <common.h>
++#include <mmc.h>
++
++/* default implementation */
++__weak int mmc_map_to_kernel_blk(int dev_no)
++{
++	return dev_no;
++}
+-- 
+2.34.1
+

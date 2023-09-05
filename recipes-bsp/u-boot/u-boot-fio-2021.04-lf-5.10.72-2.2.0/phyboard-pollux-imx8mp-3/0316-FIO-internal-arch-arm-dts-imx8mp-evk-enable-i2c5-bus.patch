@@ -1,0 +1,128 @@
+From 79575f82818e2fcd23d81e3527f94438fd337642 Mon Sep 17 00:00:00 2001
+From: Vanessa Maegima <vanessa.maegima@foundries.io>
+Date: Tue, 29 Mar 2022 13:44:56 -0300
+Subject: [PATCH 316/322] [FIO internal] arch: arm: dts: imx8mp-evk: enable
+ i2c5 bus
+
+Enable the I2C5 bus in U-Boot and SPL dts. This is needed to enable
+the SE050 support in this bus.
+
+Flexcan1 conflicts with I2C5 pins, so disable it.
+
+Signed-off-by: Vanessa Maegima <vanessa.maegima@foundries.io>
+---
+ arch/arm/dts/imx8mp-evk-u-boot.dtsi | 24 ++++++++++++++++++++++++
+ arch/arm/dts/imx8mp-evk.dts         | 27 ++++++++++++++++++++++++++-
+ 2 files changed, 50 insertions(+), 1 deletion(-)
+
+diff --git a/arch/arm/dts/imx8mp-evk-u-boot.dtsi b/arch/arm/dts/imx8mp-evk-u-boot.dtsi
+index 879983c6b92..0992c0c37ee 100644
+--- a/arch/arm/dts/imx8mp-evk-u-boot.dtsi
++++ b/arch/arm/dts/imx8mp-evk-u-boot.dtsi
+@@ -181,6 +181,10 @@
+ 	u-boot,dm-spl;
+ };
+ 
++&i2c5 {
++	u-boot,dm-spl;
++};
++
+ &pinctrl_i2c1 {
+ 	u-boot,dm-spl;
+ };
+@@ -189,6 +193,22 @@
+ 	u-boot,dm-spl;
+ };
+ 
++&pinctrl_i2c3 {
++	u-boot,dm-spl;
++};
++
++&pinctrl_i2c3_gpio {
++	u-boot,dm-spl;
++};
++
++&pinctrl_i2c5 {
++	u-boot,dm-spl;
++};
++
++&pinctrl_i2c5_gpio {
++	u-boot,dm-spl;
++};
++
+ &usdhc1 {
+ 	u-boot,dm-spl;
+ 	assigned-clocks = <&clk IMX8MP_CLK_USDHC1>;
+@@ -226,6 +246,10 @@
+ 	u-boot,dm-spl;
+ };
+ 
++&{/soc@0/bus@30800000/i2c@30a40000/gpio@20} {
++	u-boot,dm-spl;
++};
++
+ &pinctrl_pmic {
+ 	u-boot,dm-spl;
+ };
+diff --git a/arch/arm/dts/imx8mp-evk.dts b/arch/arm/dts/imx8mp-evk.dts
+index fa923d580ac..ddf9e5ed670 100644
+--- a/arch/arm/dts/imx8mp-evk.dts
++++ b/arch/arm/dts/imx8mp-evk.dts
+@@ -135,7 +135,7 @@
+ 	pinctrl-names = "default";
+ 	pinctrl-0 = <&pinctrl_flexcan1>;
+ 	xceiver-supply = <&reg_can1_stby>;
+-	status = "okay";
++	status = "disabled";
+ };
+ 
+ &flexcan2 {
+@@ -379,6 +379,17 @@
+ 	};
+ };
+ 
++&i2c5 {
++	clock-frequency = <100000>;
++	pinctrl-names = "default", "gpio";
++	pinctrl-0 = <&pinctrl_i2c5>;
++	pinctrl-1 = <&pinctrl_i2c5_gpio>;
++	scl-gpios = <&gpio5 3 GPIO_ACTIVE_HIGH>;
++	sda-gpios = <&gpio5 4 GPIO_ACTIVE_HIGH>;
++	gpio = <&pca6416 2 GPIO_ACTIVE_HIGH>;
++	status = "okay";
++};
++
+ &lcdif1 {
+ 	status = "okay";
+ };
+@@ -593,6 +604,13 @@
+ 		>;
+ 	};
+ 
++	pinctrl_i2c5: i2c5grp {
++		fsl,pins = <
++			MX8MP_IOMUXC_SPDIF_TX__I2C5_SCL			0x400001c3
++			MX8MP_IOMUXC_SPDIF_RX__I2C5_SDA			0x400001c3
++		>;
++	};
++
+ 	pinctrl_i2c1_gpio: i2c1grp-gpio {
+ 		fsl,pins = <
+ 			MX8MP_IOMUXC_I2C1_SCL__GPIO5_IO14        	0x1c3
+@@ -614,6 +632,13 @@
+ 		>;
+ 	};
+ 
++	pinctrl_i2c5_gpio: i2c5grp-gpio {
++		fsl,pins = <
++			MX8MP_IOMUXC_SPDIF_TX__GPIO5_IO03        	0x1c3
++			MX8MP_IOMUXC_SPDIF_RX__GPIO5_IO04        	0x1c3
++		>;
++	};
++
+ 	pinctrl_mipi_dsi_en: mipi_dsi_en {
+ 		fsl,pins = <
+ 			MX8MP_IOMUXC_GPIO1_IO08__GPIO1_IO08	0x16
+-- 
+2.34.1
+

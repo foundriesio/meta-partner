@@ -1,0 +1,121 @@
+From 22d961bec005b5ef2a4b2cbffe4d824b7177977c Mon Sep 17 00:00:00 2001
+From: Jorge Ramirez-Ortiz <jorge@foundries.io>
+Date: Sun, 14 Feb 2021 16:27:24 +0100
+Subject: [PATCH 079/322] [FIO fromlist] cmd: SCP03: enable and provision
+ command
+
+Enable and provision the SCP03 keys on a TEE controlled secured elemt
+from the U-Boot shell.
+
+Executing this command will generate and program new SCP03 encryption
+keys on the secure element NVM.
+
+Depending on the TEE implementation, the keys would then be stored in
+some persistent storage or better derived from some platform secret
+(so they can't be lost).
+
+Signed-off-by: Jorge Ramirez-Ortiz <jorge@foundries.io>
+Reviewed-by: Simon Glass <sjg@chromium.org>
+Reviewed-by: Igor Opaniuk <igor.opaniuk@foundries.io>
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+---
+ cmd/Kconfig  |  8 ++++++++
+ cmd/Makefile |  3 +++
+ cmd/scp03.c  | 52 ++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 63 insertions(+)
+ create mode 100644 cmd/scp03.c
+
+diff --git a/cmd/Kconfig b/cmd/Kconfig
+index 1e8a25dcdcb..1ec2f9bd3e3 100644
+--- a/cmd/Kconfig
++++ b/cmd/Kconfig
+@@ -2052,6 +2052,14 @@ config HASH_VERIFY
+ 	help
+ 	  Add -v option to verify data against a hash.
+ 
++config CMD_SCP03
++	bool "scp03 - SCP03 enable and rotate/provision operations"
++	depends on SCP03
++	help
++	  This command provides access to a Trusted Application
++	  running in a TEE to request Secure Channel Protocol 03
++	  (SCP03) enablement and/or rotation of its SCP03 keys.
++
+ config CMD_TPM_V1
+ 	bool
+ 
+diff --git a/cmd/Makefile b/cmd/Makefile
+index e950f38b0e9..012d2961965 100644
+--- a/cmd/Makefile
++++ b/cmd/Makefile
+@@ -199,6 +199,9 @@ obj-$(CONFIG_CMD_AVB) += avb.o
+ # Foundries.IO Verified Boot
+ obj-$(CONFIG_CMD_FIOVB) += fiovb.o
+ 
++# Foundries.IO SCP03
++obj-$(CONFIG_CMD_SCP03) += scp03.o
++
+ obj-$(CONFIG_ARM) += arm/
+ obj-$(CONFIG_RISCV) += riscv/
+ obj-$(CONFIG_SANDBOX) += sandbox/
+diff --git a/cmd/scp03.c b/cmd/scp03.c
+new file mode 100644
+index 00000000000..655e0bba08b
+--- /dev/null
++++ b/cmd/scp03.c
+@@ -0,0 +1,52 @@
++// SPDX-License-Identifier: GPL-2.0+
++/*
++ * (C) Copyright 2021, Foundries.IO
++ *
++ */
++
++#include <common.h>
++#include <command.h>
++#include <env.h>
++#include <scp03.h>
++
++int do_scp03_enable(struct cmd_tbl *cmdtp, int flag, int argc,
++		    char *const argv[])
++{
++	if (argc != 1)
++		return CMD_RET_USAGE;
++
++	if (tee_enable_scp03()) {
++		printf("TEE failed to enable SCP03\n");
++		return CMD_RET_FAILURE;
++	}
++
++	printf("SCP03 is enabled\n");
++
++	return CMD_RET_SUCCESS;
++}
++
++int do_scp03_provision(struct cmd_tbl *cmdtp, int flag, int argc,
++		       char *const argv[])
++{
++	if (argc != 1)
++		return CMD_RET_USAGE;
++
++	if (tee_provision_scp03()) {
++		printf("TEE failed to provision SCP03 keys\n");
++		return CMD_RET_FAILURE;
++	}
++
++	printf("SCP03 is provisioned\n");
++
++	return CMD_RET_SUCCESS;
++}
++
++static char text[] =
++	"provides a command to enable SCP03 and provision the SCP03 keys\n"
++	" enable    - enable SCP03 on the TEE\n"
++	" provision - provision SCP03 on the TEE\n";
++
++U_BOOT_CMD_WITH_SUBCMDS(scp03, "Secure Channel Protocol 03 control", text,
++	U_BOOT_SUBCMD_MKENT(enable, 1, 1, do_scp03_enable),
++	U_BOOT_SUBCMD_MKENT(provision, 1, 1, do_scp03_provision));
++
+-- 
+2.34.1
+

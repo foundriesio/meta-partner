@@ -1,0 +1,37 @@
+From 9d2ff45f922979f498342f0705ab0c88ec5254d1 Mon Sep 17 00:00:00 2001
+From: Jorge Ramirez-Ortiz <jorge@foundries.io>
+Date: Tue, 17 Dec 2019 08:40:53 +0100
+Subject: [PATCH 043/322] [FIO toup] mx7ulp: update wdog disable sequence
+
+WDOG1 might have been enabled already depending on FUSE hence we need
+to be as close as possible to its reconfiguration timing requirement
+of 128 bus clock limit.
+
+Signed-off-by: Jorge Ramirez-Ortiz <jorge@foundries.io>
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+---
+ arch/arm/mach-imx/mx7ulp/soc.c | 8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
+
+diff --git a/arch/arm/mach-imx/mx7ulp/soc.c b/arch/arm/mach-imx/mx7ulp/soc.c
+index 01e8de1e049..c5164c5989c 100644
+--- a/arch/arm/mach-imx/mx7ulp/soc.c
++++ b/arch/arm/mach-imx/mx7ulp/soc.c
+@@ -184,9 +184,11 @@ static void disable_wdog(u32 wdog_base)
+ 
+ 		while (!(readl(wdog_base + 0x00) & 0x800));
+ 	}
+-	writel(0x0, (wdog_base + 0x0C)); /* Set WIN to 0 */
+-	writel(0x400, (wdog_base + 0x08)); /* Set timeout to default 0x400 */
+-	writel(0x120, (wdog_base + 0x00)); /* Disable it and set update */
++	dmb();
++	__raw_writel(0x0, wdog_base + 0x0C); /* Set WIN to 0 */
++	__raw_writel(0x400, wdog_base + 0x08); /* Set timeout to default 0x400 */
++	__raw_writel(0x120, wdog_base + 0x00); /* Disable it and set update */
++	dmb();
+ 
+ 	while (!(readl(wdog_base + 0x00) & 0x400));
+ }
+-- 
+2.34.1
+

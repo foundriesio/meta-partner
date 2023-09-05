@@ -1,0 +1,45 @@
+From c8b4fbca97ee8b493a5f2ccc53b865e54918a4a8 Mon Sep 17 00:00:00 2001
+From: Michael Scott <mike@foundries.io>
+Date: Mon, 13 Jul 2020 20:46:17 -0700
+Subject: [PATCH 023/322] [FIO internal] mach-imx: spl: allow RAM load instead
+ of USB
+
+When CONFIG_SPL_RAM_DEVICE is enabled use: BOOT_DEVICE_RAM
+instead of BOOT_DEVICE_BOARD
+
+Signed-off-by: Michael Scott <mike@foundries.io>
+---
+ arch/arm/mach-imx/spl.c | 8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+diff --git a/arch/arm/mach-imx/spl.c b/arch/arm/mach-imx/spl.c
+index cd15f45adde..099f7ac0e0e 100644
+--- a/arch/arm/mach-imx/spl.c
++++ b/arch/arm/mach-imx/spl.c
+@@ -77,7 +77,11 @@ u32 spl_boot_device(void)
+ 	 * BOOT_MODE - see IMX6DQRM Table 8-1
+ 	 */
+ 	if (((bmode >> 24) & 0x03) == 0x01) /* Serial Downloader */
++#ifdef CONFIG_SPL_RAM_DEVICE
++		return BOOT_DEVICE_RAM;
++#else
+ 		return BOOT_DEVICE_BOARD;
++#endif
+ 
+ 	/*
+ 	 * The above method does not detect that the boot ROM used
+@@ -89,7 +93,11 @@ u32 spl_boot_device(void)
+ 	 * assumes that SPL did not (yet) initialize the USB PHY...
+ 	 */
+ 	if (is_usbotg_phy_active())
++#ifdef CONFIG_SPL_RAM_DEVICE
++		return BOOT_DEVICE_RAM;
++#else
+ 		return BOOT_DEVICE_BOARD;
++#endif
+ 
+ 	/* BOOT_CFG1[7:4] - see IMX6DQRM Table 8-8 */
+ 	switch ((reg & IMX6_BMODE_MASK) >> IMX6_BMODE_SHIFT) {
+-- 
+2.34.1
+

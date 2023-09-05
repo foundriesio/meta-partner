@@ -1,0 +1,32 @@
+From 0281205db17b3a47a8e159311e6632a3dd39a198 Mon Sep 17 00:00:00 2001
+From: Michael Scott <mike@foundries.io>
+Date: Mon, 20 Jul 2020 21:46:05 -0700
+Subject: [PATCH 024/322] [FIO toup] imx: syscounter: allow timer_init for SPL
+ build
+
+If we enable SPL and SKIP_LOWLEVEL_INIT, this results in the weak
+function timer_init() being used in the SPL build.  This is not
+desirable as on IMX6 SoC, MMC will then fail once u-boot proper
+is booted due to timing issue.
+
+Signed-off-by: Michael Scott <mike@foundries.io>
+---
+ arch/arm/mach-imx/syscounter.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/arm/mach-imx/syscounter.c b/arch/arm/mach-imx/syscounter.c
+index 6dfed365d29..e69a168a952 100644
+--- a/arch/arm/mach-imx/syscounter.c
++++ b/arch/arm/mach-imx/syscounter.c
+@@ -59,7 +59,7 @@ static inline unsigned long long us_to_tick(unsigned long long usec)
+ 	return usec;
+ }
+ 
+-#ifndef CONFIG_SKIP_LOWLEVEL_INIT
++#if !defined(CONFIG_SKIP_LOWLEVEL_INIT) || defined(CONFIG_SPL_BUILD)
+ int timer_init(void)
+ {
+ 	struct sctr_regs *sctr = (struct sctr_regs *)SCTR_BASE_ADDR;
+-- 
+2.34.1
+

@@ -1,0 +1,164 @@
+From 5291526a7c67d64d2310c1a09777669c8e4068ab Mon Sep 17 00:00:00 2001
+From: Michael Scott <mike@foundries.io>
+Date: Tue, 24 Nov 2020 17:10:22 -0800
+Subject: [PATCH 071/322] [FIO extras] fit-image: dont use CRC32, MD5 and SHA1
+ if SIGNATURE_STRICT
+
+This patch accomplishes 2 things:
+1. Disable weaker methods of fit verification / signing when
+   SIGNATURE_STRICT is enabled.  This protects against potential
+   threat vectors.
+2. By allowing these options to be disabled we save ~4k of SPL binary
+   size.  This allows more SoC with smaller SPL requirments to use the
+   SIGNATURE_STRICT setting.
+
+Signed-off-by: Michael Scott <mike@foundries.io>
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+---
+ common/Kconfig.boot | 6 ++++--
+ common/image-fit.c  | 9 ++++++++-
+ common/image-sig.c  | 3 +++
+ common/spl/Kconfig  | 8 ++++----
+ include/image.h     | 4 ++--
+ 5 files changed, 21 insertions(+), 9 deletions(-)
+
+diff --git a/common/Kconfig.boot b/common/Kconfig.boot
+index 134c385b862..7aa8b52916f 100644
+--- a/common/Kconfig.boot
++++ b/common/Kconfig.boot
+@@ -11,8 +11,10 @@ config ANDROID_BOOT_IMAGE
+ 
+ config FIT
+ 	bool "Support Flattened Image Tree"
+-	select MD5
+-	select SHA1
++	select MD5 if (!SPL_BUILD && !FIT_SIGNATURE_STRICT) || \
++		      (SPL_BUILD && !SPL_FIT_SIGNATURE_STRICT)
++	select SHA1 if (!SPL_BUILD && !FIT_SIGNATURE_STRICT) || \
++		       (SPL_BUILD && !SPL_FIT_SIGNATURE_STRICT)
+ 	help
+ 	  This option allows you to boot the new uImage structure,
+ 	  Flattened Image Tree.  FIT is formally a FDT, which can include
+diff --git a/common/image-fit.c b/common/image-fit.c
+index 445d5adbfe4..8891d40e2c6 100644
+--- a/common/image-fit.c
++++ b/common/image-fit.c
+@@ -1213,6 +1213,8 @@ int fit_set_timestamp(void *fit, int noffset, time_t timestamp)
+ int calculate_hash(const void *data, int data_len, const char *algo,
+ 			uint8_t *value, int *value_len)
+ {
++#if (!defined(CONFIG_SPL_BUILD) && !defined(CONFIG_FIT_SIGNATURE_STRICT)) || \
++    (defined(CONFIG_SPL_BUILD) && !defined(CONFIG_SPL_FIT_SIGNATURE_STRICT))
+ 	if (IMAGE_ENABLE_CRC32 && strcmp(algo, "crc32") == 0) {
+ 		*((uint32_t *)value) = crc32_wd(0, data, data_len,
+ 							CHUNKSZ_CRC32);
+@@ -1222,7 +1224,9 @@ int calculate_hash(const void *data, int data_len, const char *algo,
+ 		sha1_csum_wd((unsigned char *)data, data_len,
+ 			     (unsigned char *)value, CHUNKSZ_SHA1);
+ 		*value_len = 20;
+-	} else if (IMAGE_ENABLE_SHA256 && strcmp(algo, "sha256") == 0) {
++	} else
++#endif
++	if (IMAGE_ENABLE_SHA256 && strcmp(algo, "sha256") == 0) {
+ 		sha256_csum_wd((unsigned char *)data, data_len,
+ 			       (unsigned char *)value, CHUNKSZ_SHA256);
+ 		*value_len = SHA256_SUM_LEN;
+@@ -1234,9 +1238,12 @@ int calculate_hash(const void *data, int data_len, const char *algo,
+ 		sha512_csum_wd((unsigned char *)data, data_len,
+ 			       (unsigned char *)value, CHUNKSZ_SHA512);
+ 		*value_len = SHA512_SUM_LEN;
++#if (!defined(CONFIG_SPL_BUILD) && !defined(CONFIG_FIT_SIGNATURE_STRICT)) || \
++    (defined(CONFIG_SPL_BUILD) && !defined(CONFIG_SPL_FIT_SIGNATURE_STRICT))
+ 	} else if (IMAGE_ENABLE_MD5 && strcmp(algo, "md5") == 0) {
+ 		md5_wd((unsigned char *)data, data_len, value, CHUNKSZ_MD5);
+ 		*value_len = 16;
++#endif
+ 	} else {
+ 		debug("Unsupported hash alogrithm\n");
+ 		return -1;
+diff --git a/common/image-sig.c b/common/image-sig.c
+index a70ac3bc5db..d8bd1995803 100644
+--- a/common/image-sig.c
++++ b/common/image-sig.c
+@@ -23,6 +23,8 @@ DECLARE_GLOBAL_DATA_PTR;
+ #define IMAGE_MAX_HASHED_NODES		100
+ 
+ struct checksum_algo checksum_algos[] = {
++#if (!defined(CONFIG_SPL_BUILD) && !defined(CONFIG_FIT_SIGNATURE_STRICT)) || \
++    (defined(CONFIG_SPL_BUILD) && !defined(CONFIG_SPL_FIT_SIGNATURE_STRICT))
+ 	{
+ 		.name = "sha1",
+ 		.checksum_len = SHA1_SUM_LEN,
+@@ -33,6 +35,7 @@ struct checksum_algo checksum_algos[] = {
+ #endif
+ 		.calculate = hash_calculate,
+ 	},
++#endif
+ 	{
+ 		.name = "sha256",
+ 		.checksum_len = SHA256_SUM_LEN,
+diff --git a/common/spl/Kconfig b/common/spl/Kconfig
+index 6c8bbcbe4cf..949a95b2865 100644
+--- a/common/spl/Kconfig
++++ b/common/spl/Kconfig
+@@ -414,7 +414,7 @@ config SPL_CRC32_SUPPORT
+ 
+ config SPL_MD5_SUPPORT
+ 	bool "Support MD5"
+-	depends on SPL_FIT
++	depends on SPL_FIT && !SPL_FIT_SIGNATURE_STRICT
+ 	help
+ 	  Enable this to support MD5 in FIT images within SPL. An MD5
+ 	  checksum is a 128-bit hash value used to check that the image
+@@ -426,7 +426,7 @@ config SPL_MD5_SUPPORT
+ 
+ config SPL_SHA1_SUPPORT
+ 	bool "Support SHA1"
+-	depends on SPL_FIT
++	depends on SPL_FIT && !SPL_FIT_SIGNATURE_STRICT
+ 	select SHA1
+ 	help
+ 	  Enable this to support SHA1 in FIT images within SPL. A SHA1
+@@ -506,7 +506,7 @@ config SPL_CRYPTO_SUPPORT
+ 
+ config SPL_HASH_SUPPORT
+ 	bool "Support hashing drivers"
+-	select SHA1
++	select SHA1 if !SPL_FIT_SIGNATURE_STRICT
+ 	select SHA256
+ 	help
+ 	  Enable hashing drivers in SPL. These drivers can be used to
+@@ -517,7 +517,7 @@ config SPL_HASH_SUPPORT
+ config TPL_HASH_SUPPORT
+ 	bool "Support hashing drivers in TPL"
+ 	depends on TPL
+-	select SHA1
++	select SHA1 if !SPL_FIT_SIGNATURE_STRICT
+ 	select SHA256
+ 	help
+ 	  Enable hashing drivers in SPL. These drivers can be used to
+diff --git a/include/image.h b/include/image.h
+index 892ce4e64ee..1df06cade29 100644
+--- a/include/image.h
++++ b/include/image.h
+@@ -61,7 +61,7 @@ struct fdt_region;
+ #include <hash.h>
+ #include <linux/libfdt.h>
+ #include <fdt_support.h>
+-# ifdef CONFIG_SPL_BUILD
++# if defined(CONFIG_SPL_BUILD) && !defined(CONFIG_SPL_FIT_SIGNATURE_STRICT)
+ #  ifdef CONFIG_SPL_CRC32_SUPPORT
+ #   define IMAGE_ENABLE_CRC32	1
+ #  endif
+@@ -71,7 +71,7 @@ struct fdt_region;
+ #  ifdef CONFIG_SPL_SHA1_SUPPORT
+ #   define IMAGE_ENABLE_SHA1	1
+ #  endif
+-# else
++# elif !defined(CONFIG_SPL_BUILD) && !defined(CONFIG_FIT_SIGNATURE_STRICT)
+ #  define IMAGE_ENABLE_CRC32	1
+ #  define IMAGE_ENABLE_MD5	1
+ #  define IMAGE_ENABLE_SHA1	1
+-- 
+2.34.1
+

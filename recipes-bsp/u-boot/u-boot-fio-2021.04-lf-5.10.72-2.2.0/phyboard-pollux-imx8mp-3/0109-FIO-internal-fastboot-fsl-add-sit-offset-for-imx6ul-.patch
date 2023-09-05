@@ -1,0 +1,34 @@
+From 4beb8b6a7dca7f5020e3d10dd2827290928daacb Mon Sep 17 00:00:00 2001
+From: Igor Opaniuk <igor.opaniuk@foundries.io>
+Date: Fri, 16 Apr 2021 19:58:38 +0300
+Subject: [PATCH 109/322] [FIO internal] fastboot: fsl: add sit offset for
+ imx6ul/imx6ull
+
+Add Secondary Image Table offset for i.MX6UL/i.MX6ULL, which is used
+in redundant boot setups.
+
+Signed-off-by: Igor Opaniuk <igor.opaniuk@foundries.io>
+---
+ drivers/fastboot/fb_fsl/fb_fsl_partitions.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/fastboot/fb_fsl/fb_fsl_partitions.c b/drivers/fastboot/fb_fsl/fb_fsl_partitions.c
+index 69244b56450..f6ef7eb9f26 100644
+--- a/drivers/fastboot/fb_fsl/fb_fsl_partitions.c
++++ b/drivers/fastboot/fb_fsl/fb_fsl_partitions.c
+@@ -64,8 +64,11 @@ unsigned int g_pcount;
+ #ifdef CONFIG_FSL_FASTBOOT_BOOTLOADER_SECONDARY
+ static ulong secondary_image_table_mmc_offset(void)
+ {
+-	if (is_imx8mq() || is_imx8mm() || ((is_imx8qm() || is_imx8qxp()) && is_soc_rev(CHIP_REV_A)))
++	if (is_imx8mq() || is_imx8mm() || ((is_imx8qm() || is_imx8qxp()) && is_soc_rev(CHIP_REV_A))) {
+ 		return 0x8200;
++	} else if (is_mx6ull() || is_mx6ul()) {
++		return 0x200;
++	}
+ }
+ #endif
+ 
+-- 
+2.34.1
+

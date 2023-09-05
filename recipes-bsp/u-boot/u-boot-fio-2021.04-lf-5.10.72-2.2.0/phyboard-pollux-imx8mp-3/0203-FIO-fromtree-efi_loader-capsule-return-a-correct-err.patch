@@ -1,0 +1,42 @@
+From 7587592473664c0e9ebf545469f438226d141b23 Mon Sep 17 00:00:00 2001
+From: AKASHI Takahiro <takahiro.akashi@linaro.org>
+Date: Tue, 20 Apr 2021 10:03:16 +0900
+Subject: [PATCH 203/322] [FIO fromtree] efi_loader: capsule: return a correct
+ error code at find_boot_device()
+
+In case of failure at efi_get_variable_int("BootOrder"), we should
+skip examining boot option variables and return an appropriate error
+code which is the one the function returned.
+
+Fixes: CID 331153 Code maintainability issues  (UNUSED_VALUE)
+Signed-off-by: AKASHI Takahiro <takahiro.akashi@linaro.org>
+Reviewed-by: Heinrich Schuchardt <xypron.glpk@gmx.de>
+(cherry picked from commit 2c1a6840495eb1ab90c8d5cf7e057f793d84dc16)
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+---
+ lib/efi_loader/efi_capsule.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/lib/efi_loader/efi_capsule.c b/lib/efi_loader/efi_capsule.c
+index a984c347e1e..6ee883d5b11 100644
+--- a/lib/efi_loader/efi_capsule.c
++++ b/lib/efi_loader/efi_capsule.c
+@@ -685,7 +685,6 @@ skip:
+ 		efi_free_pool(boot_dev);
+ 		boot_dev = NULL;
+ 	}
+-out:
+ 	if (boot_dev) {
+ 		u16 *path_str;
+ 
+@@ -703,6 +702,7 @@ out:
+ 	} else {
+ 		ret = EFI_NOT_FOUND;
+ 	}
++out:
+ 	free(boot_order);
+ 
+ 	return ret;
+-- 
+2.34.1
+

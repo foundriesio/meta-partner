@@ -1,0 +1,33 @@
+From e2b6a2e6dcb92225a39a64e4adc1f41faab3c40a Mon Sep 17 00:00:00 2001
+From: Igor Opaniuk <igor.opaniuk@foundries.io>
+Date: Fri, 30 Jul 2021 19:44:01 +0300
+Subject: [PATCH 162/322] [FIO temphack] imx8qm: define
+ SYS_MMCSD_RAW_MODE_U_BOOT_SECTOR
+
+Define SYS_MMCSD_RAW_MODE_U_BOOT_SECTOR only if it wasn't set in
+defconfig.
+
+Signed-off-by: Igor Opaniuk <igor.opaniuk@foundries.io>
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+---
+ include/configs/imx8qm_mek.h | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/include/configs/imx8qm_mek.h b/include/configs/imx8qm_mek.h
+index 06532993a9f..3e7a5566ca9 100644
+--- a/include/configs/imx8qm_mek.h
++++ b/include/configs/imx8qm_mek.h
+@@ -14,8 +14,10 @@
+ #ifdef CONFIG_SPL_BUILD
+ #define CONFIG_SPL_MAX_SIZE				(192 * 1024)
+ #define CONFIG_SYS_MONITOR_LEN				(1024 * 1024)
++#ifndef CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_USE_SECTOR
+ #define CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_USE_SECTOR
+ #define CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_SECTOR                0x1040 /* (flash.bin_offset + 2Mb)/sector_size */
++#endif
+ 
+ /*
+  * 0x08081000 - 0x08180FFF is for m4_0 xip image,
+-- 
+2.34.1
+

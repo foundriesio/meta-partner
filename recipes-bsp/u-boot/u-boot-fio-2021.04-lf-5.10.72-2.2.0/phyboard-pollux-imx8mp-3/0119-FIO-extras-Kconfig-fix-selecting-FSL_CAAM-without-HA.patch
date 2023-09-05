@@ -1,0 +1,466 @@
+From 97fbd49c3b7ee8e7934f22d0fa31be7a8d6dd395 Mon Sep 17 00:00:00 2001
+From: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+Date: Tue, 28 Sep 2021 17:16:51 +0300
+Subject: [PATCH 119/322] [FIO extras] Kconfig: fix selecting FSL_CAAM without
+ HAS_CAAM
+
+The scheme SPL->OPTEE->U-Boot requires SPL to not use CAAM module
+to avoid issues with a job ring in OP-TEE.
+Now FSL_CAAM implicitly enables by several target boards even if
+HAS_CAAM is disabled.
+Fix selection of FSL_CAAM adding dependency from HAS_CAAM and
+changing selection to non-mandatory.
+
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+---
+ arch/arm/cpu/armv7/ls102xa/Kconfig        |  4 +--
+ arch/arm/cpu/armv8/fsl-layerscape/Kconfig | 32 +++++++++---------
+ arch/arm/mach-imx/imx8/Kconfig            | 24 +++++++-------
+ arch/arm/mach-imx/imx8m/Kconfig           | 32 +++++++++---------
+ arch/arm/mach-imx/mx6/Kconfig             | 40 +++++++++++------------
+ arch/arm/mach-imx/mx7/Kconfig             |  4 +--
+ arch/arm/mach-imx/mx7ulp/Kconfig          |  4 +--
+ cmd/Kconfig                               |  2 +-
+ drivers/crypto/fsl/Kconfig                |  1 +
+ 9 files changed, 72 insertions(+), 71 deletions(-)
+
+diff --git a/arch/arm/cpu/armv7/ls102xa/Kconfig b/arch/arm/cpu/armv7/ls102xa/Kconfig
+index f23c33cbc3e..650d73a1fb9 100644
+--- a/arch/arm/cpu/armv7/ls102xa/Kconfig
++++ b/arch/arm/cpu/armv7/ls102xa/Kconfig
+@@ -20,8 +20,8 @@ config ARCH_LS1021A
+ 	select SYS_FSL_SEC_LE
+ 	select SYS_FSL_SRDS_1
+ 	select SYS_HAS_SERDES
+-	select FSL_CAAM
+-	select FSL_BLOB
++	imply FSL_CAAM
++	imply FSL_BLOB
+ 	select MISC
+ 	select ARCH_MISC_INIT
+ 	imply CMD_PCI
+diff --git a/arch/arm/cpu/armv8/fsl-layerscape/Kconfig b/arch/arm/cpu/armv8/fsl-layerscape/Kconfig
+index 3e92df25c51..62e195ffa8b 100644
+--- a/arch/arm/cpu/armv8/fsl-layerscape/Kconfig
++++ b/arch/arm/cpu/armv8/fsl-layerscape/Kconfig
+@@ -18,8 +18,8 @@ config ARCH_LS1012A
+ 	select SYS_I2C_MXC
+ 	select SYS_I2C_MXC_I2C1 if !DM_I2C
+ 	select SYS_I2C_MXC_I2C2 if !DM_I2C
+-	select FSL_CAAM
+-	select FSL_BLOB
++	imply FSL_CAAM
++	imply FSL_BLOB
+ 	select MISC
+ 	select ARCH_MISC_INIT
+ 	imply PANIC_HANG
+@@ -54,8 +54,8 @@ config ARCH_LS1028A
+ 	select SYS_FSL_ERRATUM_A011334
+ 	select SYS_FSL_ESDHC_UNRELIABLE_PULSE_DETECTION_WORKAROUND
+ 	select RESV_RAM if GIC_V3_ITS
+-	select FSL_CAAM
+-	select FSL_BLOB
++	imply FSL_CAAM
++	imply FSL_BLOB
+ 	select MISC
+ 	imply PANIC_HANG
+ 
+@@ -89,8 +89,8 @@ config ARCH_LS1043A
+ 	select SYS_I2C_MXC_I2C2 if !DM_I2C
+ 	select SYS_I2C_MXC_I2C3 if !DM_I2C
+ 	select SYS_I2C_MXC_I2C4 if !DM_I2C
+-	select FSL_CAAM
+-	select FSL_BLOB
++	imply FSL_CAAM
++	imply FSL_BLOB
+ 	select MISC
+ 	select ARCH_MISC_INIT
+ 	imply CMD_PCI
+@@ -126,8 +126,8 @@ config ARCH_LS1046A
+ 	select SYS_I2C_MXC_I2C2 if !DM_I2C
+ 	select SYS_I2C_MXC_I2C3 if !DM_I2C
+ 	select SYS_I2C_MXC_I2C4 if !DM_I2C
+-	select FSL_CAAM
+-	select FSL_BLOB
++	imply FSL_CAAM
++	imply FSL_BLOB
+ 	select MISC
+ 	select ARCH_MISC_INIT
+ 	imply SCSI
+@@ -171,8 +171,8 @@ config ARCH_LS1088A
+ 	select SYS_I2C_MXC_I2C3 if !TFABOOT
+ 	select SYS_I2C_MXC_I2C4 if !TFABOOT
+ 	select RESV_RAM if GIC_V3_ITS
+-	select FSL_CAAM
+-	select FSL_BLOB
++	imply FSL_CAAM
++	imply FSL_BLOB
+ 	select MISC
+ 	imply SCSI
+ 	imply PANIC_HANG
+@@ -225,8 +225,8 @@ config ARCH_LS2080A
+ 	select SYS_I2C_MXC_I2C3 if !TFABOOT
+ 	select SYS_I2C_MXC_I2C4 if !TFABOOT
+ 	select RESV_RAM if GIC_V3_ITS
+-	select FSL_CAAM
+-	select FSL_BLOB
++	imply FSL_CAAM
++	imply FSL_BLOB
+ 	select MISC
+ 	imply DISTRO_DEFAULTS
+ 	imply PANIC_HANG
+@@ -257,8 +257,8 @@ config ARCH_LX2162A
+ 	select BOARD_EARLY_INIT_F
+ 	select SYS_I2C_MXC
+ 	select RESV_RAM if GIC_V3_ITS
+-	select FSL_CAAM
+-	select FSL_BLOB
++	imply FSL_CAAM
++	imply FSL_BLOB
+ 	select MISC
+ 	imply DISTRO_DEFAULTS
+ 	imply PANIC_HANG
+@@ -292,8 +292,8 @@ config ARCH_LX2160A
+ 	select BOARD_EARLY_INIT_F
+ 	select SYS_I2C_MXC
+ 	select RESV_RAM if GIC_V3_ITS
+-	select FSL_CAAM
+-	select FSL_BLOB
++	imply FSL_CAAM
++	imply FSL_BLOB
+ 	select MISC
+ 	imply DISTRO_DEFAULTS
+ 	imply PANIC_HANG
+diff --git a/arch/arm/mach-imx/imx8/Kconfig b/arch/arm/mach-imx/imx8/Kconfig
+index 1bd63e696cc..99ea88be39a 100644
+--- a/arch/arm/mach-imx/imx8/Kconfig
++++ b/arch/arm/mach-imx/imx8/Kconfig
+@@ -97,8 +97,8 @@ config TARGET_IMX8QM_MEK
+ 	bool "Support i.MX8QM MEK board"
+ 	select BOARD_LATE_INIT
+ 	select IMX8QM
+-	select FSL_CAAM
+-	select FSL_BLOB
++	imply FSL_CAAM
++	imply FSL_BLOB
+ 	select ARCH_MISC_INIT
+ 	select SPL_CRYPTO_SUPPORT if SPL
+ 
+@@ -122,8 +122,8 @@ config TARGET_IMX8QXP_MEK
+ 	bool "Support i.MX8QXP MEK board"
+ 	select BOARD_LATE_INIT
+ 	select IMX8QXP
+-	select FSL_CAAM
+-	select FSL_BLOB
++	imply FSL_CAAM
++	imply FSL_BLOB
+ 	select ARCH_MISC_INIT
+ 	select SPL_CRYPTO_SUPPORT if SPL
+ 
+@@ -156,8 +156,8 @@ config TARGET_IMX8DXL_PHANTOM_MEK
+ 	bool "Support i.MX8DXL PHANTOM MEK board"
+ 	select BOARD_LATE_INIT
+ 	select IMX8QXP
+-	select FSL_CAAM
+-	select FSL_BLOB
++	imply FSL_CAAM
++	imply FSL_BLOB
+ 	select ARCH_MISC_INIT
+ 	select SPL_CRYPTO_SUPPORT if SPL
+ 
+@@ -166,8 +166,8 @@ config TARGET_IMX8DX_MEK
+ 	select BOARD_LATE_INIT
+ 	select SUPPORT_SPL
+ 	select IMX8QXP
+-	select FSL_CAAM
+-	select FSL_BLOB
++	imply FSL_CAAM
++	imply FSL_BLOB
+ 	select ARCH_MISC_INIT
+ 	select SPL_CRYPTO_SUPPORT if SPL
+ 
+@@ -175,8 +175,8 @@ config TARGET_IMX8DXL_EVK
+ 	bool "Support i.MX8DXL EVK board"
+ 	select BOARD_LATE_INIT
+ 	select IMX8DXL
+-	select FSL_CAAM
+-	select FSL_BLOB
++	imply FSL_CAAM
++	imply FSL_BLOB
+ 	select ARCH_MISC_INIT
+ 	select SPL_CRYPTO_SUPPORT if SPL
+ 
+@@ -184,8 +184,8 @@ config TARGET_IMX8DXL_DDR3_EVK
+ 	bool "Support i.MX8DXL EVK board"
+ 	select BOARD_LATE_INIT
+ 	select IMX8DXL
+-	select FSL_CAAM
+-	select FSL_BLOB
++	imply FSL_CAAM
++	imply FSL_BLOB
+ 	select ARCH_MISC_INIT
+ 	select SPL_CRYPTO_SUPPORT if SPL
+ 
+diff --git a/arch/arm/mach-imx/imx8m/Kconfig b/arch/arm/mach-imx/imx8m/Kconfig
+index 82a60e800c6..39a1a3dab20 100644
+--- a/arch/arm/mach-imx/imx8m/Kconfig
++++ b/arch/arm/mach-imx/imx8m/Kconfig
+@@ -53,8 +53,8 @@ config TARGET_IMX8MQ_EVK
+ 	bool "imx8mq_evk"
+ 	select IMX8MQ
+ 	select IMX8M_LPDDR4
+-	select FSL_CAAM
+-	select FSL_BLOB
++	imply FSL_CAAM
++	imply FSL_BLOB
+ 	select MISC
+ 	select SPL_CRYPTO_SUPPORT if SPL
+ 
+@@ -89,8 +89,8 @@ config TARGET_IMX8MM_EVK
+ 	select IMX8MM
+ 	select SUPPORT_SPL
+ 	select IMX8M_LPDDR4
+-	select FSL_CAAM
+-	select FSL_BLOB
++	imply FSL_CAAM
++	imply FSL_BLOB
+ 	select MISC
+ 	select SPL_CRYPTO_SUPPORT if SPL
+ 
+@@ -111,8 +111,8 @@ config TARGET_IMX8MM_DDR4_EVK
+ 	select IMX8MM
+ 	select SUPPORT_SPL
+ 	select IMX8M_DDR4
+-	select FSL_CAAM
+-	select FSL_BLOB
++	imply FSL_CAAM
++	imply FSL_BLOB
+ 	select MISC
+ 	select SPL_CRYPTO_SUPPORT if SPL
+ 
+@@ -121,8 +121,8 @@ config TARGET_IMX8MN_EVK
+ 	select IMX8MN
+ 	select SUPPORT_SPL
+ 	select IMX8M_LPDDR4
+-	select FSL_CAAM
+-	select FSL_BLOB
++	imply FSL_CAAM
++	imply FSL_BLOB
+ 	select MISC
+ 	select SPL_CRYPTO_SUPPORT if SPL
+ 
+@@ -131,8 +131,8 @@ config TARGET_IMX8MN_DDR4_EVK
+ 	select IMX8MN
+ 	select SUPPORT_SPL
+ 	select IMX8M_DDR4
+-	select FSL_CAAM
+-	select FSL_BLOB
++	imply FSL_CAAM
++	imply FSL_BLOB
+ 	select MISC
+ 	select SPL_CRYPTO_SUPPORT if SPL
+ 
+@@ -141,8 +141,8 @@ config TARGET_IMX8MN_DDR3_EVK
+ 	select IMX8MN
+ 	select SUPPORT_SPL
+ 	select IMX8M_DDR3L
+-	select FSL_CAAM
+-	select FSL_BLOB
++	imply FSL_CAAM
++	imply FSL_BLOB
+ 	select MISC
+ 	select SPL_CRYPTO_SUPPORT if SPL
+ 
+@@ -151,8 +151,8 @@ config TARGET_IMX8MP_EVK
+ 	select IMX8MP
+ 	select SUPPORT_SPL
+ 	select IMX8M_LPDDR4
+-	select FSL_CAAM
+-	select FSL_BLOB
++	imply FSL_CAAM
++	imply FSL_BLOB
+ 	select MISC
+ 	select SPL_CRYPTO_SUPPORT if SPL
+ 
+@@ -166,8 +166,8 @@ config TARGET_IMX8MP_DDR4_EVK
+ 	select IMX8MP
+ 	select SUPPORT_SPL
+ 	select IMX8M_DDR4
+-	select FSL_CAAM
+-	select FSL_BLOB
++	imply FSL_CAAM
++	imply FSL_BLOB
+ 	select MISC
+ 	select SPL_CRYPTO_SUPPORT if SPL
+ 
+diff --git a/arch/arm/mach-imx/mx6/Kconfig b/arch/arm/mach-imx/mx6/Kconfig
+index 9af820f7e03..8daf4d73edc 100644
+--- a/arch/arm/mach-imx/mx6/Kconfig
++++ b/arch/arm/mach-imx/mx6/Kconfig
+@@ -434,8 +434,8 @@ config TARGET_MX6QSABREAUTO
+     bool "mx6qsabreauto"
+     select TARGET_MX6SABREAUTO_COMMON
+     depends on MX6Q
+-    select FSL_CAAM
+-    select FSL_BLOB
++    imply FSL_CAAM
++    imply FSL_BLOB
+     select MISC
+     select ARCH_MISC_INIT
+ 
+@@ -443,8 +443,8 @@ config TARGET_MX6QPSABREAUTO
+     bool "mx6qpsabreauto"
+     select TARGET_MX6SABREAUTO_COMMON
+     depends on MX6QP
+-    select FSL_CAAM
+-    select FSL_BLOB
++    imply FSL_CAAM
++    imply FSL_BLOB
+     select MISC
+     select ARCH_MISC_INIT
+ 
+@@ -452,8 +452,8 @@ config TARGET_MX6DLSABREAUTO
+     bool "mx6dlsabreauto"
+     select TARGET_MX6SABREAUTO_COMMON
+     depends on MX6DL
+-    select FSL_CAAM
+-    select FSL_BLOB
++    imply FSL_CAAM
++    imply FSL_BLOB
+     select MISC
+     select ARCH_MISC_INIT
+ 
+@@ -461,8 +461,8 @@ config TARGET_MX6SOLOSABREAUTO
+     bool "mx6solosabreauto"
+     select TARGET_MX6SABREAUTO_COMMON
+     depends on MX6S
+-    select FSL_CAAM
+-    select FSL_BLOB
++    imply FSL_CAAM
++    imply FSL_BLOB
+     select MISC
+     select ARCH_MISC_INIT
+ 
+@@ -470,8 +470,8 @@ config TARGET_MX6QSABRESD
+ 	bool "mx6qsabresd"
+     select TARGET_MX6SABRESD_COMMON
+     depends on MX6Q
+-    select FSL_CAAM
+-    select FSL_BLOB
++    imply FSL_CAAM
++    imply FSL_BLOB
+     select MISC
+     select ARCH_MISC_INIT
+     select RNG_SELF_TEST
+@@ -480,8 +480,8 @@ config TARGET_MX6QPSABRESD
+ 	bool "mx6qpsabresd"
+     select TARGET_MX6SABRESD_COMMON
+     depends on MX6QP
+-    select FSL_CAAM
+-    select FSL_BLOB
++    imply FSL_CAAM
++    imply FSL_BLOB
+     select MISC
+     select ARCH_MISC_INIT
+     select RNG_SELF_TEST
+@@ -490,8 +490,8 @@ config TARGET_MX6DLSABRESD
+ 	bool "mx6dlsabresd"
+     select TARGET_MX6SABRESD_COMMON
+     depends on MX6DL
+-    select FSL_CAAM
+-    select FSL_BLOB
++    imply FSL_CAAM
++    imply FSL_BLOB
+     select MISC
+     select ARCH_MISC_INIT
+     select RNG_SELF_TEST
+@@ -500,8 +500,8 @@ config TARGET_MX6SOLOSABRESD
+ 	bool "mx6solosabresd"
+     select TARGET_MX6SABRESD_COMMON
+     depends on MX6S
+-    select FSL_CAAM
+-    select FSL_BLOB
++    imply FSL_CAAM
++    imply FSL_BLOB
+     select MISC
+     select ARCH_MISC_INIT
+     select RNG_SELF_TEST
+@@ -535,8 +535,8 @@ config TARGET_MX6SXSABRESD
+ 	select DM
+ 	select DM_THERMAL
+ 	select SUPPORT_SPL
+-	select FSL_CAAM
+-	select FSL_BLOB
++	imply FSL_CAAM
++	imply FSL_BLOB
+ 	select MISC
+ 	select ARCH_MISC_INIT
+ 	select RNG_SELF_TEST
+@@ -598,8 +598,8 @@ config TARGET_MX6UL_14X14_EVK
+ 	select IMX_MODULE_FUSE
+ 	select OF_SYSTEM_SETUP
+ 	imply CMD_DM
+-	select FSL_CAAM
+-	select FSL_BLOB
++	imply FSL_CAAM
++	imply FSL_BLOB
+ 	select MISC
+ 	select ARCH_MISC_INIT
+ 
+diff --git a/arch/arm/mach-imx/mx7/Kconfig b/arch/arm/mach-imx/mx7/Kconfig
+index 85ce6b059dd..9717ec1fac6 100644
+--- a/arch/arm/mach-imx/mx7/Kconfig
++++ b/arch/arm/mach-imx/mx7/Kconfig
+@@ -56,8 +56,8 @@ config TARGET_MX7DSABRESD
+ 	select DM_THERMAL
+ 	select MX7D
+ 	imply CMD_DM
+-	select FSL_CAAM
+-	select FSL_BLOB
++	imply FSL_CAAM
++	imply FSL_BLOB
+ 	select MISC
+ 
+ config TARGET_MX7D_12X12_LPDDR3_VAL
+diff --git a/arch/arm/mach-imx/mx7ulp/Kconfig b/arch/arm/mach-imx/mx7ulp/Kconfig
+index d239b1bc45e..b957a4b9f86 100644
+--- a/arch/arm/mach-imx/mx7ulp/Kconfig
++++ b/arch/arm/mach-imx/mx7ulp/Kconfig
+@@ -53,8 +53,8 @@ config TARGET_MX7ULP_EVK
+ 	bool "Support mx7ulp EVK board"
+ 	select MX7ULP
+ 	select SYS_ARCH_TIMER
+-	select FSL_CAAM
+-	select FSL_BLOB
++	imply FSL_CAAM
++	imply FSL_BLOB
+ 	select MISC
+ 	select ARCH_MISC_INIT
+ 
+diff --git a/cmd/Kconfig b/cmd/Kconfig
+index 1ec2f9bd3e3..23d02fa347b 100644
+--- a/cmd/Kconfig
++++ b/cmd/Kconfig
+@@ -1979,7 +1979,7 @@ config CMD_AES
+ config CMD_BLOB
+ 	bool "Enable the 'blob' command"
+ 	select FSL_BLOB
+-	depends on !MX6ULL && !MX6SLL && !MX6SL
++	depends on !MX6ULL && !MX6SLL && !MX6SL && HAS_CAAM
+ 	select IMX_HAB if ARCH_MX6 || ARCH_MX7 || ARCH_MX7ULP || ARCH_IMX8M
+ 	help
+ 	  This is used with the Freescale secure boot mechanism.
+diff --git a/drivers/crypto/fsl/Kconfig b/drivers/crypto/fsl/Kconfig
+index c8c3cf46e4d..5ef6958a361 100644
+--- a/drivers/crypto/fsl/Kconfig
++++ b/drivers/crypto/fsl/Kconfig
+@@ -1,5 +1,6 @@
+ config FSL_CAAM
+ 	bool "Freescale Crypto Driver Support"
++	depends on HAS_CAAM
+ 	select SHA_HW_ACCEL
+ 	imply CMD_HASH
+ 	help
+-- 
+2.34.1
+

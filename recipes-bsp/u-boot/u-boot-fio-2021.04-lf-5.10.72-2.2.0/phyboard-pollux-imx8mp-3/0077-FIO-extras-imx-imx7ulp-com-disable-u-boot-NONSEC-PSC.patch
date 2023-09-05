@@ -1,0 +1,30 @@
+From 6d828f7bd581203171b8d8a49e8a5bc4cce0dab7 Mon Sep 17 00:00:00 2001
+From: Ricardo Salveti <ricardo@foundries.io>
+Date: Fri, 15 Jan 2021 16:03:08 -0300
+Subject: [PATCH 077/322] [FIO extras] imx: imx7ulp-com: disable u-boot
+ NONSEC/PSCI
+
+We use the PSCI implementation from OP-TEE by default.
+
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+---
+ arch/arm/mach-imx/mx7ulp/Kconfig | 3 ---
+ 1 file changed, 3 deletions(-)
+
+diff --git a/arch/arm/mach-imx/mx7ulp/Kconfig b/arch/arm/mach-imx/mx7ulp/Kconfig
+index a7f631899ff..e895503451f 100644
+--- a/arch/arm/mach-imx/mx7ulp/Kconfig
++++ b/arch/arm/mach-imx/mx7ulp/Kconfig
+@@ -9,9 +9,6 @@ config LDO_ENABLED_MODE
+ 	  Select this option to enable the PMC1 LDO.
+ 
+ config MX7ULP
+-	select ARCH_SUPPORT_PSCI
+-	select CPU_V7_HAS_NONSEC
+-	select CPU_V7_HAS_VIRT
+ 	select HAS_CAAM
+ 	bool
+ 
+-- 
+2.34.1
+

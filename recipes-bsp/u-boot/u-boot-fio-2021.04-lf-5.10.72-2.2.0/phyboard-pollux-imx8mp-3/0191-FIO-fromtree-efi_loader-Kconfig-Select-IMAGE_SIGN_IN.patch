@@ -1,0 +1,33 @@
+From 3e3c3a843590f625e6c3e739b891538c788b1efa Mon Sep 17 00:00:00 2001
+From: Sughosh Ganu <sughosh.ganu@linaro.org>
+Date: Wed, 7 Apr 2021 17:23:31 +0530
+Subject: [PATCH 191/322] [FIO fromtree] efi_loader: Kconfig: Select
+ IMAGE_SIGN_INFO when capsule authentication is enabled
+
+Enable building of the crypto helper functions used during capsule
+authentication by selecting IMAGE_SIGN_INFO.
+
+Signed-off-by: Sughosh Ganu <sughosh.ganu@linaro.org>
+Reviewed-by: Simon Glass <sjg@chromium.org>
+Reviewed-by: Heinrich Schuchardt <xypron.glpk@gmx.de>
+(cherry picked from commit dd40cf6f1fa4a6828de19c3479934ed7409af303)
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+---
+ lib/efi_loader/Kconfig | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/lib/efi_loader/Kconfig b/lib/efi_loader/Kconfig
+index e44f004f3f8..0b99d7c7749 100644
+--- a/lib/efi_loader/Kconfig
++++ b/lib/efi_loader/Kconfig
+@@ -173,6 +173,7 @@ config EFI_CAPSULE_AUTHENTICATE
+ 	select X509_CERTIFICATE_PARSER
+ 	select PKCS7_MESSAGE_PARSER
+ 	select PKCS7_VERIFY
++	select IMAGE_SIGN_INFO
+ 	default n
+ 	help
+ 	  Select this option if you want to enable capsule
+-- 
+2.34.1
+

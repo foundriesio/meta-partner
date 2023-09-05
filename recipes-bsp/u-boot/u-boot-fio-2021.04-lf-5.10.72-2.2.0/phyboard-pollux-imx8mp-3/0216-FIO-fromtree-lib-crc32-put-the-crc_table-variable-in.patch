@@ -1,0 +1,51 @@
+From 28e37a61b29701f752e3f5511da6a770908e2ee4 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Marek=20Beh=C3=BAn?= <marek.behun@nic.cz>
+Date: Thu, 20 May 2021 13:24:00 +0200
+Subject: [PATCH 216/322] [FIO fromtree] lib: crc32: put the crc_table variable
+ into efi_runtime_rodata section
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+When compiling with LTO, the compiler fails with an error saying that
+`crc_table` causes a section type conflict with `efi_var_buf`.
+
+This is because both are declared to be in the same section (via macro
+`__efi_runtime_data`), but one is const while the other is not.
+
+Put this variable into the section .rodata.efi_runtime, instead of
+.data.efi_runtime, via macro __efi_runtime_rodata.
+
+Signed-off-by: Marek Behún <marek.behun@nic.cz>
+Reviewed-by: Marek Vasut <marex@denx.de>
+Reviewed-by: Heinrich Schuchardt <xypron.gpk@gmx.de>
+(cherry picked from commit 98e55f97afc2a212185804e2c1130bebe980db73)
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+---
+ lib/crc32.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/lib/crc32.c b/lib/crc32.c
+index e9be3bf386e..f2acc107fe4 100644
+--- a/lib/crc32.c
++++ b/lib/crc32.c
+@@ -26,6 +26,7 @@
+ #ifdef USE_HOSTCC
+ #define __efi_runtime
+ #define __efi_runtime_data
++#define __efi_runtime_rodata
+ #endif
+ 
+ #define tole(x) cpu_to_le32(x)
+@@ -88,7 +89,7 @@ static void __efi_runtime make_crc_table(void)
+  * Table of CRC-32's of all single-byte values (made by make_crc_table)
+  */
+ 
+-static const uint32_t __efi_runtime_data crc_table[256] = {
++static const uint32_t __efi_runtime_rodata crc_table[256] = {
+ tole(0x00000000L), tole(0x77073096L), tole(0xee0e612cL), tole(0x990951baL),
+ tole(0x076dc419L), tole(0x706af48fL), tole(0xe963a535L), tole(0x9e6495a3L),
+ tole(0x0edb8832L), tole(0x79dcb8a4L), tole(0xe0d5e91eL), tole(0x97d2d988L),
+-- 
+2.34.1
+

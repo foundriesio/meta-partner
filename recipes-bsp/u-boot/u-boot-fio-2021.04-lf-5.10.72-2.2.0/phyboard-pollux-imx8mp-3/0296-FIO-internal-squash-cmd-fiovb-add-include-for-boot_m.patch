@@ -1,0 +1,36 @@
+From bbba812e8ee932f10ff597dfbb16431221870d9a Mon Sep 17 00:00:00 2001
+From: Igor Opaniuk <igor.opaniuk@foundries.io>
+Date: Wed, 1 Dec 2021 20:02:41 +0200
+Subject: [PATCH 296/322] [FIO internal-squash] cmd: fiovb: add include for
+ boot_mode_is_closed
+
+Add include sys_proto.h, where boot_mode_is_closed() is defined.
+
+This fixes this compile time warning:
+cmd/fiovb.c:23:7: warning: implicit declaration of function 'boot_mode_is_closed' [-Wimplicit-function-declaration]
+23 |  if (!boot_mode_is_closed())
+   |       ^~~~~~~~~~~~~~~~~~~
+
+Fixes: 545d964536 ("[FIO extras] fiovb: return error on init if board not closed")
+Signed-off-by: Igor Opaniuk <igor.opaniuk@foundries.io>
+(cherry-picked from 26f9df8e614550ffacc5327384d95ff97045349f)
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+---
+ cmd/fiovb.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/cmd/fiovb.c b/cmd/fiovb.c
+index 22b970c374c..06b15c2fa3c 100644
+--- a/cmd/fiovb.c
++++ b/cmd/fiovb.c
+@@ -4,6 +4,7 @@
+  * SPDX-License-Identifier:	GPL-2.0+
+  */
+ #include <common.h>
++#include <asm/arch/sys_proto.h>
+ #include <command.h>
+ #include <env.h>
+ #include <image.h>
+-- 
+2.34.1
+

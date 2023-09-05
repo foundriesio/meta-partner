@@ -1,0 +1,35 @@
+From 647467e5d2869d21b011fbaa3814af7bde780e16 Mon Sep 17 00:00:00 2001
+From: Ricardo Salveti <ricardo@foundries.io>
+Date: Wed, 2 Sep 2020 19:05:39 -0300
+Subject: [PATCH 288/322] [FIO extras] mx7ulp_com: force
+ board_ehci_usb_phy_mode to device
+
+Force default ehci usb phy mode to device in order to get a working OTG
+during early boot. Code needs to be extended to be able to identify if
+device or host via gpio, as done with mx7ulp_val.
+
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+---
+ board/ea/mx7ulp_com/mx7ulp_com.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/board/ea/mx7ulp_com/mx7ulp_com.c b/board/ea/mx7ulp_com/mx7ulp_com.c
+index 81fd8f54262..a10386eb8f4 100644
+--- a/board/ea/mx7ulp_com/mx7ulp_com.c
++++ b/board/ea/mx7ulp_com/mx7ulp_com.c
+@@ -129,6 +129,12 @@ int board_usb_phy_mode(int port)
+ }
+ #endif
+ 
++int board_ehci_usb_phy_mode(struct udevice *dev)
++{
++	/* TODO: probe via GPIO to identify if device or host */
++	return USB_INIT_DEVICE;
++}
++
+ int board_early_init_f(void)
+ {
+ 	setup_iomux_uart();
+-- 
+2.34.1
+

@@ -1,0 +1,33 @@
+From 511cc4c4108fed577253a3610c8a45c10fa2ad0a Mon Sep 17 00:00:00 2001
+From: Igor Opaniuk <igor.opaniuk@foundries.io>
+Date: Mon, 19 Jul 2021 16:57:27 +0300
+Subject: [PATCH 314/322] [FIO internal] imx8qm_mek: increase
+ CONFIG_SYS_BOOTM_LEN
+
+Increase CONFIG_SYS_BOOTM_LEN, which fixes this issue during
+decompression of kernel:
+Error: inflate() returned -5
+Image too large: increase CONFIG_SYS_BOOTM_LEN
+Must RESET board to recover
+
+Signed-off-by: Igor Opaniuk <igor.opaniuk@foundries.io>
+(cherry picked from commit 2b0632544b57af650b813f062d57633b5d372fd3)
+---
+ include/configs/imx8qm_mek.h | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/include/configs/imx8qm_mek.h b/include/configs/imx8qm_mek.h
+index 3e7a5566ca9..30f5ab4d831 100644
+--- a/include/configs/imx8qm_mek.h
++++ b/include/configs/imx8qm_mek.h
+@@ -315,6 +315,7 @@
+ 
+ /* Size of malloc() pool */
+ #define CONFIG_SYS_MALLOC_LEN		((CONFIG_ENV_SIZE + (32 * 1024)) * 1024)
++#define CONFIG_SYS_BOOTM_LEN		SZ_64M
+ 
+ #define CONFIG_NR_DRAM_BANKS		4
+ #if defined(CONFIG_TARGET_IMX8QM_MEK_A53_ONLY)
+-- 
+2.34.1
+

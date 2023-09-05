@@ -1,0 +1,29 @@
+From f6bd49088ac02ef034ee7e0f8f4bede778008de5 Mon Sep 17 00:00:00 2001
+From: Michael Scott <mike@foundries.io>
+Date: Mon, 13 Jul 2020 20:47:29 -0700
+Subject: [PATCH 029/322] [FIO extras] imx: mx6ullevk: set SPL_LOAD_FIT_ADDRESS
+
+Use the same LOADADDR for handling FIT load from RAM
+
+Signed-off-by: Michael Scott <mike@foundries.io>
+---
+ include/configs/mx6ullevk.h | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/include/configs/mx6ullevk.h b/include/configs/mx6ullevk.h
+index cea7bae6dab..bc70966c1c2 100644
+--- a/include/configs/mx6ullevk.h
++++ b/include/configs/mx6ullevk.h
+@@ -228,6 +228,9 @@
+ #endif
+ #else
+ #define CONFIG_EXTRA_ENV_SETTINGS
++
++/* FIT load address for RAM boot */
++#define CONFIG_SPL_LOAD_FIT_ADDRESS	CONFIG_LOADADDR
+ #endif /* CONFIG_SPL_BUILD */
+ 
+ /* Miscellaneous configurable options */
+-- 
+2.34.1
+

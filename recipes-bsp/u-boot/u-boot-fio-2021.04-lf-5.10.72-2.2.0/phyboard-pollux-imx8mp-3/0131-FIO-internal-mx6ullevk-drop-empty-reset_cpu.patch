@@ -1,0 +1,28 @@
+From ab8bdf8c924031fc8fc7dca87d1210ae966668c8 Mon Sep 17 00:00:00 2001
+From: Igor Opaniuk <igor.opaniuk@foundries.io>
+Date: Thu, 29 Apr 2021 01:03:19 +0300
+Subject: [PATCH 131/322] [FIO internal] mx6ullevk: drop empty reset_cpu
+
+Drop empty reset_cpu() in favor of the one from imx_watchdog or sysreset
+driver.
+
+Signed-off-by: Igor Opaniuk <igor.opaniuk@foundries.io>
+---
+ board/freescale/mx6ullevk/spl.c | 4 ----
+ 1 file changed, 4 deletions(-)
+
+diff --git a/board/freescale/mx6ullevk/spl.c b/board/freescale/mx6ullevk/spl.c
+index 9a0bafb3c85..c28521b4484 100644
+--- a/board/freescale/mx6ullevk/spl.c
++++ b/board/freescale/mx6ullevk/spl.c
+@@ -92,7 +92,3 @@ void board_init_f(ulong dummy)
+ 	/* load/boot image from boot device */
+ 	board_init_r(NULL, 0);
+ }
+-
+-void reset_cpu(ulong addr)
+-{
+-}
+-- 
+2.34.1
+

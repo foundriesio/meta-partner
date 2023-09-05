@@ -1,0 +1,85 @@
+From b7727226879513c0cd27f82dd282fd8bbbf089fd Mon Sep 17 00:00:00 2001
+From: Michael Scott <mike@foundries.io>
+Date: Mon, 19 Apr 2021 12:49:54 -0700
+Subject: [PATCH 139/322] [FIO extras-squash] arm: imx6ullevk shrink SPL DTS
+
+Now that we are not enabling SPL_DM, we don't need such a large
+DTS file for SPL.  Let's remove unused nodes.
+
+NOTE: This commit leaves the RNGB node for potential use by
+OP-TEE.
+NOTE2: This commit can be squashed in
+commit 97ba0443a8 ("[FIO extras] imx: support SPL build for TARGET_MX6ULL_14X14_EVK")
+in case disabling SPL_DM goes earlier.
+
+Signed-off-by: Michael Scott <mike@foundries.io>
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+---
+ arch/arm/dts/imx6ull-14x14-evk-u-boot.dtsi | 46 ----------------------
+ 1 file changed, 46 deletions(-)
+
+diff --git a/arch/arm/dts/imx6ull-14x14-evk-u-boot.dtsi b/arch/arm/dts/imx6ull-14x14-evk-u-boot.dtsi
+index c99614c1128..8d7d82ec944 100644
+--- a/arch/arm/dts/imx6ull-14x14-evk-u-boot.dtsi
++++ b/arch/arm/dts/imx6ull-14x14-evk-u-boot.dtsi
+@@ -8,57 +8,11 @@
+ 	u-boot,dm-spl;
+ };
+ 
+-&aips1 {
+-	u-boot,dm-pre-reloc;
+-	u-boot,dm-spl;
+-
+-	spba-bus@2000000 {
+-		u-boot,dm-pre-reloc;
+-		u-boot,dm-spl;
+-	};
+-};
+-
+-&aips2 {
+-	u-boot,dm-pre-reloc;
+-	u-boot,dm-spl;
+-};
+-
+ &aips3 {
+ 	u-boot,dm-pre-reloc;
+ 	u-boot,dm-spl;
+ };
+ 
+-&uart1 {
+-	u-boot,dm-pre-reloc;
+-	u-boot,dm-spl;
+-};
+-
+-&iomuxc {
+-	u-boot,dm-pre-reloc;
+-	u-boot,dm-spl;
+-};
+-
+-/* only enable the active boot device */
+-&usdhc2 {
+-        u-boot,dm-pre-reloc;
+-        u-boot,dm-spl;
+-};
+-
+-&gpio1 {
+-        u-boot,dm-pre-reloc;
+-        u-boot,dm-spl;
+-};
+-
+-&gpio2 {
+-        u-boot,dm-pre-reloc;
+-        u-boot,dm-spl;
+-};
+-
+-&reg_sd1_vmmc {
+-        u-boot,dm-pre-reloc;
+-        u-boot,dm-spl;
+-};
+-
+ &rngb {
+         u-boot,dm-pre-reloc;
+         u-boot,dm-spl;
+-- 
+2.34.1
+

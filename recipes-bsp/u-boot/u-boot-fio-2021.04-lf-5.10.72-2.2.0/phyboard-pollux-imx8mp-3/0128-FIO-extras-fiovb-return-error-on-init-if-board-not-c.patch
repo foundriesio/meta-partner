@@ -1,0 +1,42 @@
+From 13d22a14f6c79bf7e0396c6f5061b54a9aacca7c Mon Sep 17 00:00:00 2001
+From: Tim Anderson <tim.anderson@foundries.io>
+Date: Mon, 7 Jun 2021 15:56:56 -0700
+Subject: [PATCH 128/322] [FIO extras] fiovb: return error on init if board not
+ closed
+
+Signed-off-by: Tim Anderson <tim.anderson@foundries.io>
+---
+ arch/arm/mach-imx/misc.c | 5 +++++
+ cmd/fiovb.c              | 3 +++
+ 2 files changed, 8 insertions(+)
+
+diff --git a/arch/arm/mach-imx/misc.c b/arch/arm/mach-imx/misc.c
+index 9f53cc21684..9a14382beb2 100644
+--- a/arch/arm/mach-imx/misc.c
++++ b/arch/arm/mach-imx/misc.c
+@@ -213,3 +213,8 @@ int add_res_mem_dt_node(void *fdt, const char *name, phys_addr_t pa,
+ 	}
+ 	return 0;
+ }
++
++int __weak boot_mode_is_closed(void)
++{
++	return 0;
++}
+diff --git a/cmd/fiovb.c b/cmd/fiovb.c
+index 3ed9bbe74fe..d11240339f8 100644
+--- a/cmd/fiovb.c
++++ b/cmd/fiovb.c
+@@ -20,6 +20,9 @@ int do_fiovb_init(struct cmd_tbl *cmdtp, int flag, int argc, char * const argv[]
+ 	if (argc != 2)
+ 		return CMD_RET_USAGE;
+ 
++	if (!boot_mode_is_closed())
++		return CMD_RET_FAILURE;
++
+ 	mmc_dev = simple_strtoul(argv[1], NULL, 16);
+ 
+ 	if (fiovb_ops)
+-- 
+2.34.1
+

@@ -1,0 +1,67 @@
+From b40d54c4e3ae240765053e7edd5dc3ca5e7d3988 Mon Sep 17 00:00:00 2001
+From: Alexandru Gagniuc <mr.nuke.me@gmail.com>
+Date: Mon, 24 May 2021 14:28:57 -0500
+Subject: [PATCH 226/322] [FIO fromtree] efi_loader: Work-around build issue
+ due to missing hash_calculate()
+
+The hash_calculate() symbol is provided by hash-checksum.c. It depends
+on hash_progressive_lookup_algo(), provided when CONFIG_HASH=y.
+
+The issue is that hash_calculate() is used by the efi_loader,
+irregardless of CONFIG_FIT_SIGNATURE. As pointed out in
+commit 87316da05f2f ("lib: introduce HASH_CALCULATE option"),
+enabling hash_calculate() based on CONFIG_FIT_SIGNATURE is incorrect.
+
+To resolve this, use CONFIG_HASH as the compile switch for
+hash-checksum.c. This ensures that all dependencies are compiled, and
+is the most natural Kconfig to use.
+
+There is the issue of having to 'select HASH' in a couple of places
+that already 'select SHA256'. This is a deeper problem with how hashes
+are organized, and fixing it is beyonf the scope of this change.
+
+Signed-off-by: Alexandru Gagniuc <mr.nuke.me@gmail.com>
+Acked-by: Masahisa Kojima <masahisa.kojima@linaro.org>
+(cherry picked from commit 464010b0be09505aaf50ec208f996a6cf478a2dc)
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+---
+ lib/Makefile           | 2 +-
+ lib/efi_loader/Kconfig | 2 ++
+ 2 files changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/lib/Makefile b/lib/Makefile
+index 05bda256fb8..0fc93af4d20 100644
+--- a/lib/Makefile
++++ b/lib/Makefile
+@@ -61,7 +61,7 @@ endif
+ obj-$(CONFIG_$(SPL_)ACPIGEN) += acpi/
+ obj-$(CONFIG_$(SPL_)MD5) += md5.o
+ obj-$(CONFIG_$(SPL_)RSA) += rsa/
+-obj-$(CONFIG_FIT_SIGNATURE) += hash-checksum.o
++obj-$(CONFIG_HASH) += hash-checksum.o
+ obj-$(CONFIG_SHA1) += sha1.o
+ obj-$(CONFIG_SHA256) += sha256.o
+ obj-$(CONFIG_SHA512_ALGO) += sha512.o
+diff --git a/lib/efi_loader/Kconfig b/lib/efi_loader/Kconfig
+index ecbc0c94101..a6f38d13858 100644
+--- a/lib/efi_loader/Kconfig
++++ b/lib/efi_loader/Kconfig
+@@ -166,6 +166,7 @@ config EFI_CAPSULE_AUTHENTICATE
+ 	depends on EFI_CAPSULE_FIRMWARE
+ 	depends on EFI_CAPSULE_ON_DISK
+ 	depends on EFI_CAPSULE_FIRMWARE_MANAGEMENT
++	select HASH
+ 	select SHA256
+ 	select RSA
+ 	select RSA_VERIFY
+@@ -334,6 +335,7 @@ config EFI_LOAD_FILE2_INITRD
+ config EFI_SECURE_BOOT
+ 	bool "Enable EFI secure boot support"
+ 	depends on EFI_LOADER
++	select HASH
+ 	select SHA256
+ 	select RSA
+ 	select RSA_VERIFY_WITH_PKEY
+-- 
+2.34.1
+

@@ -1,0 +1,51 @@
+From eb6f33821e8f6396943fb3ee1928a9278d63215e Mon Sep 17 00:00:00 2001
+From: Ricardo Salveti <ricardo@foundries.io>
+Date: Thu, 26 Aug 2021 14:04:24 +0300
+Subject: [PATCH 057/322] [FIO fromlist] board: ea: mx7ulp_com: move setting
+ CONFIG_BOOTCOMMAND to defconfig
+
+Move setting CONFIG_BOOTCOMMAND to the mx7ulp_com_defconfig file.
+It also allows replacing the default CONFIG_BOOTCOMMAND without
+code modification.
+
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+Reviewed-by: Fabio Estevam <festevam@gmail.com>
+Reviewed-by: Tom Rini <trini@konsulko.com>
+---
+ configs/mx7ulp_com_defconfig | 2 ++
+ include/configs/mx7ulp_com.h | 5 -----
+ 2 files changed, 2 insertions(+), 5 deletions(-)
+
+diff --git a/configs/mx7ulp_com_defconfig b/configs/mx7ulp_com_defconfig
+index 5b910d1c85c..4b6a06d2b67 100644
+--- a/configs/mx7ulp_com_defconfig
++++ b/configs/mx7ulp_com_defconfig
+@@ -9,6 +9,8 @@ CONFIG_LDO_ENABLED_MODE=y
+ CONFIG_TARGET_MX7ULP_COM=y
+ CONFIG_DEFAULT_DEVICE_TREE="imx7ulp-com"
+ CONFIG_SYS_EXTRA_OPTIONS="IMX_CONFIG=board/ea/mx7ulp_com/imximage.cfg"
++CONFIG_USE_BOOTCOMMAND=y
++CONFIG_BOOTCOMMAND="if run loadimage; then run mmcboot; fi"
+ CONFIG_DEFAULT_FDT_FILE="imx7ulp-com"
+ CONFIG_BOARD_EARLY_INIT_F=y
+ CONFIG_HUSH_PARSER=y
+diff --git a/include/configs/mx7ulp_com.h b/include/configs/mx7ulp_com.h
+index d95a0963f2e..952a7361d01 100644
+--- a/include/configs/mx7ulp_com.h
++++ b/include/configs/mx7ulp_com.h
+@@ -101,11 +101,6 @@
+ 			"bootz ${loadaddr} - ${fdt_addr}; " \
+ 		"fi;\0" \
+ 
+-#define CONFIG_BOOTCOMMAND \
+-	"if run loadimage; then " \
+-		"run mmcboot; " \
+-	"fi; " \
+-
+ #define CONFIG_SYS_HZ			1000
+ #define CONFIG_SYS_LOAD_ADDR		CONFIG_LOADADDR
+ 
+-- 
+2.34.1
+

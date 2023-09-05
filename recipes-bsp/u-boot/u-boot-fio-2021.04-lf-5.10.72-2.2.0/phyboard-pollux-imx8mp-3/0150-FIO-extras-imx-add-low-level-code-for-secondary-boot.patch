@@ -1,0 +1,101 @@
+From 0aa5329a1282c46778fdf94d5ffbdcd2d24a8405 Mon Sep 17 00:00:00 2001
+From: Tim Anderson <tim.anderson@foundries.io>
+Date: Fri, 11 Jun 2021 12:43:14 -0700
+Subject: [PATCH 150/322] [FIO extras] imx: add low level code for secondary
+ boot in 7ulp
+
+The architecture specific code is isolated to 3 unique functions
+that is:
+- boot_mode_is_closed
+- boot_mode_enable_secondary
+- boot_mode_getprisec
+
+Signed-off-by: Tim Anderson <tim.anderson@foundries.io>
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+---
+ arch/arm/include/asm/arch-mx7ulp/imx-regs.h  | 11 +++++++
+ arch/arm/include/asm/arch-mx7ulp/sys_proto.h |  6 +++-
+ arch/arm/mach-imx/mx7ulp/soc.c               | 31 ++++++++++++++++++++
+ 3 files changed, 47 insertions(+), 1 deletion(-)
+
+diff --git a/arch/arm/include/asm/arch-mx7ulp/imx-regs.h b/arch/arm/include/asm/arch-mx7ulp/imx-regs.h
+index 4103c6ec8a6..e45dbc5fd94 100644
+--- a/arch/arm/include/asm/arch-mx7ulp/imx-regs.h
++++ b/arch/arm/include/asm/arch-mx7ulp/imx-regs.h
+@@ -1080,6 +1080,17 @@ struct fuse_bank7_regs {
+ 	u32	rsvd7[3];
+ };
+ 
++#define UPDATE_DGO_GP10 BIT(3)
++#define WR_ACK_DGO_GP10 BIT(16)
++#define SIM_DGO_GP10_SECONDARY_BOOT BIT(30)
++
++struct sim_regs {
++	u32	rsvd0[21];
++	u32	sim_dg0_ctrl1;			/* 0x054 */
++	u32	rsvd1[9];
++	u32	sim_dg0_gp10;			/* 0x07c */
++};
++
+ struct usbphy_regs {
+ 	u32	usbphy_pwd;			/* 0x000 */
+ 	u32	usbphy_pwd_set;			/* 0x004 */
+diff --git a/arch/arm/include/asm/arch-mx7ulp/sys_proto.h b/arch/arm/include/asm/arch-mx7ulp/sys_proto.h
+index 108df7d9e58..0b7a04467d8 100644
+--- a/arch/arm/include/asm/arch-mx7ulp/sys_proto.h
++++ b/arch/arm/include/asm/arch-mx7ulp/sys_proto.h
+@@ -32,4 +32,8 @@ enum boot_device get_boot_device(void);
+ #define M4_FW_VALID(x) (((x) == 0x402000d1) || ((x) == 0x412000d1))
+ 
+ 
+-#endif
++int boot_mode_getprisec(void);
++void boot_mode_enable_secondary(bool enable);
++int boot_mode_is_closed(void);
++
++#endif /* _SYS_PROTO_MX7ULP_H_ */
+diff --git a/arch/arm/mach-imx/mx7ulp/soc.c b/arch/arm/mach-imx/mx7ulp/soc.c
+index aa148910547..f66e5572bf8 100644
+--- a/arch/arm/mach-imx/mx7ulp/soc.c
++++ b/arch/arm/mach-imx/mx7ulp/soc.c
+@@ -458,6 +458,37 @@ int mmc_get_env_dev(void)
+ 	return board_mmc_get_env_dev(devno);
+ }
+ 
++void boot_mode_enable_secondary(bool enable)
++{
++	u32 persist_sec = SIM_DGO_GP10_SECONDARY_BOOT;
++	struct sim_regs *psrc = (struct sim_regs *) SIM0_RBASE;
++
++	if (enable)
++		setbits_le32(&psrc->sim_dg0_gp10, persist_sec);
++	else
++		clrbits_le32(&psrc->sim_dg0_gp10, persist_sec);
++
++	/* Now do DGO protocol */
++	setbits_le32(&psrc->sim_dg0_ctrl1, UPDATE_DGO_GP10);
++	while(!(readl(&psrc->sim_dg0_ctrl1) & WR_ACK_DGO_GP10))
++		;
++
++	clrbits_le32(&psrc->sim_dg0_ctrl1, UPDATE_DGO_GP10);
++	setbits_le32(&psrc->sim_dg0_ctrl1, WR_ACK_DGO_GP10);
++}
++
++int boot_mode_is_closed(void)
++{
++	return imx_hab_is_enabled();
++}
++
++int boot_mode_getprisec(void)
++{
++	struct sim_regs *psrc = (struct sim_regs *) SIM0_RBASE;
++
++	return !!(readl(&psrc->sim_dg0_gp10) & SIM_DGO_GP10_SECONDARY_BOOT);
++}
++
+ enum boot_device get_boot_device(void)
+ {
+ 	struct bootrom_sw_info **p =
+-- 
+2.34.1
+

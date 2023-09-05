@@ -1,0 +1,36 @@
+From e2168cd6a5062e64b65223102f7a627697db7db3 Mon Sep 17 00:00:00 2001
+From: Ricardo Salveti <ricardo@foundries.io>
+Date: Sat, 25 Sep 2021 13:22:55 +0300
+Subject: [PATCH 060/322] [FIO fromlist] board: rpi: always set fdt_addr if
+ provided by firmware
+
+Otherwise if the env gets saved with an incorrect or different
+fdt_addr (by moving sdcard between different rpi versions), it won't
+be able to boot with the correct address.
+
+This allows fdt_addr to always be in sync with what gets set by the
+firmware.
+
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+---
+ board/raspberrypi/rpi/rpi.c | 3 ---
+ 1 file changed, 3 deletions(-)
+
+diff --git a/board/raspberrypi/rpi/rpi.c b/board/raspberrypi/rpi/rpi.c
+index df52a4689fa..611013471e8 100644
+--- a/board/raspberrypi/rpi/rpi.c
++++ b/board/raspberrypi/rpi/rpi.c
+@@ -318,9 +318,6 @@ static void set_fdtfile(void)
+  */
+ static void set_fdt_addr(void)
+ {
+-	if (env_get("fdt_addr"))
+-		return;
+-
+ 	if (fdt_magic(fw_dtb_pointer) != FDT_MAGIC)
+ 		return;
+ 
+-- 
+2.34.1
+

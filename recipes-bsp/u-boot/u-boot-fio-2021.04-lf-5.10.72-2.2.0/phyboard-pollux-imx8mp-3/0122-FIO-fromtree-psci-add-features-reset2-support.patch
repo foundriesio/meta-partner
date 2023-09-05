@@ -1,0 +1,146 @@
+From 7ff1b225c5a96f155577ec6b0af68ac25d72421d Mon Sep 17 00:00:00 2001
+From: Igor Opaniuk <igor.opaniuk@foundries.io>
+Date: Thu, 1 Apr 2021 02:01:53 +0300
+Subject: [PATCH 122/322] [FIO fromtree] psci: add features/reset2 support
+
+Adds support for:
+* PSCI_FEATURES, which was introduced in PSCI 1.0. This provides API
+that allows discovering whether a specific PSCI function is implemented
+and its features.
+* SYSTEM_RESET2, which was introduced in PSCI 1.1, which extends existing
+SYSTEM_RESET. It provides support for vendor-specific resets, providing
+reset_type as an additional param.
+
+For additional details visit [1].
+
+Implementations of some functions were borrowed from Linux PSCI driver
+code [2].
+
+[1] https://developer.arm.com/documentation/den0022/latest/
+[2] drivers/firmware/psci/psci.c
+
+Signed-off-by: Igor Opaniuk <igor.opaniuk@foundries.io>
+(cherry picked from commit b7135b034f9f19a89516bb53535891e14a545395)
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+---
+ drivers/firmware/psci.c | 68 +++++++++++++++++++++++++++++++++++++++++
+ include/linux/psci.h    |  3 ++
+ 2 files changed, 71 insertions(+)
+
+diff --git a/drivers/firmware/psci.c b/drivers/firmware/psci.c
+index aff8591f018..a1283d2a429 100644
+--- a/drivers/firmware/psci.c
++++ b/drivers/firmware/psci.c
+@@ -13,6 +13,7 @@
+ #include <log.h>
+ #include <dm/lists.h>
+ #include <efi_loader.h>
++#include <sysreset.h>
+ #include <linux/delay.h>
+ #include <linux/libfdt.h>
+ #include <linux/arm-smccc.h>
+@@ -26,6 +27,18 @@
+ #define PSCI_METHOD_HVC 1
+ #define PSCI_METHOD_SMC 2
+ 
++/*
++ * While a 64-bit OS can make calls with SMC32 calling conventions, for some
++ * calls it is necessary to use SMC64 to pass or return 64-bit values.
++ * For such calls PSCI_FN_NATIVE(version, name) will choose the appropriate
++ * (native-width) function ID.
++ */
++#if defined(CONFIG_ARM64)
++#define PSCI_FN_NATIVE(version, name)	PSCI_##version##_FN64_##name
++#else
++#define PSCI_FN_NATIVE(version, name)	PSCI_##version##_FN_##name
++#endif
++
+ #if CONFIG_IS_ENABLED(EFI_LOADER)
+ int __efi_runtime_data psci_method;
+ #else
+@@ -53,6 +66,34 @@ unsigned long __efi_runtime invoke_psci_fn
+ 	return res.a0;
+ }
+ 
++static int psci_features(u32 psci_func_id)
++{
++	return invoke_psci_fn(PSCI_1_0_FN_PSCI_FEATURES,
++			      psci_func_id, 0, 0);
++}
++
++static u32 psci_0_2_get_version(void)
++{
++	return invoke_psci_fn(PSCI_0_2_FN_PSCI_VERSION, 0, 0, 0);
++}
++
++static bool psci_is_system_reset2_supported(void)
++{
++	int ret;
++	u32 ver;
++
++	ver = psci_0_2_get_version();
++
++	if (PSCI_VERSION_MAJOR(ver) >= 1) {
++		ret = psci_features(PSCI_FN_NATIVE(1_1, SYSTEM_RESET2));
++
++		if (ret != PSCI_RET_NOT_SUPPORTED)
++			return true;
++	}
++
++	return false;
++}
++
+ static int psci_bind(struct udevice *dev)
+ {
+ 	/* No SYSTEM_RESET support for PSCI 0.1 */
+@@ -141,6 +182,33 @@ void reset_misc(void)
+ }
+ #endif /* CONFIG_PSCI_RESET */
+ 
++void psci_sys_reset(u32 type)
++{
++	bool reset2_supported;
++
++	do_psci_probe();
++
++	reset2_supported = psci_is_system_reset2_supported();
++
++	if (type == SYSRESET_WARM && reset2_supported) {
++		/*
++		 * reset_type[31] = 0 (architectural)
++		 * reset_type[30:0] = 0 (SYSTEM_WARM_RESET)
++		 * cookie = 0 (ignored by the implementation)
++		 */
++		invoke_psci_fn(PSCI_FN_NATIVE(1_1, SYSTEM_RESET2), 0, 0, 0);
++	} else {
++		invoke_psci_fn(PSCI_0_2_FN_SYSTEM_RESET, 0, 0, 0);
++	}
++}
++
++void psci_sys_poweroff(void)
++{
++	do_psci_probe();
++
++	invoke_psci_fn(PSCI_0_2_FN_SYSTEM_OFF, 0, 0, 0);
++}
++
+ #ifdef CONFIG_CMD_POWEROFF
+ int do_poweroff(struct cmd_tbl *cmdtp, int flag, int argc, char *const argv[])
+ {
+diff --git a/include/linux/psci.h b/include/linux/psci.h
+index 2be29bf656d..9400254dcd4 100644
+--- a/include/linux/psci.h
++++ b/include/linux/psci.h
+@@ -118,6 +118,9 @@
+ #ifdef CONFIG_ARM_PSCI_FW
+ unsigned long invoke_psci_fn(unsigned long a0, unsigned long a1,
+ 			     unsigned long a2, unsigned long a3);
++void psci_sys_reset(u32 type);
++void psci_sys_poweroff(void);
++
+ #else
+ static inline unsigned long invoke_psci_fn(unsigned long a0, unsigned long a1,
+ 					   unsigned long a2, unsigned long a3)
+-- 
+2.34.1
+

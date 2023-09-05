@@ -1,0 +1,38 @@
+From b4573ea4629bf5a2290a0ce1eba6ec934d5431fd Mon Sep 17 00:00:00 2001
+From: Vanessa Maegima <vanessa.maegima@foundries.io>
+Date: Thu, 3 Feb 2022 14:57:29 -0300
+Subject: [PATCH 309/322] [FIO internal] arch: arm: mach-imx: fiohab: extend
+ hab event message
+
+In case of any hab events found in the image, print a message to help
+with the most common errors (SPL incorrectly signed or board not
+fused).
+
+Signed-off-by: Vanessa Maegima <vanessa.maegima@foundries.io>
+---
+ arch/arm/mach-imx/fiohab.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/arch/arm/mach-imx/fiohab.c b/arch/arm/mach-imx/fiohab.c
+index 5a9182339a3..28e207156cc 100644
+--- a/arch/arm/mach-imx/fiohab.c
++++ b/arch/arm/mach-imx/fiohab.c
+@@ -192,6 +192,7 @@ static int hab_status(void)
+ 		       HAB_SUCCESS) {
+ 			if (!is_known_rng_fail_event(event_data, bytes)) {
+ 				printf("HAB events active error\n");
++				printf("Make sure the SPL is correctly signed and the board is fused\n");
+ 				return 1;
+ 			}
+ 		}
+@@ -200,6 +201,7 @@ static int hab_status(void)
+ 		return 0;
+ #else
+ 		printf("HAB events active error\n");
++		printf("Make sure the SPL is correctly signed and the board is fused\n");
+ 		return 1;
+ #endif
+ 	}
+-- 
+2.34.1
+

@@ -1,0 +1,57 @@
+From acd00c2d8734fc640458c7568942fc28774e117f Mon Sep 17 00:00:00 2001
+From: Ilias Apalodimas <ilias.apalodimas@linaro.org>
+Date: Wed, 26 May 2021 21:01:00 +0300
+Subject: [PATCH 225/322] [FIO fromtree] efi_loader: Fix coverity warnings for
+ efi tcg2 protocol
+
+Coverity reported 3 warnings on the current code.
+CID 331856, 331855, 331854 on the latest scan.
+
+Fix the rest of the warnings by initializing the variables before
+passing them to tpm2_get_pcr_info().
+In order to avoid future warnings and errors initialize them to 0 within
+the function as well, since the values are always OR'ed after querying the
+hardware.
+
+Signed-off-by: Ilias Apalodimas <ilias.apalodimas@linaro.org>
+(cherry picked from commit 38de680e582b36d4605b05d3b2c67a3c0c458bfb)
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+---
+ lib/efi_loader/efi_tcg2.c | 7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
+
+diff --git a/lib/efi_loader/efi_tcg2.c b/lib/efi_loader/efi_tcg2.c
+index 39074f75477..ee743f5951f 100644
+--- a/lib/efi_loader/efi_tcg2.c
++++ b/lib/efi_loader/efi_tcg2.c
+@@ -403,6 +403,9 @@ static int tpm2_get_pcr_info(struct udevice *dev, u32 *supported_pcr,
+ 	size_t i;
+ 	int tpm_ret;
+ 
++	*supported_pcr = 0;
++	*active_pcr = 0;
++	*pcr_banks = 0;
+ 	memset(response, 0, sizeof(response));
+ 	ret = tpm2_get_capability(dev, TPM2_CAP_PCRS, 0, response, 1);
+ 	if (ret)
+@@ -481,7 +484,7 @@ out:
+ static efi_status_t __get_active_pcr_banks(u32 *active_pcr_banks)
+ {
+ 	struct udevice *dev;
+-	u32 active, supported, pcr_banks;
++	u32 active = 0, supported = 0, pcr_banks = 0;
+ 	efi_status_t ret;
+ 	int err;
+ 
+@@ -900,7 +903,7 @@ static efi_status_t create_specid_event(struct udevice *dev, void *buffer,
+ 	struct tcg_efi_spec_id_event *spec_event;
+ 	size_t spec_event_size;
+ 	efi_status_t ret = EFI_DEVICE_ERROR;
+-	u32 active, supported;
++	u32 active = 0, supported = 0;
+ 	int err;
+ 	size_t i;
+ 
+-- 
+2.34.1
+

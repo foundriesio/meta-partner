@@ -1,0 +1,36 @@
+From 738c5011dffb924b7b05e59c2509f79014d1637b Mon Sep 17 00:00:00 2001
+From: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+Date: Tue, 14 Sep 2021 17:37:32 +0300
+Subject: [PATCH 001/322] [FIO toimx] imx7d: allow overriding reset_cpu()
+
+Toradex implements its own reset_cpu() function for Colibri-iMX7 to
+reset the whole module via PMIC.
+Let reset_cpu() be overridden to fix compilation error [1] and use
+board-specific implementation.
+
+[1]
+board/toradex/colibri_imx7/built-in.o: in function `reset_cpu':
+board/toradex/colibri_imx7/colibri_imx7.c:241: multiple definition of `reset_cpu'; \
+arch/arm/mach-imx/built-in.o:arch/arm/mach-imx/mx7/soc.c:507: first defined here
+
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+---
+ arch/arm/mach-imx/mx7/soc.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/arm/mach-imx/mx7/soc.c b/arch/arm/mach-imx/mx7/soc.c
+index 1d979bafc86..2c126124392 100644
+--- a/arch/arm/mach-imx/mx7/soc.c
++++ b/arch/arm/mach-imx/mx7/soc.c
+@@ -499,7 +499,7 @@ void smp_waitloop(unsigned previous_address)
+ #endif
+ #endif
+ 
+-void reset_cpu(ulong addr)
++void __weak reset_cpu(ulong addr)
+ {
+ 	struct watchdog_regs *wdog = (struct watchdog_regs *)WDOG1_BASE_ADDR;
+ 
+-- 
+2.34.1
+

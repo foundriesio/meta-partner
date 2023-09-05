@@ -1,0 +1,30 @@
+From 8674add2ce043c2e93c2abfb7eac41751983bce1 Mon Sep 17 00:00:00 2001
+From: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+Date: Sat, 8 Jan 2022 01:32:40 +0200
+Subject: [PATCH 307/322] [FIO internal] misc: include misc-uclass depending on
+ Kconfig option
+
+There the SPL_MISC Kconfig option exists. Include misc-uclass driver
+only if an option enabled.
+
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+---
+ drivers/misc/Makefile | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/misc/Makefile b/drivers/misc/Makefile
+index 5c949490e5b..2253d49ec35 100644
+--- a/drivers/misc/Makefile
++++ b/drivers/misc/Makefile
+@@ -3,7 +3,7 @@
+ # (C) Copyright 2000-2007
+ # Wolfgang Denk, DENX Software Engineering, wd@denx.de.
+ 
+-obj-$(CONFIG_MISC) += misc-uclass.o
++obj-$(CONFIG_$(SPL_TPL_)MISC) += misc-uclass.o
+ 
+ obj-$(CONFIG_$(SPL_TPL_)CROS_EC) += cros_ec.o
+ obj-$(CONFIG_$(SPL_TPL_)CROS_EC_SANDBOX) += cros_ec_sandbox.o
+-- 
+2.34.1
+

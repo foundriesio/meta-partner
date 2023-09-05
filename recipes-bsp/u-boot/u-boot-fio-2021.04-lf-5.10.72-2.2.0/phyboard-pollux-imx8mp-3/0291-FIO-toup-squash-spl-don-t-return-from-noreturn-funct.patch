@@ -1,0 +1,54 @@
+From e610d500e4e73091d4c41c843bbb4837576c7efb Mon Sep 17 00:00:00 2001
+From: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+Date: Sat, 16 Oct 2021 23:11:44 +0300
+Subject: [PATCH 291/322] [FIO toup-squash] spl: don't return from
+ noreturn-function
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+It sould not be any way to return from non-return function.
+Throw panic() to prevent returing in any case.
+
+This fixes a warning [1].
+
+[1]
+  CC      spl/common/spl/spl.o
+common/spl/spl.c: In function ‘jump_to_image_optee’:
+common/spl/spl.c:169:1: warning: ‘noreturn’ function does return
+
+Fixes: 1ca431d72a ("[FIO fromlist] arm: spl: flush and disable cache before jumping to OPTEE")
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+---
+ common/spl/spl.c | 1 +
+ include/spl.h    | 2 +-
+ 2 files changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/common/spl/spl.c b/common/spl/spl.c
+index 0b9d2bcd23e..e8645ecc844 100644
+--- a/common/spl/spl.c
++++ b/common/spl/spl.c
+@@ -169,6 +169,7 @@ __weak void __noreturn jump_to_image_optee(struct spl_image_info *spl_image)
+ {
+ 	spl_optee_entry(NULL, NULL, spl_image->fdt_addr,
+ 			(void *)spl_image->entry_point);
++	panic("spl_optee_entry() returns control back\n");
+ }
+ #endif
+ 
+diff --git a/include/spl.h b/include/spl.h
+index f4c93a526c5..3928d83c466 100644
+--- a/include/spl.h
++++ b/include/spl.h
+@@ -686,7 +686,7 @@ struct bl_params *bl2_plat_get_bl31_params_v2_default(uintptr_t bl32_entry,
+  * @arg2: device tree address, (ARMv7 standard bootarg #2)
+  * @arg3: non-secure entry address (ARMv7 bootarg #0)
+  */
+-void spl_optee_entry(void *arg0, void *arg1, void *arg2, void *arg3);
++void __noreturn spl_optee_entry(void *arg0, void *arg1, void *arg2, void *arg3);
+ 
+ /**
+  * spl_invoke_opensbi - boot using a RISC-V OpenSBI image
+-- 
+2.34.1
+

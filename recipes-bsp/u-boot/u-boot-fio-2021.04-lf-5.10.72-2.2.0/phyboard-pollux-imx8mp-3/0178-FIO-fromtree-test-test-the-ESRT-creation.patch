@@ -1,0 +1,60 @@
+From e1279548a6d3b96624d01dcb1b3aec5612b994f2 Mon Sep 17 00:00:00 2001
+From: Jose Marinho <jose.marinho@arm.com>
+Date: Thu, 11 Mar 2021 13:18:53 +0000
+Subject: [PATCH 178/322] [FIO fromtree] test: test the ESRT creation
+
+This commit slightly extends test_efi_capsule_fw3.
+
+ In order to run the test the following must be added to
+ sandbox_defconfig:
+  +CONFIG_CMD_SF=y
+  +CONFIG_CMD_MEMORY=y
+  +CONFIG_CMD_FAT=y
+  +CONFIG_DFU=y
+
+ The ESRT is printed in the u-boot shell by calling efidebug esrt.
+ The test ensures that, after the capsule is installed, the  ESRT
+ contains entries with the GUIDs:
+  - EFI_FIRMWARE_IMAGE_TYPE_UBOOT_FIT_GUID;
+  - EFI_FIRMWARE_IMAGE_TYPE_UBOOT_RAW_GUID;
+
+test invocation:
+ sudo ./test/py/test.py --bd sandbox -k capsule_fw3 -l --build
+
+CC: Heinrich Schuchardt	<xypron.glpk@gmx.de>
+CC: Sughosh Ganu <sughosh.ganu@linaro.org>
+CC: AKASHI Takahiro <takahiro.akashi@linaro.org>
+CC: Ilias Apalodimas <ilias.apalodimas@linaro.org>
+CC: Andre Przywara <andre.przywara@arm.com>
+CC: Alexander Graf <agraf@csgraf.de>
+CC: nd@arm.com
+Signed-off-by: Jose Marinho <jose.marinho@arm.com>
+Reviewed-by: Heinrich Schuchardt <xypron.glpk@gmx.de>
+(cherry picked from commit de489d82e31894b3b4cdf37972bab353267a83e8)
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+---
+ test/py/tests/test_efi_capsule/test_capsule_firmware.py | 8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+diff --git a/test/py/tests/test_efi_capsule/test_capsule_firmware.py b/test/py/tests/test_efi_capsule/test_capsule_firmware.py
+index e8b0a157545..160a64a14b4 100644
+--- a/test/py/tests/test_efi_capsule/test_capsule_firmware.py
++++ b/test/py/tests/test_efi_capsule/test_capsule_firmware.py
+@@ -229,6 +229,14 @@ class TestEfiCapsuleFirmwareFit(object):
+                 output = u_boot_console.run_command(
+                     'env print -e -all Capsule0000')
+ 
++            output = u_boot_console.run_command_list(['efidebug capsule esrt'])
++
++            # ensure that EFI_FIRMWARE_IMAGE_TYPE_UBOOT_FIT_GUID is in the ESRT.
++            assert 'AE13FF2D-9AD4-4E25-9AC8-6D80B3B22147' in ''.join(output)
++
++            # ensure that  EFI_FIRMWARE_IMAGE_TYPE_UBOOT_RAW_GUID is in the ESRT.
++            assert 'E2BB9C06-70E9-4B14-97A3-5A7913176E3F' in ''.join(output)
++
+             output = u_boot_console.run_command_list([
+                 'host bind 0 %s' % disk_img,
+                 'fatls host 0:1 %s' % CAPSULE_INSTALL_DIR])
+-- 
+2.34.1
+

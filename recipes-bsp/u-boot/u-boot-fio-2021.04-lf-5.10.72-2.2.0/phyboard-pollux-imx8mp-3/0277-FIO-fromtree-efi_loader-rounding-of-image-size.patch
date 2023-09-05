@@ -1,0 +1,54 @@
+From 21c97109c63a436689935e01e14d5ddbcf865125 Mon Sep 17 00:00:00 2001
+From: Heinrich Schuchardt <heinrich.schuchardt@canonical.com>
+Date: Sun, 29 Aug 2021 11:52:44 +0200
+Subject: [PATCH 277/322] [FIO fromtree] efi_loader: rounding of image size
+
+We should not first allocate memory and then report a rounded up value as
+image size. Instead first round up according to section allocation and then
+allocate the memory.
+
+Fixes: 82786754b9d2 ("efi_loader: ImageSize must be multiple of SectionAlignment")
+Signed-off-by: Heinrich Schuchardt <heinrich.schuchardt@canonical.com>
+(cherry picked from commit f3a343d7339acf1d531e438e15fef3c7975cfdcf)
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+---
+ lib/efi_loader/efi_image_loader.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/lib/efi_loader/efi_image_loader.c b/lib/efi_loader/efi_image_loader.c
+index b1e0060fd69..107f1b6ada9 100644
+--- a/lib/efi_loader/efi_image_loader.c
++++ b/lib/efi_loader/efi_image_loader.c
+@@ -881,6 +881,7 @@ efi_status_t efi_load_pe(struct efi_loaded_image_obj *handle,
+ 		image_base = opt->ImageBase;
+ 		efi_set_code_and_data_type(loaded_image_info, opt->Subsystem);
+ 		handle->image_type = opt->Subsystem;
++		virt_size = ALIGN(virt_size, opt->SectionAlignment);
+ 		efi_reloc = efi_alloc(virt_size,
+ 				      loaded_image_info->image_code_type);
+ 		if (!efi_reloc) {
+@@ -891,12 +892,12 @@ efi_status_t efi_load_pe(struct efi_loaded_image_obj *handle,
+ 		handle->entry = efi_reloc + opt->AddressOfEntryPoint;
+ 		rel_size = opt->DataDirectory[rel_idx].Size;
+ 		rel = efi_reloc + opt->DataDirectory[rel_idx].VirtualAddress;
+-		virt_size = ALIGN(virt_size, opt->SectionAlignment);
+ 	} else if (nt->OptionalHeader.Magic == IMAGE_NT_OPTIONAL_HDR32_MAGIC) {
+ 		IMAGE_OPTIONAL_HEADER32 *opt = &nt->OptionalHeader;
+ 		image_base = opt->ImageBase;
+ 		efi_set_code_and_data_type(loaded_image_info, opt->Subsystem);
+ 		handle->image_type = opt->Subsystem;
++		virt_size = ALIGN(virt_size, opt->SectionAlignment);
+ 		efi_reloc = efi_alloc(virt_size,
+ 				      loaded_image_info->image_code_type);
+ 		if (!efi_reloc) {
+@@ -907,7 +908,6 @@ efi_status_t efi_load_pe(struct efi_loaded_image_obj *handle,
+ 		handle->entry = efi_reloc + opt->AddressOfEntryPoint;
+ 		rel_size = opt->DataDirectory[rel_idx].Size;
+ 		rel = efi_reloc + opt->DataDirectory[rel_idx].VirtualAddress;
+-		virt_size = ALIGN(virt_size, opt->SectionAlignment);
+ 	} else {
+ 		log_err("Invalid optional header magic %x\n",
+ 			nt->OptionalHeader.Magic);
+-- 
+2.34.1
+

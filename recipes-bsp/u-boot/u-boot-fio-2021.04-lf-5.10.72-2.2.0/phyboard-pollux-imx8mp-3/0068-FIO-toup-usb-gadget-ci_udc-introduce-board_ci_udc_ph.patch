@@ -1,0 +1,62 @@
+From 66b482c39fc61d5995c0a9217136b9bd615e3db2 Mon Sep 17 00:00:00 2001
+From: Igor Opaniuk <igor.opaniuk@toradex.com>
+Date: Wed, 30 Sep 2020 16:42:38 +0300
+Subject: [PATCH 068/322] [FIO toup] usb: gadget: ci_udc: introduce
+ board_ci_udc_phy_mode
+
+Introduce board_ci_udc_phy_mode() weak function which provides
+opportunity to re-define the logic of OTG role detection, and use
+board specific way of generation of USB cable states (for example,
+when USB ID pin is connected to a GPIO pin).
+
+Signed-off-by: Igor Opaniuk <igor.opaniuk@toradex.com>
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+---
+ drivers/usb/gadget/ci_udc.c | 15 ++++++++++-----
+ 1 file changed, 10 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/usb/gadget/ci_udc.c b/drivers/usb/gadget/ci_udc.c
+index 5b27fb61ea3..9c10a595962 100644
+--- a/drivers/usb/gadget/ci_udc.c
++++ b/drivers/usb/gadget/ci_udc.c
+@@ -28,7 +28,6 @@
+ #include <asm/mach-imx/regs-usbphy.h>
+ #include <linux/types.h>
+ #include <linux/usb/ch9.h>
+-#include <linux/usb/gadget.h>
+ #include <linux/usb/otg.h>
+ #include <dm/pinctrl.h>
+ #include <usb/ci_udc.h>
+@@ -1315,12 +1314,9 @@ static int ci_udc_otg_clk_init(struct udevice *dev,
+ 	return 0;
+ }
+ 
+-static int ci_udc_otg_phy_mode(struct udevice *dev)
++int __weak board_ci_udc_phy_mode(void *__iomem phy_base, int phy_off)
+ {
+-	struct ci_udc_priv_data *priv = dev_get_priv(dev);
+-
+ 	void *__iomem phy_ctrl, *__iomem phy_status;
+-	void *__iomem phy_base = (void *__iomem)devfdt_get_addr(&priv->otgdev);
+ 	u32 val;
+ 
+ 	if (is_mx6() || is_mx7ulp() || is_imx8() || is_imx8ulp()) {
+@@ -1349,6 +1345,15 @@ static int ci_udc_otg_phy_mode(struct udevice *dev)
+ 	}
+ }
+ 
++
++static int ci_udc_otg_phy_mode(struct udevice *dev)
++{
++	struct ci_udc_priv_data *priv = dev_get_priv(dev);
++
++	void *__iomem phy_base = (void *__iomem)devfdt_get_addr(&priv->otgdev);
++	return board_ci_udc_phy_mode(phy_base, priv->phy_off);
++}
++
+ static int ci_udc_otg_ofdata_to_platdata(struct udevice *dev)
+ {
+ 	struct ci_udc_priv_data *priv = dev_get_priv(dev);
+-- 
+2.34.1
+

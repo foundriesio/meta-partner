@@ -1,0 +1,49 @@
+From b86e411f25fdc26409100fe04ff7a85d5f5560e9 Mon Sep 17 00:00:00 2001
+From: Ricardo Salveti <ricardo@foundries.io>
+Date: Mon, 27 Sep 2021 22:01:20 -0300
+Subject: [PATCH 114/322] [FIO internal-squash] imx: mmc: remove secondary
+ detection logic
+
+Remove the logic that was added by mistake as part of commit
+commit b35a3db4c3dc. The only part that was supposed to be added is
+available via board/freescale/common/mmc.c.
+
+Fixes: b35a3db4c3 ("[FIO internal] imx: mmc: detect offset of next image in runtime")
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+---
+ board/freescale/imx8mm_evk/spl.c | 21 ---------------------
+ 1 file changed, 21 deletions(-)
+
+diff --git a/board/freescale/imx8mm_evk/spl.c b/board/freescale/imx8mm_evk/spl.c
+index 906b4a8deaf..4ca63ff1ba0 100644
+--- a/board/freescale/imx8mm_evk/spl.c
++++ b/board/freescale/imx8mm_evk/spl.c
+@@ -326,24 +326,3 @@ void board_init_f(ulong dummy)
+ 
+ 	board_init_r(NULL, 0);
+ }
+-
+-#if defined(CONFIG_SECONDARY_BOOT_RUNTIME_DETECTION) && \
+-    defined(CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_USE_SECTOR)
+-unsigned long spl_mmc_get_uboot_raw_sector(struct mmc *mmc,
+-					   unsigned long raw_sect)
+-{
+-	int boot_secondary = boot_mode_getprisec();
+-	unsigned long offset = CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_SECTOR;
+-
+-	if (boot_secondary) {
+-		offset += CONFIG_SECONDARY_BOOT_SECTOR_OFFSET;
+-		printf("SPL: Booting secondary boot path: using 0x%lx offset "
+-		       "for next boot image\n", offset);
+-	} else {
+-		printf("SPL: Booting primary boot path: using 0x%lx offset "
+-		       "for next boot image\n", offset);
+-	}
+-
+-	return offset;
+-}
+-#endif
+-- 
+2.34.1
+

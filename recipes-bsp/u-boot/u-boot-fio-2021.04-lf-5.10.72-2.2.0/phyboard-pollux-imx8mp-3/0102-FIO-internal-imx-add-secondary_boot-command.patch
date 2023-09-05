@@ -1,0 +1,134 @@
+From e9e2930fd97b91cb09c70b4f48dd2ef4b7a52474 Mon Sep 17 00:00:00 2001
+From: Igor Opaniuk <igor.opaniuk@foundries.io>
+Date: Wed, 10 Mar 2021 12:22:20 +0200
+Subject: [PATCH 102/322] [FIO internal] imx: add secondary_boot command
+
+Add command for triggering SiP service provided by TF-A for setting/clearing
+SRC GPR10 PERSIST_SECONDARY_BOOT bit, that identifies which image will be
+used for boot after warm reset: primary(0) or secondary(1).
+
+Signed-off-by: Igor Opaniuk <igor.opaniuk@foundries.io>
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+---
+ arch/arm/mach-imx/Kconfig              |  9 ++++
+ arch/arm/mach-imx/Makefile             |  1 +
+ arch/arm/mach-imx/imx_secondary_boot.c | 61 ++++++++++++++++++++++++++
+ include/imx_sip.h                      |  2 +
+ 4 files changed, 73 insertions(+)
+ create mode 100644 arch/arm/mach-imx/imx_secondary_boot.c
+
+diff --git a/arch/arm/mach-imx/Kconfig b/arch/arm/mach-imx/Kconfig
+index 9de4b5fe0ce..436bd64501d 100644
+--- a/arch/arm/mach-imx/Kconfig
++++ b/arch/arm/mach-imx/Kconfig
+@@ -52,6 +52,15 @@ config IMX_BOOTAUX
+ 	help
+ 	  bootaux [addr] to boot auxiliary core.
+ 
++config CMD_SECONDARY_BOOT
++	bool "Use SiP service exposed by trusted firmware for redundant boot control"
++	default n
++	depends on ARCH_IMX8M
++	help
++	  Command for triggering SiP service provided by TF-A for setting/clearing
++	  SRC GPR10 PERSIST_SECONDARY_BOOT bit, that identifies which image will be
++	  used for boot after warm reset: primary(0) or secondary(1)
++
+ config IMX_MODULE_FUSE
+ 	bool "i.MX Module Fuse"
+ 	depends on ARCH_MX6
+diff --git a/arch/arm/mach-imx/Makefile b/arch/arm/mach-imx/Makefile
+index af9f6792957..7f674802b3f 100644
+--- a/arch/arm/mach-imx/Makefile
++++ b/arch/arm/mach-imx/Makefile
+@@ -87,6 +87,7 @@ obj-$(CONFIG_CMD_DEKBLOB) += cmd_dek.o
+ obj-$(CONFIG_CMD_NANDBCB) += cmd_nandbcb.o
+ obj-$(CONFIG_CMD_QSPIHDR) += cmd_qspihdr.o
+ obj-$(CONFIG_IMX_VSERVICE) += imx_vservice.o
++obj-${CONFIG_CMD_SECONDARY_BOOT} += imx_secondary_boot.o
+ endif
+ 
+ ifeq ($(CONFIG_SPL_BUILD),y)
+diff --git a/arch/arm/mach-imx/imx_secondary_boot.c b/arch/arm/mach-imx/imx_secondary_boot.c
+new file mode 100644
+index 00000000000..7ec71e3fc74
+--- /dev/null
++++ b/arch/arm/mach-imx/imx_secondary_boot.c
+@@ -0,0 +1,61 @@
++// SPDX-License-Identifier: GPL-2.0+
++/*
++ * Copyright (C) 2021 Foundries.io Ltd
++ */
++
++#include <common.h>
++#include <asm/io.h>
++#include <asm/mach-imx/sys_proto.h>
++#include <command.h>
++#include <elf.h>
++#include <imx_sip.h>
++#include <linux/arm-smccc.h>
++#include <linux/compiler.h>
++#include <cpu_func.h>
++
++static int do_imx_secondary_boot(cmd_tbl_t *cmdtp, int flag,
++				 int argc, char * const argv[])
++{
++	u32 secondary = 0;
++	struct arm_smccc_res res;
++	char secondary_val[2] = { 0 };
++	int ret;
++
++	/* If we just want to retrieve current value */
++	if (argc == 1) {
++		arm_smccc_smc(IMX_SIP_SRC, IMX_SIP_SRC_IS_SECONDARY_BOOT, 0, 0,
++			      0, 0, 0, 0, &res);
++
++		secondary = res.a0;
++		printf("Secondary boot bit = %d\n", secondary);
++		ret = snprintf(secondary_val, sizeof(secondary_val),
++			       "%d", secondary);
++		if (ret < 0)
++			return CMD_RET_FAILURE;
++
++		ret = env_set("fiovb.is_secondary_boot", secondary_val);
++		if (ret)
++			return CMD_RET_FAILURE;
++
++		return CMD_RET_SUCCESS;
++	}
++
++	secondary = simple_strtoul(argv[1], NULL, 10);
++
++	if (!(secondary == 0 || secondary == 1))
++		return CMD_RET_USAGE;
++
++	arm_smccc_smc(IMX_SIP_SRC, IMX_SIP_SRC_SET_SECONDARY_BOOT, secondary, 0,
++		      0, 0, 0, 0, &res);
++
++	return CMD_RET_SUCCESS;
++}
++
++U_BOOT_CMD(
++	imx_secondary_boot, CONFIG_SYS_MAXARGS, 1, do_imx_secondary_boot,
++	"Get/Set PERSIST_SECONDARY_BOOT bit",
++	"[0|1]\n"
++	"   no param  - get current bit value\n"
++	"   0 - set primary image\n"
++	"   1 - set secondary image\n"
++);
+diff --git a/include/imx_sip.h b/include/imx_sip.h
+index 22a733d8777..60e4cb592a6 100644
+--- a/include/imx_sip.h
++++ b/include/imx_sip.h
+@@ -15,6 +15,8 @@
+ #define IMX_SIP_SRC		0xC2000005
+ #define IMX_SIP_SRC_MCU_START	0x00
+ #define IMX_SIP_SRC_MCU_STARTED	0x01
++#define IMX_SIP_SRC_SET_SECONDARY_BOOT	0x10
++#define IMX_SIP_SRC_IS_SECONDARY_BOOT	0x11
+ 
+ #define IMX_SIP_HAB		0xC2000007
+ #define IMX_SIP_HAB_AUTHENTICATE	0x00
+-- 
+2.34.1
+

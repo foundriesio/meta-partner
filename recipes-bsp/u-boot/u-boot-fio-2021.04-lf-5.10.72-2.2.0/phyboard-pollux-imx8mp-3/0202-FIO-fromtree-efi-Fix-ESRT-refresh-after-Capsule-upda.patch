@@ -1,0 +1,56 @@
+From 5ae59c58f443b5815eeae1119bc94fb22ef5a117 Mon Sep 17 00:00:00 2001
+From: Jose Marinho <jose.marinho@arm.com>
+Date: Mon, 19 Apr 2021 14:54:33 +0100
+Subject: [PATCH 202/322] [FIO fromtree] efi: Fix ESRT refresh after Capsule
+ update
+
+Indicated by Coverity Scan CID 331147
+
+The ESRT was being refreshed in situations where the UpdateCapsule
+procedure failed. In that scenario:
+
+1) the ESRT refresh was superfluous.
+2) a failed ESRT refresh return code overwrites the UpdateCapsule error
+return code.
+
+This commit ensures that the ESRT is only refreshed when the
+UpdateCapsule performs successfully.
+
+CC: Heinrich Schuchardt <xypron.glpk@gmx.de>
+CC: Sughosh Ganu <sughosh.ganu@linaro.org>
+CC: AKASHI Takahiro <takahiro.akashi@linaro.org>
+CC: Tom Rini <trini@konsulko.com>
+CC: Andre Przywara <andre.przywara@arm.com>
+CC: nd@arm.com
+
+Signed-off-by: Jose Marinho <jose.marinho@arm.com>
+Reviewed-by: Heinrich Schuchardt <xypron.glpk@gmx.de>
+(cherry picked from commit 3627cf4bff9b29cf9e41ad88b56f469a3675aba2)
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+---
+ lib/efi_loader/efi_capsule.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/lib/efi_loader/efi_capsule.c b/lib/efi_loader/efi_capsule.c
+index 691eda5e0d1..a984c347e1e 100644
+--- a/lib/efi_loader/efi_capsule.c
++++ b/lib/efi_loader/efi_capsule.c
+@@ -481,7 +481,6 @@ efi_status_t EFIAPI efi_update_capsule(
+ 		if (ret != EFI_SUCCESS)
+ 			goto out;
+ 	}
+-out:
+ 
+ 	if (IS_ENABLED(CONFIG_EFI_ESRT)) {
+ 		/* Rebuild the ESRT to reflect any updated FW images. */
+@@ -489,6 +488,7 @@ out:
+ 		if (ret != EFI_SUCCESS)
+ 			log_warning("EFI Capsule: failed to update ESRT\n");
+ 	}
++out:
+ 
+ 	return EFI_EXIT(ret);
+ }
+-- 
+2.34.1
+

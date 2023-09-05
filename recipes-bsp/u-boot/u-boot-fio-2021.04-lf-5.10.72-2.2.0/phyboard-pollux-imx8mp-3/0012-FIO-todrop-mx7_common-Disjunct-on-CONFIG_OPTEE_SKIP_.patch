@@ -1,0 +1,46 @@
+From 80908007e9ae813d5c12ebf9a4165a861d1056ac Mon Sep 17 00:00:00 2001
+From: Bryan O'Donoghue <bryan.odonoghue@linaro.org>
+Date: Tue, 6 Aug 2019 12:38:32 +0100
+Subject: [PATCH 012/322] [FIO todrop] mx7_common: Disjunct on
+ CONFIG_OPTEE_SKIP_LOWLEVEL_INIT
+
+Switch from complex ifdef chain to more simple disjunction on
+CONFIG_OPTEE_SKIP_LOWLEVEL_INIT to determine if SKIP_LOWLEVEL_INIT
+should be on.
+
+NOTE: Should be converted to the CONFIG_SKIP_LOWLEVEL_INIT defconfig
+option during updating u-boot to v2022.01.
+
+Signed-off-by: Bryan O'Donoghue <bryan.odonoghue@linaro.org>
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+---
+ include/configs/mx7_common.h | 9 +++------
+ 1 file changed, 3 insertions(+), 6 deletions(-)
+
+diff --git a/include/configs/mx7_common.h b/include/configs/mx7_common.h
+index 7922ae147b7..9ee3acd445b 100644
+--- a/include/configs/mx7_common.h
++++ b/include/configs/mx7_common.h
+@@ -47,15 +47,12 @@
+ #endif
+ 
+ /*
+- * If we have defined the OPTEE ram size and not OPTEE it means that we were
+- * launched by OPTEE, because of that we shall skip all the low level
+- * initialization since it was already done by ATF or OPTEE
++ * If OPTEE_SKIP_LOWLEVEL_INIT is flagged indicate CONFIG_SKIP_LOWLEVEL_INIT and
++ * subsequently skip over reserved a range of reserved low-level bit twiddling.
+  */
+-#if (CONFIG_OPTEE_TZDRAM_SIZE != 0)
+-#ifndef CONFIG_OPTEE
++#ifdef CONFIG_OPTEE_SKIP_LOWLEVEL_INIT
+ #define CONFIG_SKIP_LOWLEVEL_INIT
+ #endif
+-#endif
+ 
+ #ifdef CONFIG_IMX_OPTEE
+ #define TEE_ENV "tee=yes\0"
+-- 
+2.34.1
+

@@ -1,0 +1,30 @@
+From 92f45413eb38fbc315d926e0d2a222588689b4ff Mon Sep 17 00:00:00 2001
+From: Igor Opaniuk <igor.opaniuk@foundries.io>
+Date: Thu, 12 Aug 2021 16:16:20 +0300
+Subject: [PATCH 163/322] [FIO toup] ARM: dts: fsl-imx8qm-apalis: don't include
+ u-boot.dtsi
+
+Don't include explicitly fsl-imx8qm-apalis-u-boot.dtsi, as it's done
+automatically by dtc, which also permits to add additional properties
+to nodes, defined in board dts file after this include.
+
+Signed-off-by: Igor Opaniuk <igor.opaniuk@foundries.io>
+---
+ arch/arm/dts/fsl-imx8qm-apalis.dts | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/arch/arm/dts/fsl-imx8qm-apalis.dts b/arch/arm/dts/fsl-imx8qm-apalis.dts
+index 0d8d3b3e8e8..e92bfcecbe9 100644
+--- a/arch/arm/dts/fsl-imx8qm-apalis.dts
++++ b/arch/arm/dts/fsl-imx8qm-apalis.dts
+@@ -9,7 +9,6 @@
+ /memreserve/ 0x80000000 0x00020000;
+ 
+ #include "fsl-imx8qm.dtsi"
+-#include "fsl-imx8qm-apalis-u-boot.dtsi"
+ 
+ / {
+ 	model = "Toradex Apalis iMX8";
+-- 
+2.34.1
+

@@ -1,0 +1,268 @@
+From e4ac661bcf53cd1b4a26208c86022e4ff10a2ffe Mon Sep 17 00:00:00 2001
+From: Masahisa Kojima <masahisa.kojima@linaro.org>
+Date: Fri, 14 May 2021 09:53:36 +0900
+Subject: [PATCH 218/322] [FIO fromtree] efi_loader: expose efi_image_parse()
+ even if UEFI Secure Boot is disabled
+
+This is preparation for PE/COFF measurement support.
+PE/COFF image hash calculation is same in both
+UEFI Secure Boot image verification and measurement in
+measured boot. PE/COFF image parsing functions are
+gathered into efi_image_loader.c, and exposed even if
+UEFI Secure Boot is not enabled.
+
+This commit also adds the EFI_SIGNATURE_SUPPORT option
+to decide if efi_signature.c shall be compiled.
+
+Signed-off-by: Masahisa Kojima <masahisa.kojima@linaro.org>
+Signed-off-by: Heinrich Schuchardt <xypron.glpk@gmx.de>
+(cherry picked from commit f6081a8a1e45e4864e36d83ccc236eef62478b1f)
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+---
+ lib/efi_loader/Kconfig            |  5 +++
+ lib/efi_loader/Makefile           |  2 +-
+ lib/efi_loader/efi_image_loader.c | 64 ++++++++++++++++++++++++++++-
+ lib/efi_loader/efi_signature.c    | 67 +------------------------------
+ lib/efi_loader/efi_var_common.c   |  3 ++
+ 5 files changed, 73 insertions(+), 68 deletions(-)
+
+diff --git a/lib/efi_loader/Kconfig b/lib/efi_loader/Kconfig
+index c259abe0333..ecbc0c94101 100644
+--- a/lib/efi_loader/Kconfig
++++ b/lib/efi_loader/Kconfig
+@@ -174,6 +174,7 @@ config EFI_CAPSULE_AUTHENTICATE
+ 	select PKCS7_MESSAGE_PARSER
+ 	select PKCS7_VERIFY
+ 	select IMAGE_SIGN_INFO
++	select EFI_SIGNATURE_SUPPORT
+ 	default n
+ 	help
+ 	  Select this option if you want to enable capsule
+@@ -342,6 +343,7 @@ config EFI_SECURE_BOOT
+ 	select X509_CERTIFICATE_PARSER
+ 	select PKCS7_MESSAGE_PARSER
+ 	select PKCS7_VERIFY
++	select EFI_SIGNATURE_SUPPORT
+ 	default n
+ 	help
+ 	  Select this option to enable EFI secure boot support.
+@@ -349,6 +351,9 @@ config EFI_SECURE_BOOT
+ 	  it is signed with a trusted key. To do that, you need to install,
+ 	  at least, PK, KEK and db.
+ 
++config EFI_SIGNATURE_SUPPORT
++	bool
++
+ config EFI_ESRT
+ 	bool "Enable the UEFI ESRT generation"
+ 	depends on EFI_CAPSULE_FIRMWARE_MANAGEMENT
+diff --git a/lib/efi_loader/Makefile b/lib/efi_loader/Makefile
+index 8bd343e258a..fd344cea29b 100644
+--- a/lib/efi_loader/Makefile
++++ b/lib/efi_loader/Makefile
+@@ -63,7 +63,7 @@ obj-$(CONFIG_GENERATE_SMBIOS_TABLE) += efi_smbios.o
+ obj-$(CONFIG_EFI_RNG_PROTOCOL) += efi_rng.o
+ obj-$(CONFIG_EFI_TCG2_PROTOCOL) += efi_tcg2.o
+ obj-$(CONFIG_EFI_LOAD_FILE2_INITRD) += efi_load_initrd.o
+-obj-y += efi_signature.o
++obj-$(CONFIG_EFI_SIGNATURE_SUPPORT) += efi_signature.o
+ 
+ EFI_VAR_SEED_FILE := $(subst $\",,$(CONFIG_EFI_VAR_SEED_FILE))
+ $(obj)/efi_var_seed.o: $(srctree)/$(EFI_VAR_SEED_FILE)
+diff --git a/lib/efi_loader/efi_image_loader.c b/lib/efi_loader/efi_image_loader.c
+index e1ba84eb7a8..915bf791bdf 100644
+--- a/lib/efi_loader/efi_image_loader.c
++++ b/lib/efi_loader/efi_image_loader.c
+@@ -214,7 +214,68 @@ static void efi_set_code_and_data_type(
+ 	}
+ }
+ 
+-#ifdef CONFIG_EFI_SECURE_BOOT
++/**
++ * efi_image_region_add() - add an entry of region
++ * @regs:	Pointer to array of regions
++ * @start:	Start address of region (included)
++ * @end:	End address of region (excluded)
++ * @nocheck:	flag against overlapped regions
++ *
++ * Take one entry of region [@start, @end[ and insert it into the list.
++ *
++ * * If @nocheck is false, the list will be sorted ascending by address.
++ *   Overlapping entries will not be allowed.
++ *
++ * * If @nocheck is true, the list will be sorted ascending by sequence
++ *   of adding the entries. Overlapping is allowed.
++ *
++ * Return:	status code
++ */
++efi_status_t efi_image_region_add(struct efi_image_regions *regs,
++				  const void *start, const void *end,
++				  int nocheck)
++{
++	struct image_region *reg;
++	int i, j;
++
++	if (regs->num >= regs->max) {
++		EFI_PRINT("%s: no more room for regions\n", __func__);
++		return EFI_OUT_OF_RESOURCES;
++	}
++
++	if (end < start)
++		return EFI_INVALID_PARAMETER;
++
++	for (i = 0; i < regs->num; i++) {
++		reg = &regs->reg[i];
++		if (nocheck)
++			continue;
++
++		/* new data after registered region */
++		if (start >= reg->data + reg->size)
++			continue;
++
++		/* new data preceding registered region */
++		if (end <= reg->data) {
++			for (j = regs->num - 1; j >= i; j--)
++				memcpy(&regs->reg[j + 1], &regs->reg[j],
++				       sizeof(*reg));
++			break;
++		}
++
++		/* new data overlapping registered region */
++		EFI_PRINT("%s: new region already part of another\n", __func__);
++		return EFI_INVALID_PARAMETER;
++	}
++
++	reg = &regs->reg[i];
++	reg->data = start;
++	reg->size = end - start;
++	regs->num++;
++
++	return EFI_SUCCESS;
++}
++
+ /**
+  * cmp_pe_section() - compare virtual addresses of two PE image sections
+  * @arg1:	pointer to pointer to first section header
+@@ -423,6 +484,7 @@ err:
+ 	return false;
+ }
+ 
++#ifdef CONFIG_EFI_SECURE_BOOT
+ /**
+  * efi_image_unsigned_authenticate() - authenticate unsigned image with
+  * SHA256 hash
+diff --git a/lib/efi_loader/efi_signature.c b/lib/efi_loader/efi_signature.c
+index c7ec2754147..bdd09881fc9 100644
+--- a/lib/efi_loader/efi_signature.c
++++ b/lib/efi_loader/efi_signature.c
+@@ -15,18 +15,16 @@
+ #include <crypto/public_key.h>
+ #include <linux/compat.h>
+ #include <linux/oid_registry.h>
++#include <u-boot/hash-checksum.h>
+ #include <u-boot/rsa.h>
+ #include <u-boot/sha256.h>
+ 
+-const efi_guid_t efi_guid_image_security_database =
+-		EFI_IMAGE_SECURITY_DATABASE_GUID;
+ const efi_guid_t efi_guid_sha256 = EFI_CERT_SHA256_GUID;
+ const efi_guid_t efi_guid_cert_rsa2048 = EFI_CERT_RSA2048_GUID;
+ const efi_guid_t efi_guid_cert_x509 = EFI_CERT_X509_GUID;
+ const efi_guid_t efi_guid_cert_x509_sha256 = EFI_CERT_X509_SHA256_GUID;
+ const efi_guid_t efi_guid_cert_type_pkcs7 = EFI_CERT_TYPE_PKCS7_GUID;
+ 
+-#if defined(CONFIG_EFI_SECURE_BOOT) || defined(CONFIG_EFI_CAPSULE_AUTHENTICATE)
+ static u8 pkcs7_hdr[] = {
+ 	/* SEQUENCE */
+ 	0x30, 0x82, 0x05, 0xc7,
+@@ -539,68 +537,6 @@ out:
+ 	return !revoked;
+ }
+ 
+-/**
+- * efi_image_region_add() - add an entry of region
+- * @regs:	Pointer to array of regions
+- * @start:	Start address of region (included)
+- * @end:	End address of region (excluded)
+- * @nocheck:	flag against overlapped regions
+- *
+- * Take one entry of region [@start, @end[ and insert it into the list.
+- *
+- * * If @nocheck is false, the list will be sorted ascending by address.
+- *   Overlapping entries will not be allowed.
+- *
+- * * If @nocheck is true, the list will be sorted ascending by sequence
+- *   of adding the entries. Overlapping is allowed.
+- *
+- * Return:	status code
+- */
+-efi_status_t efi_image_region_add(struct efi_image_regions *regs,
+-				  const void *start, const void *end,
+-				  int nocheck)
+-{
+-	struct image_region *reg;
+-	int i, j;
+-
+-	if (regs->num >= regs->max) {
+-		EFI_PRINT("%s: no more room for regions\n", __func__);
+-		return EFI_OUT_OF_RESOURCES;
+-	}
+-
+-	if (end < start)
+-		return EFI_INVALID_PARAMETER;
+-
+-	for (i = 0; i < regs->num; i++) {
+-		reg = &regs->reg[i];
+-		if (nocheck)
+-			continue;
+-
+-		/* new data after registered region */
+-		if (start >= reg->data + reg->size)
+-			continue;
+-
+-		/* new data preceding registered region */
+-		if (end <= reg->data) {
+-			for (j = regs->num - 1; j >= i; j--)
+-				memcpy(&regs->reg[j + 1], &regs->reg[j],
+-				       sizeof(*reg));
+-			break;
+-		}
+-
+-		/* new data overlapping registered region */
+-		EFI_PRINT("%s: new region already part of another\n", __func__);
+-		return EFI_INVALID_PARAMETER;
+-	}
+-
+-	reg = &regs->reg[i];
+-	reg->data = start;
+-	reg->size = end - start;
+-	regs->num++;
+-
+-	return EFI_SUCCESS;
+-}
+-
+ /**
+  * efi_sigstore_free - free signature store
+  * @sigstore:	Pointer to signature store structure
+@@ -846,4 +782,3 @@ struct efi_signature_store *efi_sigstore_parse_sigdb(u16 *name)
+ 
+ 	return efi_build_signature_store(db, db_size);
+ }
+-#endif /* CONFIG_EFI_SECURE_BOOT || CONFIG_EFI_CAPSULE_AUTHENTICATE */
+diff --git a/lib/efi_loader/efi_var_common.c b/lib/efi_loader/efi_var_common.c
+index 2139ca79383..3d92afe2ebd 100644
+--- a/lib/efi_loader/efi_var_common.c
++++ b/lib/efi_loader/efi_var_common.c
+@@ -24,6 +24,9 @@ struct efi_auth_var_name_type {
+ 	const enum efi_auth_var_type type;
+ };
+ 
++const efi_guid_t efi_guid_image_security_database =
++		EFI_IMAGE_SECURITY_DATABASE_GUID;
++
+ static const struct efi_auth_var_name_type name_type[] = {
+ 	{u"PK", &efi_global_variable_guid, EFI_AUTH_VAR_PK},
+ 	{u"KEK", &efi_global_variable_guid, EFI_AUTH_VAR_KEK},
+-- 
+2.34.1
+

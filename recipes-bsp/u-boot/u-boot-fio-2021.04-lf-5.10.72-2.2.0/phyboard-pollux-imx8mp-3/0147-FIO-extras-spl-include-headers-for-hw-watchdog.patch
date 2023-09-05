@@ -1,0 +1,29 @@
+From a2b4bddcd7b080b9141e97a19e6dddb8bfca4594 Mon Sep 17 00:00:00 2001
+From: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+Date: Wed, 29 Sep 2021 23:22:39 +0300
+Subject: [PATCH 147/322] [FIO extras] spl: include headers for hw watchdog
+
+If HW_WATCHDOG enabled, we need a file with related functions'
+declarations.
+
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+---
+ common/spl/spl.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/common/spl/spl.c b/common/spl/spl.c
+index 03fa714d07b..5b147cb77b5 100644
+--- a/common/spl/spl.c
++++ b/common/spl/spl.c
+@@ -664,6 +664,8 @@ void board_init_r(gd_t *dummy1, ulong dummy2)
+ #if CONFIG_IS_ENABLED(WDT)
+ 	initr_watchdog();
+ #else /* SPL_HW_WATCHDOG */
++# include <watchdog.h>
++
+ 	hw_watchdog_init();
+ #endif
+ #endif
+-- 
+2.34.1
+

@@ -1,0 +1,44 @@
+From 4fff72137d166d802498a6ab9d7458e9fbb4fb4f Mon Sep 17 00:00:00 2001
+From: Masami Hiramatsu <masami.hiramatsu@linaro.org>
+Date: Mon, 12 Jul 2021 18:05:17 +0900
+Subject: [PATCH 248/322] [FIO fromtree] efi_loader: Fix to set bootdev_root
+ correctly if bootdev found
+
+Fix find_boot_device() to set bootdev_root if it finds the
+bootdev from BootNext. Currently it sets the bootdev_root only
+when it finds bootdev from BootOrder.
+
+Fixes: c74cd8bd08d1 ("efi_loader: capsule: add capsule_on_disk support")
+Signed-off-by: Masami Hiramatsu <masami.hiramatsu@linaro.org>
+Accked-by: Ilias Apalodimas <ilias.apalodimas@linaro.org>
+Reviewed-by: Heinrich Schuchardt <xypron.glpk@gmx.de>
+(cherry picked from commit b0b1449b3be9b93ecc57d91b0cb18ed81fc8a1ee)
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+---
+ lib/efi_loader/efi_capsule.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/lib/efi_loader/efi_capsule.c b/lib/efi_loader/efi_capsule.c
+index bef9d61f675..b878e71438b 100644
+--- a/lib/efi_loader/efi_capsule.c
++++ b/lib/efi_loader/efi_capsule.c
+@@ -646,7 +646,7 @@ static efi_status_t find_boot_device(void)
+ 		ret = get_dp_device(boot_var16, &boot_dev);
+ 		if (ret == EFI_SUCCESS) {
+ 			if (device_is_present_and_system_part(boot_dev)) {
+-				goto out;
++				goto found;
+ 			} else {
+ 				efi_free_pool(boot_dev);
+ 				boot_dev = NULL;
+@@ -689,6 +689,7 @@ skip:
+ 		efi_free_pool(boot_dev);
+ 		boot_dev = NULL;
+ 	}
++found:
+ 	if (boot_dev) {
+ 		u16 *path_str;
+ 
+-- 
+2.34.1
+

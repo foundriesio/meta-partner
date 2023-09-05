@@ -1,0 +1,55 @@
+From ed296dc3e5db1a1ca571287327f859da239247e0 Mon Sep 17 00:00:00 2001
+From: Ricardo Salveti <ricardo@foundries.io>
+Date: Fri, 21 Aug 2020 16:09:56 -0300
+Subject: [PATCH 035/322] [FIO extras] autoboot: imx: only boot from usb if
+ fastboot is set
+
+Fastboot might not always be available, even when booting from USB, to
+make sure to only allow mfg/uuu autoboot logic to be in place if
+fastboot is enabled and supported by the usb stack.
+
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+---
+ common/autoboot.c | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/common/autoboot.c b/common/autoboot.c
+index cc51867a514..3d73eedd3cf 100644
+--- a/common/autoboot.c
++++ b/common/autoboot.c
+@@ -350,6 +350,7 @@ const char *bootdelay_process(void)
+ 		bootdelay = fdtdec_get_config_int(gd->fdt_blob, "bootdelay",
+ 						  bootdelay);
+ 
++#if defined(CONFIG_USB_FUNCTION_FASTBOOT)
+ #if defined(is_boot_from_usb)
+ 	if (is_boot_from_usb() && env_get("bootcmd_mfg")) {
+ 		disconnect_from_pc();
+@@ -359,9 +360,8 @@ const char *bootdelay_process(void)
+ 	} else if (is_boot_from_usb()) {
+ 		printf("Boot from USB for uuu\n");
+ 		env_set("bootcmd", "fastboot 0");
+-	} else {
+-		printf("Normal Boot\n");
+ 	}
++#endif
+ #endif
+ 
+ 	debug("### main_loop entered: bootdelay=%d\n\n", bootdelay);
+@@ -380,11 +380,13 @@ const char *bootdelay_process(void)
+ 	else
+ 		s = env_get("bootcmd");
+ 
++#if defined(CONFIG_USB_FUNCTION_FASTBOOT)
+ #if defined(is_boot_from_usb)
+ 	if (is_boot_from_usb() && env_get("bootcmd_mfg")) {
+ 		s = env_get("bootcmd_mfg");
+ 		printf("Run bootcmd_mfg: %s\n", s);
+ 	}
++#endif
+ #endif
+ 
+ 	if (IS_ENABLED(CONFIG_OF_CONTROL))
+-- 
+2.34.1
+

@@ -1,0 +1,33 @@
+From d9897f0cecf404892a03eec92eef4656528272a9 Mon Sep 17 00:00:00 2001
+From: Igor Opaniuk <igor.opaniuk@foundries.io>
+Date: Fri, 3 Sep 2021 14:54:38 -0700
+Subject: [PATCH 265/322] [FIO internal] imx8mp_evk: disable DM_I2C for SPL
+
+Force disable DM_I2C for the SPL build (workaround).
+
+Signed-off-by: Igor Opaniuk <igor.opaniuk@foundries.io>
+Signed-off-by: Michael Scott <mike@foundries.io>
+(cherry-picked from commit 22bf38250b5ca5b0f77d69ab7a2cfe05465c10f5)
+Co-developed-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+---
+ include/configs/imx8mp_evk.h | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/include/configs/imx8mp_evk.h b/include/configs/imx8mp_evk.h
+index 10e87f349d8..85202269b3d 100644
+--- a/include/configs/imx8mp_evk.h
++++ b/include/configs/imx8mp_evk.h
+@@ -42,6 +42,9 @@
+ 	(CONFIG_SYS_NAND_U_BOOT_OFFS + CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_SECTOR * 512 - 0x8400)
+ #endif
+ 
++#undef CONFIG_SPL_DM_I2C
++#define CONFIG_SYS_I2C
++
+ #endif
+ 
+ #define CONFIG_CMD_READ
+-- 
+2.34.1
+

@@ -1,0 +1,30 @@
+From 9f9cfa4621aa7670200dd4f2826c33ab32cd2ae5 Mon Sep 17 00:00:00 2001
+From: Ricardo Salveti <ricardo@foundries.io>
+Date: Wed, 19 Aug 2020 19:35:40 -0300
+Subject: [PATCH 027/322] [FIO extras] imx: mx6ullevk: make USB configs
+ specific to CONFIG_USB
+
+Needed for having USB enabled even without CONFIG_USB_CMD (e.g.
+fastboot).
+
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+---
+ include/configs/mx6ullevk.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/include/configs/mx6ullevk.h b/include/configs/mx6ullevk.h
+index 26e86523ca6..7c775abc781 100644
+--- a/include/configs/mx6ullevk.h
++++ b/include/configs/mx6ullevk.h
+@@ -270,7 +270,7 @@
+ #endif
+ 
+ /* USB Configs */
+-#ifdef CONFIG_CMD_USB
++#ifdef CONFIG_USB
+ #define CONFIG_EHCI_HCD_INIT_AFTER_RESET
+ #define CONFIG_MXC_USB_PORTSC  (PORT_PTS_UTMI | PORT_PTS_PTW)
+ #define CONFIG_MXC_USB_FLAGS   0
+-- 
+2.34.1
+

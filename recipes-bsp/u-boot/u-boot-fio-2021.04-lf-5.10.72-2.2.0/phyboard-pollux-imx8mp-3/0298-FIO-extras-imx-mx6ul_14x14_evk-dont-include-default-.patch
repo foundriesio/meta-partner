@@ -1,0 +1,50 @@
+From 4efeb5a7e3cdfc771fa989b473a7313db9a2bd07 Mon Sep 17 00:00:00 2001
+From: Michael Scott <mike@foundries.io>
+Date: Thu, 16 Dec 2021 16:20:19 -0800
+Subject: [PATCH 298/322] [FIO extras] imx: mx6ul_14x14_evk: dont include
+ default env in SPL
+
+This saves some space in the end binary.
+
+Signed-off-by: Michael Scott <mike@foundries.io>
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+---
+ include/configs/mx6ul_14x14_evk.h | 8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+diff --git a/include/configs/mx6ul_14x14_evk.h b/include/configs/mx6ul_14x14_evk.h
+index 014bcea6c4b..4bfa294c94f 100644
+--- a/include/configs/mx6ul_14x14_evk.h
++++ b/include/configs/mx6ul_14x14_evk.h
+@@ -15,6 +15,10 @@
+ #include <asm/mach-imx/gpio.h>
+ #include "imx_env.h"
+ 
++#ifdef CONFIG_SPL
++#include "imx6_spl.h"
++#endif
++
+ /* uncomment for BEE support, needs to enable CONFIG_CMD_FUSE */
+ /* #define CONFIG_CMD_BEE */
+ 
+@@ -81,6 +85,7 @@
+ 	"mtdparts=" MFG_NAND_PARTITION \
+ 	"\0"\
+ 
++#ifndef CONFIG_SPL_BUILD
+ #if defined(CONFIG_NAND_BOOT)
+ #define CONFIG_EXTRA_ENV_SETTINGS \
+ 	CONFIG_MFG_ENV_SETTINGS \
+@@ -219,6 +224,9 @@
+ 		   "fi; " \
+ 	   "else run netboot; fi"
+ #endif
++#else
++#define CONFIG_EXTRA_ENV_SETTINGS
++#endif /* CONFIG_SPL_BUILD */
+ 
+ /* Miscellaneous configurable options */
+ 
+-- 
+2.34.1
+

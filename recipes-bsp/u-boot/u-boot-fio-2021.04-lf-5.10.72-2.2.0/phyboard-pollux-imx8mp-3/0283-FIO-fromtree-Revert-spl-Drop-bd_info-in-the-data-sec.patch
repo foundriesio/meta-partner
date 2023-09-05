@@ -1,0 +1,156 @@
+From 3ee55d0d57d83ec94a1ee5e734f4d238773ecc92 Mon Sep 17 00:00:00 2001
+From: Alexandru Gagniuc <mr.nuke.me@gmail.com>
+Date: Thu, 8 Apr 2021 11:56:11 -0500
+Subject: [PATCH 283/322] [FIO fromtree] Revert "spl: Drop bd_info in the data
+ section"
+
+This reverts commit 38d6b7ebdaee3e0e8426ef1b9df88bdce8ae2e75.
+
+struct global_data contains a pointer to the bd_info structure. This
+pointer was populated spl_set_bd() to a pre-allocated bd_info in the
+".data" section. The referenced commit replaced this mechanism to one
+that uses malloc(). That new mechanism is only used if SPL_ALLOC_BD=y.
+which very few boards do.
+
+The result is that (struct global_data)->bd is NULL in SPL on most
+platforms. This breaks falcon mode, since arch_fixup_fdt() tries to
+access (struct global_data)->bd and set the "/memory" node in the
+devicetree. The result is that the "/memory" node contains garbage
+values, causing linux to panic() as it sets up the page table.
+
+Instead of trying to fix the mess, potentially causing other issues,
+revert to the code that worked, while this change is reworked.
+
+Signed-off-by: Alexandru Gagniuc <mr.nuke.me@gmail.com>
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+---
+ arch/arm/cpu/armv8/fsl-layerscape/spl.c |  5 +----
+ common/spl/Kconfig                      |  9 ---------
+ common/spl/spl.c                        | 20 ++++++++------------
+ include/spl.h                           | 10 +---------
+ 4 files changed, 10 insertions(+), 34 deletions(-)
+
+diff --git a/arch/arm/cpu/armv8/fsl-layerscape/spl.c b/arch/arm/cpu/armv8/fsl-layerscape/spl.c
+index d5131bcf4b3..7d594a9f749 100644
+--- a/arch/arm/cpu/armv8/fsl-layerscape/spl.c
++++ b/arch/arm/cpu/armv8/fsl-layerscape/spl.c
+@@ -39,9 +39,6 @@ u32 spl_boot_device(void)
+ 
+ #ifdef CONFIG_SPL_BUILD
+ 
+-/* Define board data structure */
+-static struct bd_info bdata __attribute__ ((section(".data")));
+-
+ void spl_board_init(void)
+ {
+ #if defined(CONFIG_NXP_ESBC) && defined(CONFIG_FSL_LSCH2)
+@@ -78,7 +75,7 @@ void board_init_f(ulong dummy)
+ 	get_clocks();
+ 
+ 	preloader_console_init();
+-	gd->bd = &bdata;
++	spl_set_bd();
+ 
+ #ifdef CONFIG_SYS_I2C
+ #ifdef CONFIG_SPL_I2C_SUPPORT
+diff --git a/common/spl/Kconfig b/common/spl/Kconfig
+index beab53ca02d..7410736fe5a 100644
+--- a/common/spl/Kconfig
++++ b/common/spl/Kconfig
+@@ -113,15 +113,6 @@ config SPL_FSL_PBL
+ 	  Create boot binary having SPL binary in PBI format concatenated with
+ 	  u-boot binary.
+ 
+-config SPL_ALLOC_BD
+-	bool "Allocate memory for bd_info"
+-	default y if X86 || SANDBOX
+-	help
+-	  Some boards don't allocate space for this in their board_init_f()
+-	  code. In this case U-Boot can allocate space for gd->bd in the
+-	  standard SPL flow (board_init_r()). Enable this option to support
+-	  this feature.
+-
+ endmenu
+ 
+ config HANDOFF
+diff --git a/common/spl/spl.c b/common/spl/spl.c
+index eea6f4ff278..0b9d2bcd23e 100644
+--- a/common/spl/spl.c
++++ b/common/spl/spl.c
+@@ -54,6 +54,9 @@ binman_sym_declare(ulong, spl, image_pos);
+ binman_sym_declare(ulong, spl, size);
+ #endif
+ 
++/* Define board data structure */
++static struct bd_info bdata __attribute__ ((section(".data")));
++
+ /*
+  * Board-specific Platform code can reimplement show_boot_progress () if needed
+  */
+@@ -455,19 +458,14 @@ static int spl_common_init(bool setup_malloc)
+ 	return 0;
+ }
+ 
+-int spl_alloc_bd(void)
++void spl_set_bd(void)
+ {
+ 	/*
+ 	 * NOTE: On some platforms (e.g. x86) bdata may be in flash and not
+ 	 * writeable.
+ 	 */
+-	if (!gd->bd) {
+-		gd->bd = malloc(sizeof(*gd->bd));
+-		if (!gd->bd)
+-			return -ENOMEM;
+-	}
+-
+-	return 0;
++	if (!gd->bd)
++		gd->bd = &bdata;
+ }
+ 
+ int spl_early_init(void)
+@@ -617,6 +615,8 @@ void board_init_r(gd_t *dummy1, ulong dummy2)
+ 
+ 	debug(">>" SPL_TPL_PROMPT "board_init_r()\n");
+ 
++	spl_set_bd();
++
+ #if defined(CONFIG_SYS_SPL_MALLOC_START)
+ 	mem_malloc_init(CONFIG_SYS_SPL_MALLOC_START,
+ 			CONFIG_SYS_SPL_MALLOC_SIZE);
+@@ -626,10 +626,6 @@ void board_init_r(gd_t *dummy1, ulong dummy2)
+ 		if (spl_init())
+ 			hang();
+ 	}
+-	if (IS_ENABLED(CONFIG_SPL_ALLOC_BD) && spl_alloc_bd()) {
+-		puts("Cannot alloc bd\n");
+-		hang();
+-	}
+ #if !defined(CONFIG_PPC) && !defined(CONFIG_ARCH_MX6)
+ 	/*
+ 	 * timer_init() does not exist on PPC systems. The timer is initialized
+diff --git a/include/spl.h b/include/spl.h
+index cf9e5eaab1e..f4c93a526c5 100644
+--- a/include/spl.h
++++ b/include/spl.h
+@@ -352,15 +352,7 @@ u32 spl_mmc_boot_mode(const u32 boot_device);
+  * If not overridden, it is weakly defined in common/spl/spl_mmc.c.
+  */
+ int spl_mmc_boot_partition(const u32 boot_device);
+-
+-/**
+- * spl_alloc_bd() - Allocate space for bd_info
+- *
+- * This sets up the gd->bd pointer by allocating memory for it
+- *
+- * @return 0 if OK, -ENOMEM if out of memory
+- */
+-int spl_alloc_bd(void);
++void spl_set_bd(void);
+ 
+ /**
+  * spl_set_header_raw_uboot() - Set up a standard SPL image structure
+-- 
+2.34.1
+

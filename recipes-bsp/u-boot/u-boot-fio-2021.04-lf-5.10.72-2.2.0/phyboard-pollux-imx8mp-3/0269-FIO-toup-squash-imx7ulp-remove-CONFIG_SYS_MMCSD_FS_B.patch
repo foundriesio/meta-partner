@@ -1,0 +1,31 @@
+From 20c80e98e5920b4ce2e9433b5fa233c2aca6a839 Mon Sep 17 00:00:00 2001
+From: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+Date: Tue, 12 Oct 2021 22:29:29 +0300
+Subject: [PATCH 269/322] [FIO toup-squash] imx7ulp: remove
+ CONFIG_SYS_MMCSD_FS_BOOT_PARTITION from header
+
+The CONFIG_SYS_MMCSD_FS_BOOT_PARTITION was moved to Kconfig in the
+commit acc415ac60 ("Convert CONFIG_SYS_MMCSD_FS_BOOT_PARTITION to
+Kconfig"). Since then this option is unneeded in header. Remove it.
+
+Fixes: babfb7d1aa ("[FIO fromlist] mx7ulp: add base SPL support for mx7ulp")
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+---
+ include/configs/imx7ulp_spl.h | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/include/configs/imx7ulp_spl.h b/include/configs/imx7ulp_spl.h
+index 991ea366c68..65e9cad1abf 100644
+--- a/include/configs/imx7ulp_spl.h
++++ b/include/configs/imx7ulp_spl.h
+@@ -29,7 +29,6 @@
+ 
+ /* MMC support */
+ #if CONFIG_IS_ENABLED(SPL_MMC_SUPPORT)
+-#define CONFIG_SYS_MMCSD_FS_BOOT_PARTITION	1
+ #define CONFIG_SYS_MONITOR_LEN			409600	/* 400 KB */
+ #endif
+ 
+-- 
+2.34.1
+

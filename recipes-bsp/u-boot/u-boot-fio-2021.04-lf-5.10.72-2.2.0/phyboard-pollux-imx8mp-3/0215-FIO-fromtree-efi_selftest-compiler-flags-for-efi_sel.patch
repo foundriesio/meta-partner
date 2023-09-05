@@ -1,0 +1,41 @@
+From e026ecc39ad6614099736ffe36c51b419fafee68 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Marek=20Beh=C3=BAn?= <marek.behun@nic.cz>
+Date: Thu, 20 May 2021 13:23:59 +0200
+Subject: [PATCH 215/322] [FIO fromtree] efi_selftest: compiler flags for
+ efi_selftest_miniapp_exception.o
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Add $(CFLAGS_EFI) and remove $(CFLAGS_NON_EFI) for
+efi_selftest_miniapp_exception.o.
+
+The removal is needed when compiling with LTO - this object file needs
+to be compiled without -flto.
+
+The adding is for consistency with other miniapps.
+
+Signed-off-by: Marek Behún <marek.behun@nic.cz>
+Reviewed-by: Heinrich Schuchardt <xypron.glpk@gmx.de>
+(cherry picked from commit ead698acbc3077eab5b209276a512ddc7fefb6b8)
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+---
+ lib/efi_selftest/Makefile | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/lib/efi_selftest/Makefile b/lib/efi_selftest/Makefile
+index aa71d0995cf..9ff6e1760c6 100644
+--- a/lib/efi_selftest/Makefile
++++ b/lib/efi_selftest/Makefile
+@@ -10,6 +10,8 @@ ccflags-y += -DHOST_ARCH="$(HOST_ARCH)"
+ 
+ CFLAGS_dtbdump.o := $(CFLAGS_EFI) -Os -ffreestanding
+ CFLAGS_REMOVE_dtbdump.o := $(CFLAGS_NON_EFI)
++CFLAGS_efi_selftest_miniapp_exception.o := $(CFLAGS_EFI) -Os -ffreestanding
++CFLAGS_REMOVE_efi_selftest_miniapp_exception.o := $(CFLAGS_NON_EFI)
+ CFLAGS_efi_selftest_miniapp_exit.o := $(CFLAGS_EFI) -Os -ffreestanding
+ CFLAGS_REMOVE_efi_selftest_miniapp_exit.o := $(CFLAGS_NON_EFI)
+ CFLAGS_efi_selftest_miniapp_return.o := $(CFLAGS_EFI) -Os -ffreestanding
+-- 
+2.34.1
+

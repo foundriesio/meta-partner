@@ -1,0 +1,31 @@
+From 15dc66d21454692c45c2f1b751d8710d5324728c Mon Sep 17 00:00:00 2001
+From: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+Date: Tue, 12 Oct 2021 22:25:43 +0300
+Subject: [PATCH 268/322] [FIO internal-squash] imx8mm_evk: remove
+ CONFIG_SYS_MMCSD_FS_BOOT_PARTITION from header
+
+The CONFIG_SYS_MMCSD_FS_BOOT_PARTITION was moved to Kconfig in the
+commit acc415ac60 ("Convert CONFIG_SYS_MMCSD_FS_BOOT_PARTITION to
+Kconfig"). Since then this option is unneeded in header. Remove it.
+
+Fixes: 9f07f943fb ("[FIO internal] imx8mm_evk: runtime detection raw sector offsets")
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+---
+ include/configs/imx8mm_evk.h | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/include/configs/imx8mm_evk.h b/include/configs/imx8mm_evk.h
+index 30abf820cb6..82e2734c893 100644
+--- a/include/configs/imx8mm_evk.h
++++ b/include/configs/imx8mm_evk.h
+@@ -25,7 +25,6 @@
+ #else
+ #define CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_SECTOR	(0x300 + CONFIG_SECONDARY_BOOT_SECTOR_OFFSET)
+ #endif /* CONFIG_SECONDARY_BOOT_RUNTIME_DETECTION */
+-#define CONFIG_SYS_MMCSD_FS_BOOT_PARTITION	1
+ #define CONFIG_SYS_UBOOT_BASE	\
+ 	(QSPI0_AMBA_BASE + CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_SECTOR * 512)
+ 
+-- 
+2.34.1
+

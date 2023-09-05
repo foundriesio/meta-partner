@@ -1,0 +1,750 @@
+From b408700c849affbea10acdeaace6799e4c5ca2ca Mon Sep 17 00:00:00 2001
+From: Jose Marinho <jose.marinho@arm.com>
+Date: Tue, 2 Mar 2021 17:26:38 +0000
+Subject: [PATCH 175/322] [FIO fromtree] efi: Add ESRT to the EFI system table
+
+The ESRT is initialised during efi_init_objlist after
+efi_initialize_system_table().
+
+The ESRT is recreated from scratch at the following events:
+- successful UpdateCapsule;
+- FMP instance install.
+
+The code ensures that every ESRT entry has a unique fw_class value.
+
+Limitations:
+- The ESRT is not updated if an FMP instance is uninstalled;
+- the fields image_type and flags are in the current implementation left
+undefined. Setting these values will require a per-platform function
+that returns the image_type/flags as a function of the image fw_class.
+
+CC: Heinrich Schuchardt	<xypron.glpk@gmx.de>
+CC: Sughosh Ganu <sughosh.ganu@linaro.org>
+CC: AKASHI Takahiro <takahiro.akashi@linaro.org>
+CC: Ilias Apalodimas <ilias.apalodimas@linaro.org>
+CC: Andre Przywara <andre.przywara@arm.com>
+CC: Alexander Graf <agraf@csgraf.de>
+CC: nd@arm.com
+Signed-off-by: Jose Marinho <jose.marinho@arm.com>
+
+Remove two EFI_CALL() indirections.
+Move ESRT GUID in efidebug's list of GUIDs.
+
+Reviewed-by: Heinrich Schuchardt <xypron.glpk@gmx.de>
+(cherry picked from commit 64a8aae15ce9cccdb907219a9fce9f5b17ae791a)
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+---
+ cmd/efidebug.c                |   4 +
+ include/efi_api.h             |  21 ++
+ include/efi_loader.h          |  24 ++
+ lib/efi_loader/Kconfig        |   7 +
+ lib/efi_loader/Makefile       |   1 +
+ lib/efi_loader/efi_boottime.c |   7 +-
+ lib/efi_loader/efi_capsule.c  |   8 +
+ lib/efi_loader/efi_esrt.c     | 510 ++++++++++++++++++++++++++++++++++
+ lib/efi_loader/efi_setup.c    |   6 +
+ 9 files changed, 584 insertions(+), 4 deletions(-)
+ create mode 100644 lib/efi_loader/efi_esrt.c
+
+diff --git a/cmd/efidebug.c b/cmd/efidebug.c
+index 80ddd598e0a..392d2d58109 100644
+--- a/cmd/efidebug.c
++++ b/cmd/efidebug.c
+@@ -518,6 +518,10 @@ static const struct {
+ 		"ACPI table",
+ 		EFI_ACPI_TABLE_GUID,
+ 	},
++	{
++		"EFI System Resource Table",
++		EFI_SYSTEM_RESOURCE_TABLE_GUID,
++	},
+ 	{
+ 		"device tree",
+ 		EFI_FDT_GUID,
+diff --git a/include/efi_api.h b/include/efi_api.h
+index 2671177078f..c83e30f9f77 100644
+--- a/include/efi_api.h
++++ b/include/efi_api.h
+@@ -1736,6 +1736,23 @@ struct efi_load_file_protocol {
+ 					 void *buffer);
+ };
+ 
++struct efi_system_resource_entry {
++	efi_guid_t fw_class;
++	u32 fw_type;
++	u32 fw_version;
++	u32 lowest_supported_fw_version;
++	u32 capsule_flags;
++	u32 last_attempt_version;
++	u32 last_attempt_status;
++} __packed;
++
++struct efi_system_resource_table {
++	u32 fw_resource_count;
++	u32 fw_resource_count_max;
++	u64 fw_resource_version;
++	struct efi_system_resource_entry entries[];
++} __packed;
++
+ /* Boot manager load options */
+ #define LOAD_OPTION_ACTIVE		0x00000001
+ #define LOAD_OPTION_FORCE_RECONNECT	0x00000002
+@@ -1754,6 +1771,10 @@ struct efi_load_file_protocol {
+ #define ESRT_FW_TYPE_DEVICEFIRMWARE	0x00000002
+ #define ESRT_FW_TYPE_UEFIDRIVER		0x00000003
+ 
++#define EFI_SYSTEM_RESOURCE_TABLE_GUID\
++	EFI_GUID(0xb122a263, 0x3661, 0x4f68,\
++		0x99, 0x29, 0x78, 0xf8, 0xb0, 0xd6, 0x21, 0x80)
++
+ /* Last Attempt Status Values */
+ #define LAST_ATTEMPT_STATUS_SUCCESS			0x00000000
+ #define LAST_ATTEMPT_STATUS_ERROR_UNSUCCESSFUL		0x00000001
+diff --git a/include/efi_loader.h b/include/efi_loader.h
+index c06835abaa2..19721ef6d4b 100644
+--- a/include/efi_loader.h
++++ b/include/efi_loader.h
+@@ -214,6 +214,8 @@ extern const efi_guid_t efi_guid_rng_protocol;
+ extern const efi_guid_t efi_guid_capsule_report;
+ /* GUID of firmware management protocol */
+ extern const efi_guid_t efi_guid_firmware_management_protocol;
++/* GUID for the ESRT */
++extern const efi_guid_t efi_esrt_guid;
+ /* GUID of memory only reset control */
+ extern const efi_guid_t efi_memory_only_reset_control_guid;
+ 
+@@ -561,6 +563,10 @@ struct efi_simple_file_system_protocol *efi_simple_file_system(
+ /* open file from device-path: */
+ struct efi_file_handle *efi_file_from_path(struct efi_device_path *fp);
+ 
++/* Registers a callback function for a notification event. */
++efi_status_t EFIAPI efi_register_protocol_notify(const efi_guid_t *protocol,
++						 struct efi_event *event,
++						 void **registration);
+ efi_status_t efi_file_size(struct efi_file_handle *fh, efi_uintn_t *size);
+ 
+ /* get a device path from a Boot#### option */
+@@ -904,4 +910,22 @@ static inline efi_status_t efi_launch_capsules(void)
+ 
+ #endif /* CONFIG_IS_ENABLED(EFI_LOADER) */
+ 
++/**
++ * Install the ESRT system table.
++ *
++ * @return	status code
++ */
++efi_status_t efi_esrt_register(void);
++
++/**
++ * efi_esrt_populate() - Populates the ESRT entries from the FMP instances
++ * present in the system.
++ * If an ESRT already exists, the old ESRT is replaced in the system table.
++ * The memory of the old ESRT is deallocated.
++ *
++ * Return:
++ * - EFI_SUCCESS if the ESRT is correctly created
++ * - error code otherwise.
++ */
++efi_status_t efi_esrt_populate(void);
+ #endif /* _EFI_LOADER_H */
+diff --git a/lib/efi_loader/Kconfig b/lib/efi_loader/Kconfig
+index 0a412441a71..e44f004f3f8 100644
+--- a/lib/efi_loader/Kconfig
++++ b/lib/efi_loader/Kconfig
+@@ -342,4 +342,11 @@ config EFI_SECURE_BOOT
+ 	  it is signed with a trusted key. To do that, you need to install,
+ 	  at least, PK, KEK and db.
+ 
++config EFI_ESRT
++	bool "Enable the UEFI ESRT generation"
++	depends on EFI_CAPSULE_FIRMWARE_MANAGEMENT
++	default y
++	help
++	  Enabling this option creates the ESRT UEFI system table.
++
+ endif
+diff --git a/lib/efi_loader/Makefile b/lib/efi_loader/Makefile
+index da2741adecf..8bd343e258a 100644
+--- a/lib/efi_loader/Makefile
++++ b/lib/efi_loader/Makefile
+@@ -53,6 +53,7 @@ obj-y += efi_variable.o
+ obj-$(CONFIG_EFI_VARIABLES_PRESEED) += efi_var_seed.o
+ endif
+ obj-y += efi_watchdog.o
++obj-$(CONFIG_EFI_ESRT) += efi_esrt.o
+ obj-$(CONFIG_LCD) += efi_gop.o
+ obj-$(CONFIG_DM_VIDEO) += efi_gop.o
+ obj-$(CONFIG_PARTITIONS) += efi_disk.o
+diff --git a/lib/efi_loader/efi_boottime.c b/lib/efi_loader/efi_boottime.c
+index 41b8949b042..8e8b0a9bc6c 100644
+--- a/lib/efi_loader/efi_boottime.c
++++ b/lib/efi_loader/efi_boottime.c
+@@ -1406,10 +1406,9 @@ out:
+  *
+  * Return: status code
+  */
+-static efi_status_t EFIAPI efi_register_protocol_notify(
+-						const efi_guid_t *protocol,
+-						struct efi_event *event,
+-						void **registration)
++efi_status_t EFIAPI efi_register_protocol_notify(const efi_guid_t *protocol,
++						 struct efi_event *event,
++						 void **registration)
+ {
+ 	struct efi_register_notify_event *item;
+ 	efi_status_t ret = EFI_SUCCESS;
+diff --git a/lib/efi_loader/efi_capsule.c b/lib/efi_loader/efi_capsule.c
+index 7ba1ced0a08..9df9c35084c 100644
+--- a/lib/efi_loader/efi_capsule.c
++++ b/lib/efi_loader/efi_capsule.c
+@@ -482,6 +482,14 @@ efi_status_t EFIAPI efi_update_capsule(
+ 			goto out;
+ 	}
+ out:
++
++	if (IS_ENABLED(CONFIG_EFI_ESRT)) {
++		/* Rebuild the ESRT to reflect any updated FW images. */
++		ret = efi_esrt_populate();
++		if (ret != EFI_SUCCESS)
++			log_warning("EFI Capsule: failed to update ESRT\n");
++	}
++
+ 	return EFI_EXIT(ret);
+ }
+ 
+diff --git a/lib/efi_loader/efi_esrt.c b/lib/efi_loader/efi_esrt.c
+new file mode 100644
+index 00000000000..947bdb5e95f
+--- /dev/null
++++ b/lib/efi_loader/efi_esrt.c
+@@ -0,0 +1,510 @@
++// SPDX-License-Identifier: GPL-2.0-only
++/*
++ *  EFI application ESRT tables support
++ *
++ *  Copyright (C) 2021 Arm Ltd.
++ */
++
++#include <common.h>
++#include <efi_loader.h>
++#include <log.h>
++#include <efi_api.h>
++#include <malloc.h>
++
++const efi_guid_t efi_esrt_guid = EFI_SYSTEM_RESOURCE_TABLE_GUID;
++
++static struct efi_system_resource_table *esrt;
++
++#define EFI_ESRT_VERSION 1
++
++/**
++ * efi_esrt_image_info_to_entry() - copy the information present in a fw image
++ * descriptor to a ESRT entry.
++ * The function ensures the ESRT entry matches the image_type_id in @img_info.
++ * In case of a mismatch we leave the entry unchanged.
++ *
++ * @img_info:     the source image info descriptor
++ * @entry:        pointer to the ESRT entry to be filled
++ * @desc_version: the version of the elements in img_info
++ * @image_type:   the image type value to be set in the ESRT entry
++ * @flags:        the capsule flags value to be set in the ESRT entry
++ *
++ * Return:
++ * - EFI_SUCCESS if the entry is correctly updated
++ * - EFI_INVALID_PARAMETER if entry does not match image_type_id in @img_info.
++ */
++static efi_status_t
++efi_esrt_image_info_to_entry(struct efi_firmware_image_descriptor *img_info,
++			     struct efi_system_resource_entry *entry,
++			     u32 desc_version, u32 image_type, u32 flags)
++{
++	if (guidcmp(&entry->fw_class, &img_info->image_type_id)) {
++		EFI_PRINT("ESRT entry %pUL mismatches img_type_id %pUL\n",
++			  &entry->fw_class, &img_info->image_type_id);
++		return EFI_INVALID_PARAMETER;
++	}
++
++	entry->fw_version = img_info->version;
++
++	entry->fw_type = image_type;
++	entry->capsule_flags = flags;
++
++	/*
++	 * The field lowest_supported_image_version is only present
++	 * on image info structure of version 2 or greater.
++	 * See the EFI_FIRMWARE_IMAGE_DESCRIPTOR definition in UEFI.
++	 */
++	if (desc_version >= 2)
++		entry->lowest_supported_fw_version =
++			img_info->lowest_supported_image_version;
++	else
++		entry->lowest_supported_fw_version = 0;
++
++	/*
++	 * The fields last_attempt_version and last_attempt_status
++	 * are only present on image info structure of version 3 or
++	 * greater.
++	 * See the EFI_FIRMWARE_IMAGE_DESCRIPTOR definition in UEFI.
++	 */
++	if (desc_version >= 3) {
++		entry->last_attempt_version =
++			img_info->last_attempt_version;
++
++		entry->last_attempt_status =
++			img_info->last_attempt_status;
++	} else {
++		entry->last_attempt_version = 0;
++		entry->last_attempt_status = LAST_ATTEMPT_STATUS_SUCCESS;
++	}
++
++	return EFI_SUCCESS;
++}
++
++/**
++ * efi_esrt_entries_to_size() - Obtain the bytes used by an ESRT
++ * datastructure with @num_entries.
++ *
++ * @num_entries: the number of entries in the ESRT.
++ *
++ * Return: the number of bytes an ESRT with @num_entries occupies in memory.
++ */
++static
++inline u32 efi_esrt_entries_to_size(u32 num_entries)
++{
++	u32 esrt_size = sizeof(struct efi_system_resource_table) +
++		num_entries * sizeof(struct efi_system_resource_entry);
++
++	return esrt_size;
++}
++
++/**
++ * efi_esrt_allocate_install() - Allocates @num_entries for the ESRT and
++ * performs basic ESRT initialization.
++ *
++ * @num_entries: the number of entries that the ESRT will hold.
++ *
++ * Return:
++ * - pointer to the ESRT if successful.
++ * - NULL otherwise.
++ */
++static
++efi_status_t efi_esrt_allocate_install(u32 num_entries)
++{
++	efi_status_t ret;
++	struct efi_system_resource_table *new_esrt;
++	u32 size = efi_esrt_entries_to_size(num_entries);
++	efi_guid_t esrt_guid = efi_esrt_guid;
++
++	/* Reserve num_pages for ESRT */
++	ret = efi_allocate_pool(EFI_BOOT_SERVICES_DATA, size,
++				(void **)&new_esrt);
++
++	if (ret != EFI_SUCCESS) {
++		EFI_PRINT("ESRT cannot allocate memory for %d entries (%d bytes)\n",
++			  num_entries, efi_esrt_entries_to_size(num_entries));
++
++		return ret;
++	}
++
++	new_esrt->fw_resource_count_max = num_entries;
++	new_esrt->fw_resource_count = 0;
++	new_esrt->fw_resource_version = EFI_ESRT_VERSION;
++
++	/* Install the ESRT in the system configuration table. */
++	ret = efi_install_configuration_table(&esrt_guid, (void *)new_esrt);
++	if (ret != EFI_SUCCESS) {
++		EFI_PRINT("ESRT failed to install the ESRT in the system table\n");
++		return ret;
++	}
++
++	/* If there was a previous ESRT, deallocate its memory now. */
++	if (esrt)
++		ret = EFI_CALL(efi_free_pool(esrt));
++
++	esrt = new_esrt;
++
++	return EFI_SUCCESS;
++}
++
++/**
++ * esrt_find_entry() - Obtain the ESRT entry for the image with GUID
++ * @img_fw_class.
++ *
++ * If the img_fw_class is not yet present in the ESRT, this function
++ * reserves the tail element of the current ESRT as the entry for that fw_class.
++ * The number of elements in the ESRT is updated in that case.
++ *
++ * @img_fw_class: the GUID of the FW image which ESRT entry we want to obtain.
++ *
++ * Return:
++ *  - A pointer to the ESRT entry for the image with GUID img_fw_class,
++ *  - NULL if:
++ *   - there is no more space in the ESRT,
++ *   - ESRT is not initialized,
++ */
++static
++struct efi_system_resource_entry *esrt_find_entry(efi_guid_t *img_fw_class)
++{
++	u32 filled_entries;
++	u32 max_entries;
++	struct efi_system_resource_entry *entry;
++
++	if (!esrt) {
++		EFI_PRINT("ESRT access before initialized\n");
++		return NULL;
++	}
++
++	filled_entries = esrt->fw_resource_count;
++	entry = esrt->entries;
++
++	/* Check if the image with img_fw_class is already in the ESRT. */
++	for (u32 idx = 0; idx < filled_entries; idx++) {
++		if (!guidcmp(&entry[idx].fw_class, img_fw_class)) {
++			EFI_PRINT("ESRT found entry for image %pUl at index %d\n",
++				  img_fw_class, idx);
++			return &entry[idx];
++		}
++	}
++
++	max_entries = esrt->fw_resource_count_max;
++	/*
++	 * Since the image with img_fw_class is not present in the ESRT, check
++	 * if ESRT is full before appending the new entry to it.
++	 */
++	if (filled_entries == max_entries) {
++		EFI_PRINT("ESRT full, this should not happen\n");
++		return NULL;
++	}
++
++	/*
++	 * This is a new entry for a fw image, increment the element
++	 * number in the table and set the fw_class field.
++	 */
++	esrt->fw_resource_count++;
++	entry[filled_entries].fw_class = *img_fw_class;
++	EFI_PRINT("ESRT allocated new entry for image %pUl at index %d\n",
++		  img_fw_class, filled_entries);
++
++	return &entry[filled_entries];
++}
++
++/**
++ * efi_esrt_add_from_fmp() - Populates a sequence of ESRT entries from the FW
++ * images in the FMP.
++ *
++ * @fmp: the FMP instance from which FW images are added to the ESRT
++ *
++ * Return:
++ * - EFI_SUCCESS if all the FW images in the FMP are added to the ESRT
++ * - Error status otherwise
++ */
++static
++efi_status_t efi_esrt_add_from_fmp(struct efi_firmware_management_protocol *fmp)
++{
++	struct efi_system_resource_entry *entry = NULL;
++	size_t info_size = 0;
++	struct efi_firmware_image_descriptor *img_info = NULL;
++	u32 desc_version;
++	u8 desc_count;
++	size_t desc_size;
++	u32 package_version;
++	u16 *package_version_name;
++	efi_status_t ret = EFI_SUCCESS;
++
++	/*
++	 * TODO: set the field image_type depending on the FW image type
++	 * defined in a platform basis.
++	 */
++	u32 image_type = ESRT_FW_TYPE_UNKNOWN;
++
++	/* TODO: set the capsule flags as a function of the FW image type. */
++	u32 flags = 0;
++
++	ret = EFI_CALL(fmp->get_image_info(fmp, &info_size, img_info,
++					   &desc_version, &desc_count,
++					   &desc_size, NULL, NULL));
++
++	if (ret != EFI_BUFFER_TOO_SMALL) {
++		/*
++		 * An input of info_size=0 should always lead
++		 * fmp->get_image_info to return BUFFER_TO_SMALL.
++		 */
++		EFI_PRINT("Erroneous FMP implementation\n");
++		return EFI_INVALID_PARAMETER;
++	}
++
++	ret = EFI_CALL(efi_allocate_pool(EFI_BOOT_SERVICES_DATA, info_size,
++					 (void **)&img_info));
++	if (ret != EFI_SUCCESS) {
++		EFI_PRINT("ESRT failed to allocate memory for image info.\n");
++		return ret;
++	}
++
++	ret = EFI_CALL(fmp->get_image_info(fmp, &info_size, img_info,
++					   &desc_version, &desc_count,
++					   &desc_size, &package_version,
++					   &package_version_name));
++	if (ret != EFI_SUCCESS) {
++		EFI_PRINT("ESRT failed to obtain the FMP image info\n");
++		goto out;
++	}
++
++	/*
++	 * Iterate over all the FW images in the FMP.
++	 */
++	for (u32 desc_idx = 0; desc_idx < desc_count; desc_idx++) {
++		struct efi_firmware_image_descriptor *cur_img_info =
++			(struct efi_firmware_image_descriptor *)
++			((uintptr_t)img_info + desc_idx * desc_size);
++
++		/*
++		 * Obtain the ESRT entry for the FW image with fw_class
++		 * equal to cur_img_info->image_type_id.
++		 */
++		entry = esrt_find_entry(&cur_img_info->image_type_id);
++
++		if (entry) {
++			ret = efi_esrt_image_info_to_entry(cur_img_info, entry,
++							   desc_version,
++							   image_type, flags);
++			if (ret != EFI_SUCCESS)
++				EFI_PRINT("ESRT entry mismatches image_type\n");
++
++		} else {
++			EFI_PRINT("ESRT failed to add entry for %pUl\n",
++				  &cur_img_info->image_type_id);
++			continue;
++		}
++	}
++
++out:
++	EFI_CALL(efi_free_pool(img_info));
++	return EFI_SUCCESS;
++}
++
++/**
++ * efi_esrt_populate() - Populates the ESRT entries from the FMP instances
++ * present in the system.
++ * If an ESRT already exists, the old ESRT is replaced in the system table.
++ * The memory of the old ESRT is deallocated.
++ *
++ * Return:
++ * - EFI_SUCCESS if the ESRT is correctly created
++ * - error code otherwise.
++ */
++efi_status_t efi_esrt_populate(void)
++{
++	efi_handle_t *base_handle = NULL;
++	efi_handle_t *it_handle;
++	size_t no_handles = 0;
++	struct efi_firmware_management_protocol *fmp;
++	efi_status_t ret;
++	u32 num_entries = 0;
++	struct efi_handler *handler;
++
++	/*
++	 * Obtain the number of registered FMP handles.
++	 */
++	ret = EFI_CALL(efi_locate_handle_buffer(BY_PROTOCOL,
++						&efi_guid_firmware_management_protocol,
++						NULL, &no_handles,
++						(efi_handle_t **)&base_handle));
++
++	if (ret != EFI_SUCCESS) {
++		EFI_PRINT("ESRT There are no FMP instances\n");
++
++		ret = efi_esrt_allocate_install(0);
++		if (ret != EFI_SUCCESS) {
++			EFI_PRINT("ESRT failed to create table with 0 entries\n");
++			return ret;
++		}
++		return EFI_SUCCESS;
++	}
++
++	EFI_PRINT("ESRT populate esrt from (%ld) available FMP handles\n",
++		  no_handles);
++
++	/*
++	 * Iterate over all FMPs to determine an upper bound on the number of
++	 * ESRT entries.
++	 */
++	it_handle = base_handle;
++	for (u32 idx = 0; idx < no_handles; idx++, it_handle++) {
++		struct efi_firmware_image_descriptor *img_info = NULL;
++		size_t info_size = 0;
++		u32 desc_version = 0;
++		u8 desc_count = 0;
++		size_t desc_size = 0;
++		u32 package_version;
++		u16 *package_version_name;
++
++		ret = efi_search_protocol(*it_handle,
++					  &efi_guid_firmware_management_protocol,
++					  &handler);
++
++		if (ret != EFI_SUCCESS) {
++			EFI_PRINT("ESRT Unable to find FMP handle (%d)\n",
++				  idx);
++			goto out;
++		}
++		fmp = handler->protocol_interface;
++
++		ret = EFI_CALL(fmp->get_image_info(fmp, &info_size, NULL,
++						   &desc_version, &desc_count,
++						   &desc_size, &package_version,
++						   &package_version_name));
++
++		if (ret != EFI_BUFFER_TOO_SMALL) {
++			/*
++			 * An input of info_size=0 should always lead
++			 * fmp->get_image_info to return BUFFER_TO_SMALL.
++			 */
++			EFI_PRINT("ESRT erroneous FMP implementation\n");
++			ret = EFI_INVALID_PARAMETER;
++			goto out;
++		}
++
++		ret = EFI_CALL(efi_allocate_pool(EFI_BOOT_SERVICES_DATA, info_size,
++						 (void **)&img_info));
++		if (ret != EFI_SUCCESS) {
++			EFI_PRINT("ESRT failed to allocate memory for image info\n");
++			goto out;
++		}
++
++		/*
++		 * Calls to a FMP get_image_info method do not return the
++		 * desc_count value if the return status differs from EFI_SUCCESS.
++		 * We need to repeat the call to get_image_info with a properly
++		 * sized buffer in order to obtain the real number of images
++		 * handled by the FMP.
++		 */
++		ret = EFI_CALL(fmp->get_image_info(fmp, &info_size, img_info,
++						   &desc_version, &desc_count,
++						   &desc_size, &package_version,
++						   &package_version_name));
++
++		if (ret != EFI_SUCCESS) {
++			EFI_PRINT("ESRT failed to obtain image info from FMP\n");
++			EFI_CALL(efi_free_pool(img_info));
++			goto out;
++		}
++
++		num_entries += desc_count;
++
++		EFI_CALL(efi_free_pool(img_info));
++	}
++
++	EFI_PRINT("ESRT create table with %d entries\n", num_entries);
++	/*
++	 * Allocate an ESRT with the sufficient number of entries to accommodate
++	 * all the FMPs in the system.
++	 */
++	ret = efi_esrt_allocate_install(num_entries);
++	if (ret != EFI_SUCCESS) {
++		EFI_PRINT("ESRT failed to initialize table\n");
++		goto out;
++	}
++
++	/*
++	 * Populate the ESRT entries with all existing FMP.
++	 */
++	it_handle = base_handle;
++	for (u32 idx = 0; idx < no_handles; idx++, it_handle++) {
++		ret = EFI_CALL(efi_search_protocol(*it_handle,
++						   &efi_guid_firmware_management_protocol,
++						   &handler));
++
++		if (ret != EFI_SUCCESS) {
++			EFI_PRINT("ESRT unable to find FMP handle (%d)\n",
++				  idx);
++			break;
++		}
++		fmp = handler->protocol_interface;
++
++		ret = efi_esrt_add_from_fmp(fmp);
++		if (ret != EFI_SUCCESS)
++			EFI_PRINT("ESRT failed to add FMP to the table\n");
++	}
++
++out:
++
++	EFI_CALL(efi_free_pool(base_handle));
++
++	return ret;
++}
++
++/**
++ * efi_esrt_new_fmp_notify() - Callback for the EVT_NOTIFY_SIGNAL event raised
++ * when a new FMP protocol instance is registered in the system.
++ */
++static void EFIAPI efi_esrt_new_fmp_notify(struct efi_event *event,
++					   void *context)
++{
++	efi_status_t ret;
++
++	EFI_ENTRY();
++
++	ret = efi_esrt_populate();
++	if (ret != EFI_SUCCESS)
++		EFI_PRINT("ESRT failed to populate ESRT entry\n");
++
++	EFI_EXIT(ret);
++}
++
++/**
++ * efi_esrt_register() - Install the ESRT system table.
++ *
++ * Return: status code
++ */
++efi_status_t efi_esrt_register(void)
++{
++	struct efi_event *ev = NULL;
++	void *registration;
++	efi_status_t ret;
++
++	EFI_PRINT("ESRT creation start\n");
++
++	ret = efi_esrt_populate();
++	if (ret != EFI_SUCCESS) {
++		EFI_PRINT("ESRT failed to initiate the table\n");
++		return ret;
++	}
++
++	ret = EFI_CALL(efi_create_event(EVT_NOTIFY_SIGNAL, TPL_CALLBACK,
++					efi_esrt_new_fmp_notify, NULL, NULL, &ev));
++	if (ret != EFI_SUCCESS) {
++		EFI_PRINT("ESRT failed to create event\n");
++		return ret;
++	}
++
++	ret = EFI_CALL(efi_register_protocol_notify(&efi_guid_firmware_management_protocol,
++						    ev, &registration));
++	if (ret != EFI_SUCCESS) {
++		EFI_PRINT("ESRT failed to register FMP callback\n");
++		return ret;
++	}
++
++	EFI_PRINT("ESRT table created\n");
++
++	return ret;
++}
+diff --git a/lib/efi_loader/efi_setup.c b/lib/efi_loader/efi_setup.c
+index 6420deb6e26..cea2b4cf390 100644
+--- a/lib/efi_loader/efi_setup.c
++++ b/lib/efi_loader/efi_setup.c
+@@ -298,6 +298,12 @@ efi_status_t efi_init_obj_list(void)
+ 	if (ret != EFI_SUCCESS)
+ 		goto out;
+ 
++	if (IS_ENABLED(CONFIG_EFI_ESRT)) {
++		ret = efi_esrt_register();
++		if (ret != EFI_SUCCESS)
++			goto out;
++	}
++
+ 	if (IS_ENABLED(CONFIG_EFI_TCG2_PROTOCOL)) {
+ 		ret = efi_tcg2_register();
+ 		if (ret != EFI_SUCCESS)
+-- 
+2.34.1
+

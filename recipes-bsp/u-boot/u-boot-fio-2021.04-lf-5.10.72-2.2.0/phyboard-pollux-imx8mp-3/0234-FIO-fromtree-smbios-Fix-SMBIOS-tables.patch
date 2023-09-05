@@ -1,0 +1,90 @@
+From 9b8655c74f2b380bbfc6a1d66aaf7c83a2ffa092 Mon Sep 17 00:00:00 2001
+From: Ilias Apalodimas <ilias.apalodimas@linaro.org>
+Date: Thu, 10 Jun 2021 12:33:15 +0300
+Subject: [PATCH 234/322] [FIO fromtree] smbios: Fix SMBIOS tables
+
+Commit e4f8e543f1a9("smbios: Drop the unused Kconfig options")
+break SMBIOS tables.  The reason is that the patch drops the Kconfig
+options *after* removing the code using them,  but that changes the semantics
+of the code completely.  Prior to the change a non NULL value was used in
+the 'product' and 'manufacturer ' fields.
+
+Chapter 6.2 of the DMTF spec requires Manufacturer and Product Name to be
+non-null on some of the tables. So let's add sane defaults for Type1/2/3.
+
+* Before the patchset:
+
+<snip>
+Handle 0x0002, DMI type 2, 14 bytes
+Base Board Information
+        Manufacturer: Not Specified
+        Product Name: Not Specified
+        Version: Not Specified
+        Serial Number: Not Specified
+        Asset Tag: Not Specified
+        Features:
+                Board is a hosting board
+        Location In Chassis: Not Specified
+        Chassis Handle: 0x0000
+        Type: Motherboard
+
+Invalid entry length (0). DMI table is broken! Stop.
+
+* After the patchset:
+
+<snip>
+Handle 0x0005, DMI type 32, 11 bytes
+System Boot Information
+        Status: No errors detected
+
+Handle 0x0006, DMI type 127, 4 bytes
+End Of Table
+
+Fixes: e4f8e543f1a9 ("smbios: Drop the unused Kconfig options")
+Signed-off-by: Ilias Apalodimas <ilias.apalodimas@linaro.org>
+(cherry picked from commit 70e80666f26a516096f3787e884d42818d8b4087)
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+---
+ lib/smbios.c | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
+
+diff --git a/lib/smbios.c b/lib/smbios.c
+index 3ddc5ea2188..f727f82dff6 100644
+--- a/lib/smbios.c
++++ b/lib/smbios.c
+@@ -262,7 +262,11 @@ static int smbios_write_type1(ulong *current, int handle,
+ 	fill_smbios_header(t, SMBIOS_SYSTEM_INFORMATION, len, handle);
+ 	smbios_set_eos(ctx, t->eos);
+ 	t->manufacturer = smbios_add_prop(ctx, "manufacturer");
++	if (!t->manufacturer)
++		t->manufacturer = smbios_add_string(ctx, "Unknown");
+ 	t->product_name = smbios_add_prop(ctx, "product");
++	if (!t->product_name)
++		t->product_name = smbios_add_string(ctx, "Unknown Product");
+ 	t->version = smbios_add_prop_si(ctx, "version",
+ 					SYSINFO_ID_SMBIOS_SYSTEM_VERSION);
+ 	if (serial_str) {
+@@ -292,7 +296,11 @@ static int smbios_write_type2(ulong *current, int handle,
+ 	fill_smbios_header(t, SMBIOS_BOARD_INFORMATION, len, handle);
+ 	smbios_set_eos(ctx, t->eos);
+ 	t->manufacturer = smbios_add_prop(ctx, "manufacturer");
++	if (!t->manufacturer)
++		t->manufacturer = smbios_add_string(ctx, "Unknown");
+ 	t->product_name = smbios_add_prop(ctx, "product");
++	if (!t->product_name)
++		t->product_name = smbios_add_string(ctx, "Unknown Product");
+ 	t->version = smbios_add_prop_si(ctx, "version",
+ 					SYSINFO_ID_SMBIOS_BASEBOARD_VERSION);
+ 	t->asset_tag_number = smbios_add_prop(ctx, "asset-tag");
+@@ -317,6 +325,8 @@ static int smbios_write_type3(ulong *current, int handle,
+ 	fill_smbios_header(t, SMBIOS_SYSTEM_ENCLOSURE, len, handle);
+ 	smbios_set_eos(ctx, t->eos);
+ 	t->manufacturer = smbios_add_prop(ctx, "manufacturer");
++	if (!t->manufacturer)
++		t->manufacturer = smbios_add_string(ctx, "Unknown");
+ 	t->chassis_type = SMBIOS_ENCLOSURE_DESKTOP;
+ 	t->bootup_state = SMBIOS_STATE_SAFE;
+ 	t->power_supply_state = SMBIOS_STATE_SAFE;
+-- 
+2.34.1
+

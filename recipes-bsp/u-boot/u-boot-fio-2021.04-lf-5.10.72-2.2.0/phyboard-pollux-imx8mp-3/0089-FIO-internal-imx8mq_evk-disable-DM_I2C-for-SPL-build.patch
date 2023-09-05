@@ -1,0 +1,28 @@
+From 7a9d0caf3769200427ce9f8f4b454ebbf61c2544 Mon Sep 17 00:00:00 2001
+From: Igor Opaniuk <igor.opaniuk@foundries.io>
+Date: Mon, 22 Feb 2021 23:06:55 +0200
+Subject: [PATCH 089/322] [FIO internal] imx8mq_evk: disable DM_I2C for SPL
+ build
+
+Force disable DM_I2C for the SPL build (workaround).
+
+Signed-off-by: Igor Opaniuk <igor.opaniuk@foundries.io>
+---
+ include/configs/imx8mq_evk.h | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/include/configs/imx8mq_evk.h b/include/configs/imx8mq_evk.h
+index fe2145bac00..68e5898aefd 100644
+--- a/include/configs/imx8mq_evk.h
++++ b/include/configs/imx8mq_evk.h
+@@ -36,6 +36,7 @@
+ #undef CONFIG_DM_MMC
+ #undef CONFIG_DM_PMIC
+ #undef CONFIG_DM_PMIC_PFUZE100
++#undef CONFIG_DM_I2C
+ 
+ #define CONFIG_SYS_I2C
+ 
+-- 
+2.34.1
+

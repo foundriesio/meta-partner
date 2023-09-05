@@ -1,0 +1,30 @@
+From 284c69872b9477207013b5386f5f02423e4bdc49 Mon Sep 17 00:00:00 2001
+From: Ricardo Salveti <ricardo@foundries.io>
+Date: Mon, 18 Oct 2021 19:50:03 -0300
+Subject: [PATCH 274/322] Revert "[FIO internal] imx8mp_evk: disable DM_I2C for
+ SPL"
+
+DM_I2C is needed by pca9450.
+
+This reverts commit c3235605bc42543a13caac191b2354a3130b0261.
+---
+ include/configs/imx8mp_evk.h | 3 ---
+ 1 file changed, 3 deletions(-)
+
+diff --git a/include/configs/imx8mp_evk.h b/include/configs/imx8mp_evk.h
+index c29d4af1885..01a468c75c1 100644
+--- a/include/configs/imx8mp_evk.h
++++ b/include/configs/imx8mp_evk.h
+@@ -51,9 +51,6 @@
+ 	(CONFIG_SYS_NAND_U_BOOT_OFFS + CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_SECTOR * 512 - 0x8400)
+ #endif
+ 
+-#undef CONFIG_SPL_DM_I2C
+-#define CONFIG_SYS_I2C
+-
+ #endif
+ 
+ #define CONFIG_CMD_READ
+-- 
+2.34.1
+

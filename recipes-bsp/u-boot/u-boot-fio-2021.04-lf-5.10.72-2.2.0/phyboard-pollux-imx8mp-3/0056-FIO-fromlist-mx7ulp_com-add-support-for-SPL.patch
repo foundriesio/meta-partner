@@ -1,0 +1,172 @@
+From 4a9129643b820b0befffa984a1d95ec69d87db0b Mon Sep 17 00:00:00 2001
+From: Ricardo Salveti <ricardo@foundries.io>
+Date: Sun, 12 Sep 2021 17:32:57 +0300
+Subject: [PATCH 056/322] [FIO fromlist] mx7ulp_com: add support for SPL
+
+Add EA iMX7ULP COM board support for building SPL.
+
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+---
+ arch/arm/dts/imx7ulp-com-u-boot.dtsi | 37 ++++++++++++++++++++++++++++
+ arch/arm/dts/imx7ulp-com.dts         |  1 +
+ arch/arm/mach-imx/mx7ulp/Kconfig     | 21 +++++++++++++---
+ board/ea/mx7ulp_com/mx7ulp_com.c     | 26 +++++++++++++++++++
+ include/configs/mx7ulp_com.h         |  6 +++++
+ 5 files changed, 87 insertions(+), 4 deletions(-)
+ create mode 100644 arch/arm/dts/imx7ulp-com-u-boot.dtsi
+
+diff --git a/arch/arm/dts/imx7ulp-com-u-boot.dtsi b/arch/arm/dts/imx7ulp-com-u-boot.dtsi
+new file mode 100644
+index 00000000000..d73bfbf7a08
+--- /dev/null
++++ b/arch/arm/dts/imx7ulp-com-u-boot.dtsi
+@@ -0,0 +1,37 @@
++// SPDX-License-Identifier: GPL-2.0+ OR X11
++/*
++ * Copyright 2019 Foundries.io
++ */
++
++&iomuxc1 {
++	u-boot,dm-spl;
++};
++
++&ahbbridge0 {
++	u-boot,dm-spl;
++};
++
++&ahbbridge1 {
++	u-boot,dm-spl;
++};
++
++&lpuart4 {
++	u-boot,dm-spl;
++};
++
++&usbotg1 {
++	extcon = <&usbphy1>;
++	u-boot,dm-spl;
++};
++
++&usbphy1 {
++	u-boot,dm-spl;
++};
++
++&usdhc0 {
++	u-boot,dm-spl;
++};
++
++&gpio0 {
++	u-boot,dm-spl;
++};
+diff --git a/arch/arm/dts/imx7ulp-com.dts b/arch/arm/dts/imx7ulp-com.dts
+index 21c9150f812..a02fb7b5c46 100644
+--- a/arch/arm/dts/imx7ulp-com.dts
++++ b/arch/arm/dts/imx7ulp-com.dts
+@@ -6,6 +6,7 @@
+ /dts-v1/;
+ 
+ #include "imx7ulp.dtsi"
++#include "imx7ulp-com-u-boot.dtsi"
+ 
+ / {
+ 	model = "Embedded Artists i.MX7ULP COM";
+diff --git a/arch/arm/mach-imx/mx7ulp/Kconfig b/arch/arm/mach-imx/mx7ulp/Kconfig
+index 60c645f7e44..a7f631899ff 100644
+--- a/arch/arm/mach-imx/mx7ulp/Kconfig
++++ b/arch/arm/mach-imx/mx7ulp/Kconfig
+@@ -25,10 +25,6 @@ choice
+ 	prompt "MX7ULP board select"
+ 	optional
+ 
+-config TARGET_MX7ULP_COM
+-	bool "Support MX7ULP COM board"
+-	select MX7ULP
+-	select SYS_ARCH_TIMER
+ config TARGET_MX7ULP_10X10_VAL
+ 	bool "Support mx7ulp 10x10 validation board"
+ 	select SYS_ARCH_TIMER
+@@ -39,6 +35,23 @@ config TARGET_MX7ULP_14X14_VAL
+ 	select SYS_ARCH_TIMER
+ 	select MX7ULP
+ 
++config TARGET_MX7ULP_COM
++	bool "Support MX7ULP COM board"
++	select MX7ULP
++	select SYS_ARCH_TIMER
++	select SPL_DM if SPL
++	select SPL_GPIO_SUPPORT if SPL
++	select SPL_LIBCOMMON_SUPPORT if SPL
++	select SPL_LIBDISK_SUPPORT if SPL
++	select SPL_LIBGENERIC_SUPPORT if SPL
++	select SPL_MMC_SUPPORT if SPL
++	select SPL_OF_CONTROL if SPL
++	select SPL_OF_LIBFDT if SPL
++	select SPL_PINCTRL if SPL
++	select SPL_SEPARATE_BSS if SPL
++	select SPL_SERIAL_SUPPORT if SPL
++	select SUPPORT_SPL
++
+ config TARGET_MX7ULP_EVK
+ 	bool "Support mx7ulp EVK board"
+ 	select MX7ULP
+diff --git a/board/ea/mx7ulp_com/mx7ulp_com.c b/board/ea/mx7ulp_com/mx7ulp_com.c
+index d8bbff0624f..a8822702e36 100644
+--- a/board/ea/mx7ulp_com/mx7ulp_com.c
++++ b/board/ea/mx7ulp_com/mx7ulp_com.c
+@@ -154,3 +154,29 @@ add:
+ 	return 0;
+ }
+ #endif
++
++#ifdef CONFIG_SPL_BUILD
++#include <spl.h>
++
++#ifdef CONFIG_SPL_LOAD_FIT
++int board_fit_config_name_match(const char *name)
++{
++	if (!strcmp(name, "imx7ulp-com"))
++		return 0;
++
++	return -1;
++}
++#endif
++
++void spl_board_init(void)
++{
++	preloader_console_init();
++}
++
++void board_init_f(ulong dummy)
++{
++	arch_cpu_init();
++
++	board_early_init_f();
++}
++#endif
+diff --git a/include/configs/mx7ulp_com.h b/include/configs/mx7ulp_com.h
+index f1af103504e..d95a0963f2e 100644
+--- a/include/configs/mx7ulp_com.h
++++ b/include/configs/mx7ulp_com.h
+@@ -11,6 +11,10 @@
+ #include <linux/sizes.h>
+ #include <asm/arch/imx-regs.h>
+ 
++#ifdef CONFIG_SPL
++#include "imx7ulp_spl.h"
++#endif
++
+ #define CONFIG_BOARD_POSTCLK_INIT
+ #define CONFIG_SYS_BOOTM_LEN		0x1000000
+ 
+@@ -121,5 +125,7 @@
+ #define QSPI0_AMBA_BASE                 0xC0000000
+ #endif
+ 
++#define CONFIG_ARMV7_SECURE_BASE	0x2F000000
++
+ #define CONFIG_MXC_USB_PORTSC		(PORT_PTS_UTMI | PORT_PTS_PTW)
+ #endif	/* __CONFIG_H */
+-- 
+2.34.1
+

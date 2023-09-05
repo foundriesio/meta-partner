@@ -1,0 +1,76 @@
+From ad6e117e9b049e980e72a95ada6fd2c8a01250c8 Mon Sep 17 00:00:00 2001
+From: Ricardo Salveti <ricardo@foundries.io>
+Date: Mon, 27 Sep 2021 21:27:44 -0300
+Subject: [PATCH 110/322] [FIO extras] fiovb: convert to cmd_tbl
+
+Commit 091401131085 removed the cmd_tbl_t typedef, so update fiovb to
+use struct cmd_tbl instead.
+
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+---
+ cmd/fiovb.c | 14 +++++++-------
+ 1 file changed, 7 insertions(+), 7 deletions(-)
+
+diff --git a/cmd/fiovb.c b/cmd/fiovb.c
+index 2149e539095..3ed9bbe74fe 100644
+--- a/cmd/fiovb.c
++++ b/cmd/fiovb.c
+@@ -13,7 +13,7 @@
+ 
+ static struct fiovb_ops *fiovb_ops;
+ 
+-int do_fiovb_init(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
++int do_fiovb_init(struct cmd_tbl *cmdtp, int flag, int argc, char * const argv[])
+ {
+ 	unsigned long mmc_dev;
+ 
+@@ -34,7 +34,7 @@ int do_fiovb_init(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
+ 	return CMD_RET_FAILURE;
+ }
+ 
+-int do_fiovb_read_pvalue(cmd_tbl_t *cmdtp, int flag, int argc,
++int do_fiovb_read_pvalue(struct cmd_tbl *cmdtp, int flag, int argc,
+ 		         char * const argv[])
+ {
+ 	const char *name;
+@@ -81,7 +81,7 @@ int do_fiovb_read_pvalue(cmd_tbl_t *cmdtp, int flag, int argc,
+ 	return CMD_RET_FAILURE;
+ }
+ 
+-int do_fiovb_write_pvalue(cmd_tbl_t *cmdtp, int flag, int argc,
++int do_fiovb_write_pvalue(struct cmd_tbl *cmdtp, int flag, int argc,
+ 			  char * const argv[])
+ {
+ 	const char *name;
+@@ -113,7 +113,7 @@ int do_fiovb_write_pvalue(cmd_tbl_t *cmdtp, int flag, int argc,
+ 	return CMD_RET_FAILURE;
+ }
+ 
+-int do_fiovb_delete_pvalue(cmd_tbl_t *cmdtp, int flag, int argc,
++int do_fiovb_delete_pvalue(struct cmd_tbl *cmdtp, int flag, int argc,
+ 			   char * const argv[])
+ {
+ 	const char *name;
+@@ -142,16 +142,16 @@ int do_fiovb_delete_pvalue(cmd_tbl_t *cmdtp, int flag, int argc,
+ 	return CMD_RET_FAILURE;
+ }
+ 
+-static cmd_tbl_t cmd_fiovb[] = {
++static struct cmd_tbl cmd_fiovb[] = {
+ 	U_BOOT_CMD_MKENT(init, 2, 0, do_fiovb_init, "", ""),
+ 	U_BOOT_CMD_MKENT(read_pvalue, 3, 0, do_fiovb_read_pvalue, "", ""),
+ 	U_BOOT_CMD_MKENT(write_pvalue, 3, 0, do_fiovb_write_pvalue, "", ""),
+ 	U_BOOT_CMD_MKENT(delete_pvalue, 2, 0, do_fiovb_delete_pvalue, "", ""),
+ };
+ 
+-static int do_fiovb(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
++static int do_fiovb(struct cmd_tbl *cmdtp, int flag, int argc, char * const argv[])
+ {
+-	cmd_tbl_t *cp;
++	struct cmd_tbl *cp;
+ 
+ 	cp = find_cmd_tbl(argv[1], cmd_fiovb, ARRAY_SIZE(cmd_fiovb));
+ 
+-- 
+2.34.1
+

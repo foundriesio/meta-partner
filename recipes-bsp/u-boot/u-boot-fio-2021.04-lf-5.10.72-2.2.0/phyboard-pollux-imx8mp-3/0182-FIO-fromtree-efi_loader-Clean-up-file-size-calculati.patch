@@ -1,0 +1,69 @@
+From 2bae4a03a5c1fdc20ded35de4589c91eebe16179 Mon Sep 17 00:00:00 2001
+From: Ilias Apalodimas <ilias.apalodimas@linaro.org>
+Date: Thu, 25 Mar 2021 21:55:16 +0200
+Subject: [PATCH 182/322] [FIO fromtree] efi_loader: Clean up file size
+ calculations
+
+We recently added a common function for calculating file size,
+instead of copy pasting the code around.  Switch one of the
+occurences over to the common function
+
+Signed-off-by: Ilias Apalodimas <ilias.apalodimas@linaro.org>
+Reviwed-by: Heinrich Schuchardt <xypron.glpk@gmx.de>
+(cherry picked from commit ac30aad21076e9eeb460af2865b863f3ae3d2eaa)
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+---
+ lib/efi_loader/efi_boottime.c | 16 +---------------
+ 1 file changed, 1 insertion(+), 15 deletions(-)
+
+diff --git a/lib/efi_loader/efi_boottime.c b/lib/efi_loader/efi_boottime.c
+index 8e8b0a9bc6c..4777b35fd4f 100644
+--- a/lib/efi_loader/efi_boottime.c
++++ b/lib/efi_loader/efi_boottime.c
+@@ -1876,7 +1876,6 @@ static
+ efi_status_t efi_load_image_from_file(struct efi_device_path *file_path,
+ 				      void **buffer, efi_uintn_t *size)
+ {
+-	struct efi_file_info *info = NULL;
+ 	struct efi_file_handle *f;
+ 	efi_status_t ret;
+ 	u64 addr;
+@@ -1887,18 +1886,7 @@ efi_status_t efi_load_image_from_file(struct efi_device_path *file_path,
+ 	if (!f)
+ 		return EFI_NOT_FOUND;
+ 
+-	/* Get file size */
+-	bs = 0;
+-	EFI_CALL(ret = f->getinfo(f, (efi_guid_t *)&efi_file_info_guid,
+-				  &bs, info));
+-	if (ret != EFI_BUFFER_TOO_SMALL) {
+-		ret =  EFI_DEVICE_ERROR;
+-		goto error;
+-	}
+-
+-	info = malloc(bs);
+-	EFI_CALL(ret = f->getinfo(f, (efi_guid_t *)&efi_file_info_guid, &bs,
+-				  info));
++	ret = efi_file_size(f, &bs);
+ 	if (ret != EFI_SUCCESS)
+ 		goto error;
+ 
+@@ -1908,7 +1896,6 @@ efi_status_t efi_load_image_from_file(struct efi_device_path *file_path,
+ 	 * allocate a buffer as EFI_BOOT_SERVICES_DATA. The caller has to
+ 	 * update the reservation according to the image type.
+ 	 */
+-	bs = info->file_size;
+ 	ret = efi_allocate_pages(EFI_ALLOCATE_ANY_PAGES,
+ 				 EFI_BOOT_SERVICES_DATA,
+ 				 efi_size_in_pages(bs), &addr);
+@@ -1925,7 +1912,6 @@ efi_status_t efi_load_image_from_file(struct efi_device_path *file_path,
+ 	*size = bs;
+ error:
+ 	EFI_CALL(f->close(f));
+-	free(info);
+ 	return ret;
+ }
+ 
+-- 
+2.34.1
+

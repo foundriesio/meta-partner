@@ -1,0 +1,45 @@
+From c0e4c3a85619f991d37f9218d4382a1ffe952311 Mon Sep 17 00:00:00 2001
+From: Michael Scott <mike@foundries.io>
+Date: Mon, 14 Dec 2020 12:24:46 -0800
+Subject: [PATCH 074/322] [FIO toup] arch: mach-imx: fiohab: use fiohab_dev var
+ in fiovb_provisioned
+
+Currently, fiovb_provisioned() is hard-coded for MMC dev 0.
+
+Let's replace that with the fiohab_dev var, and if fiohav_dev isn't set,
+generate an error.
+
+Signed-off-by: Michael Scott <mike@foundries.io>
+---
+ arch/arm/mach-imx/fiohab.c | 10 ++++++++--
+ 1 file changed, 8 insertions(+), 2 deletions(-)
+
+diff --git a/arch/arm/mach-imx/fiohab.c b/arch/arm/mach-imx/fiohab.c
+index 1616d6c7e04..e166c791bcd 100644
+--- a/arch/arm/mach-imx/fiohab.c
++++ b/arch/arm/mach-imx/fiohab.c
+@@ -41,13 +41,19 @@ static int fiovb_provisioned(void)
+ 	char len_str[32] = { '\0' };
+ 	struct fiovb_ops *sec;
+ 	int ret;
++	unsigned int fiohab_dev = env_get_ulong("fiohab_dev", 10, 0xFFUL);
+ 
+-	if (!init_mmc_device(0, false)) {
++	if (fiohab_dev == 0xFFUL) {
++		printf("fiohav_dev var is not defined!\n");
++		return -EINVAL;
++	}
++
++	if (!init_mmc_device(fiohab_dev, false)) {
+ 		printf("Cant init MMC - RPMB not available\n");
+ 		return -1;
+ 	}
+ 
+-	sec = fiovb_ops_alloc(0);
++	sec = fiovb_ops_alloc(fiohab_dev);
+ 	if (!sec) {
+ 		printf("Not enough memory to allocate ops\n");
+ 		return -ENOMEM;
+-- 
+2.34.1
+

@@ -1,0 +1,101 @@
+From 449f68727599c412f338d9cdcc7cec3b8f83063e Mon Sep 17 00:00:00 2001
+From: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+Date: Tue, 21 Dec 2021 20:55:27 +0200
+Subject: [PATCH 302/322] [FIO internal] mx6: disable fuses and of-system setup
+ in SPL
+
+IMX_MODULE_FUSE adds ~8K of binary size to SPL where it's only used for 1
+check to see if USB has been fused off.
+
+For FIO use-case we only enable USB for mfgtool, where USB fusing would
+not apply.
+
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+---
+ arch/arm/mach-imx/mx6/Kconfig | 28 ++++++++++++++--------------
+ 1 file changed, 14 insertions(+), 14 deletions(-)
+
+diff --git a/arch/arm/mach-imx/mx6/Kconfig b/arch/arm/mach-imx/mx6/Kconfig
+index 8daf4d73edc..a1c583195a9 100644
+--- a/arch/arm/mach-imx/mx6/Kconfig
++++ b/arch/arm/mach-imx/mx6/Kconfig
+@@ -584,8 +584,8 @@ config TARGET_MX6UL_9X9_EVK
+ 	select DM
+ 	select DM_THERMAL
+ 	select SUPPORT_SPL
+-	select IMX_MODULE_FUSE
+-	select OF_SYSTEM_SETUP
++	select IMX_MODULE_FUSE if !SPL_BUILD
++	select OF_SYSTEM_SETUP if !SPL_BUILD
+ 	imply CMD_DM
+ 
+ config TARGET_MX6UL_14X14_EVK
+@@ -595,8 +595,8 @@ config TARGET_MX6UL_14X14_EVK
+ 	select DM
+ 	select DM_THERMAL
+ 	select SUPPORT_SPL
+-	select IMX_MODULE_FUSE
+-	select OF_SYSTEM_SETUP
++	select IMX_MODULE_FUSE if !SPL_BUILD
++	select OF_SYSTEM_SETUP if !SPL_BUILD
+ 	imply CMD_DM
+ 	imply FSL_CAAM
+ 	imply FSL_BLOB
+@@ -609,8 +609,8 @@ config TARGET_MX6UL_14X14_DDR3_VAL
+ 	select BOARD_LATE_INIT
+ 	select DM
+ 	select DM_THERMAL
+-	select IMX_MODULE_FUSE
+-	select OF_SYSTEM_SETUP
++	select IMX_MODULE_FUSE if !SPL_BUILD
++	select OF_SYSTEM_SETUP if !SPL_BUILD
+ 	imply CMD_DM
+ 
+ config TARGET_MX6UL_14X14_LPDDR2_VAL
+@@ -619,8 +619,8 @@ config TARGET_MX6UL_14X14_LPDDR2_VAL
+ 	select BOARD_LATE_INIT
+ 	select DM
+ 	select DM_THERMAL
+-	select IMX_MODULE_FUSE
+-	select OF_SYSTEM_SETUP
++	select IMX_MODULE_FUSE if !SPL_BUILD
++	select OF_SYSTEM_SETUP if !SPL_BUILD
+ 	imply CMD_DM
+ 
+ config TARGET_MX6UL_ENGICAM
+@@ -647,8 +647,8 @@ config TARGET_MX6ULL_DDR3_VAL
+ 	select BOARD_LATE_INIT
+ 	select DM
+ 	select DM_THERMAL
+-	select IMX_MODULE_FUSE
+-	select OF_SYSTEM_SETUP
++	select IMX_MODULE_FUSE if !SPL_BUILD
++	select OF_SYSTEM_SETUP if !SPL_BUILD
+ 	imply CMD_DM
+ 
+ config TARGET_MX6ULL_9X9_EVK
+@@ -657,8 +657,8 @@ config TARGET_MX6ULL_9X9_EVK
+ 	select BOARD_LATE_INIT
+ 	select DM
+ 	select DM_THERMAL
+-	select IMX_MODULE_FUSE
+-	select OF_SYSTEM_SETUP
++	select IMX_MODULE_FUSE if !SPL_BUILD
++	select OF_SYSTEM_SETUP if !SPL_BUILD
+ 	imply CMD_DM
+ 
+ config TARGET_MX6ULL_14X14_EVK
+@@ -667,8 +667,8 @@ config TARGET_MX6ULL_14X14_EVK
+ 	select BOARD_LATE_INIT
+ 	select DM
+ 	select DM_THERMAL
+-	select IMX_MODULE_FUSE
+-	select OF_SYSTEM_SETUP
++	select IMX_MODULE_FUSE if !SPL_BUILD
++	select OF_SYSTEM_SETUP if !SPL_BUILD
+ 	select SUPPORT_SPL
+ 	imply CMD_DM
+ 
+-- 
+2.34.1
+

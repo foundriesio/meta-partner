@@ -1,0 +1,51 @@
+From 2e1e33abeb12cfdc2a6798ccf06b8a9f251d473b Mon Sep 17 00:00:00 2001
+From: Heinrich Schuchardt <xypron.glpk@gmx.de>
+Date: Thu, 18 Mar 2021 07:46:07 +0100
+Subject: [PATCH 174/322] [FIO fromtree] dfu: dfu_sf: avoid double free of SPI
+ device
+
+Multiple DFU entities may share the same SPI device. We must make sure that
+the SPI device is only freed once.
+
+When using the driver model it is not necessary to free the SPI device.
+
+Signed-off-by: Heinrich Schuchardt <xypron.glpk@gmx.de>
+Acked-by: Lukasz Majewski <lukma@denx.de>
+(cherry picked from commit 57cba225faf60f16f63b7aaba0dcd991a69666b5)
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+---
+ drivers/dfu/dfu_sf.c | 18 +++++++++++++++++-
+ 1 file changed, 17 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/dfu/dfu_sf.c b/drivers/dfu/dfu_sf.c
+index 76b629a334f..8f8c4259772 100644
+--- a/drivers/dfu/dfu_sf.c
++++ b/drivers/dfu/dfu_sf.c
+@@ -87,7 +87,23 @@ static unsigned int dfu_polltimeout_sf(struct dfu_entity *dfu)
+ 
+ static void dfu_free_entity_sf(struct dfu_entity *dfu)
+ {
+-	spi_flash_free(dfu->data.sf.dev);
++	/*
++	 * In the DM case it is not necessary to free the SPI device.
++	 * For the non-DM case we must ensure that the the SPI device is only
++	 * freed once.
++	 */
++	if (!CONFIG_IS_ENABLED(DM_SPI_FLASH)) {
++		struct spi_flash *dev = dfu->data.sf.dev;
++
++		if (!dev)
++			return;
++		dfu->data.sf.dev = NULL;
++		list_for_each_entry(dfu, &dfu_list, list) {
++			if (dfu->data.sf.dev == dev)
++				dfu->data.sf.dev = NULL;
++		}
++		spi_flash_free(dev);
++	}
+ }
+ 
+ static struct spi_flash *parse_dev(char *devstr)
+-- 
+2.34.1
+

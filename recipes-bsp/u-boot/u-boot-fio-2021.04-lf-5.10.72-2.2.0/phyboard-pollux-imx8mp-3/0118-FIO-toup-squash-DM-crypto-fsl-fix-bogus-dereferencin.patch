@@ -1,0 +1,43 @@
+From c2763268bda39e428c5a531e0ec4d43713103eb7 Mon Sep 17 00:00:00 2001
+From: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+Date: Tue, 28 Sep 2021 15:22:23 +0300
+Subject: [PATCH 118/322] [FIO toup-squash] DM: crypto/fsl: fix bogus
+ dereferencing
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Fix bogus dereferencing causing the compiler error [1].
+
+[1]
+drivers/crypto/fsl/fsl_rsa.c:26:29: warning: dereferencing ‘void *’ pointer
+   26 |  fdt64_t exp = fdt64_to_cpu(*prop->public_exponent);
+      |                             ^~~~~~~~~~~~~~~~~~~~~~
+...
+include/linux/byteorder/little_endian.h:39:50: error: invalid use of void expression
+   39 | #define __be64_to_cpu(x) __swab64((__force __u64)(__be64)(x))
+      |                                                  ^
+---------------------------------------------------------------------
+
+Fixes: 6b0c6d7383 ("[FIO toup] DM: crypto/fsl: fix alignment issue in fsl_rsa driver")
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+---
+ drivers/crypto/fsl/fsl_rsa.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/crypto/fsl/fsl_rsa.c b/drivers/crypto/fsl/fsl_rsa.c
+index 2767d4cb4d5..5911c2bb012 100644
+--- a/drivers/crypto/fsl/fsl_rsa.c
++++ b/drivers/crypto/fsl/fsl_rsa.c
+@@ -23,7 +23,7 @@ int fsl_mod_exp(struct udevice *dev, const uint8_t *sig, uint32_t sig_len,
+ 	struct pk_in_params pkin;
+ 	uint32_t desc[MAX_CAAM_DESCSIZE];
+ 	int ret;
+-	fdt64_t exp = fdt64_to_cpu(*prop->public_exponent);
++	fdt64_t exp = fdt64_to_cpu(prop->public_exponent);
+ 
+ 	/* Length in bytes */
+ 	keylen = prop->num_bits / 8;
+-- 
+2.34.1
+

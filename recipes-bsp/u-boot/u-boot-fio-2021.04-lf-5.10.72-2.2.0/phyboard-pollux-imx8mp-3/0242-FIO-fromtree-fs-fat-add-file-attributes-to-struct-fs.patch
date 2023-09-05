@@ -1,0 +1,113 @@
+From 9af298bfee344a6632529481156267c46a57eb29 Mon Sep 17 00:00:00 2001
+From: Heinrich Schuchardt <xypron.glpk@gmx.de>
+Date: Sat, 15 May 2021 22:06:16 +0200
+Subject: [PATCH 242/322] [FIO fromtree] fs: fat: add file attributes to struct
+ fs_dirent
+
+When reading a directory in the UEFI file system we have to return file
+attributes and timestamps. Copy this data to the directory entry structure.
+
+Signed-off-by: Heinrich Schuchardt <xypron.glpk@gmx.de>
+(cherry picked from commit 13c11c665320beff22ea94674da42719b6281501)
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+---
+ fs/fat/fat.c | 32 +++++++++++++++++++++++++++++++-
+ include/fs.h | 22 ++++++++++++++++++----
+ 2 files changed, 49 insertions(+), 5 deletions(-)
+
+diff --git a/fs/fat/fat.c b/fs/fat/fat.c
+index c561d82b351..7021138b987 100644
+--- a/fs/fat/fat.c
++++ b/fs/fat/fat.c
+@@ -1187,6 +1187,28 @@ out:
+ 	return ret == 0;
+ }
+ 
++/**
++ * fat2rtc() - convert FAT time stamp to RTC file stamp
++ *
++ * @date:	FAT date
++ * @time:	FAT time
++ * @tm:		RTC time stamp
++ */
++static void __maybe_unused fat2rtc(u16 date, u16 time, struct rtc_time *tm)
++{
++	tm->tm_mday = date & 0x1f;
++	tm->tm_mon = (date & 0x1e0) >> 4;
++	tm->tm_year = (date >> 9) + 1980;
++
++	tm->tm_sec = (time & 0x1f) << 1;
++	tm->tm_min = (time & 0x7e0) >> 5;
++	tm->tm_hour = time >> 11;
++
++	rtc_calc_weekday(tm);
++	tm->tm_yday = 0;
++	tm->tm_isdst = 0;
++}
++
+ int fat_size(const char *filename, loff_t *size)
+ {
+ 	fsdata fsdata;
+@@ -1325,7 +1347,15 @@ int fat_readdir(struct fs_dir_stream *dirs, struct fs_dirent **dentp)
+ 
+ 	memset(dent, 0, sizeof(*dent));
+ 	strcpy(dent->name, dir->itr.name);
+-
++	if (CONFIG_IS_ENABLED(EFI_LOADER)) {
++		dent->attr = dir->itr.dent->attr;
++		fat2rtc(le16_to_cpu(dir->itr.dent->cdate),
++			le16_to_cpu(dir->itr.dent->ctime), &dent->create_time);
++		fat2rtc(le16_to_cpu(dir->itr.dent->date),
++			le16_to_cpu(dir->itr.dent->time), &dent->change_time);
++		fat2rtc(le16_to_cpu(dir->itr.dent->adate),
++			0, &dent->access_time);
++	}
+ 	if (fat_itr_isdir(&dir->itr)) {
+ 		dent->type = FS_DT_DIR;
+ 	} else {
+diff --git a/include/fs.h b/include/fs.h
+index acaa553460f..839523c9191 100644
+--- a/include/fs.h
++++ b/include/fs.h
+@@ -6,6 +6,7 @@
+ #define _FS_H
+ 
+ #include <common.h>
++#include <rtc.h>
+ 
+ struct cmd_tbl;
+ 
+@@ -162,13 +163,26 @@ int fs_write(const char *filename, ulong addr, loff_t offset, loff_t len,
+ #define FS_DT_REG  8         /* regular file */
+ #define FS_DT_LNK  10        /* symbolic link */
+ 
+-/*
+- * A directory entry, returned by fs_readdir().  Returns information
++/**
++ * struct fs_dirent - directory entry
++ *
++ * A directory entry, returned by fs_readdir(). Returns information
+  * about the file/directory at the current directory entry position.
+  */
+ struct fs_dirent {
+-	unsigned type;       /* one of FS_DT_x (not a mask) */
+-	loff_t size;         /* size in bytes */
++	/** @type:		one of FS_DT_x (not a mask) */
++	unsigned int type;
++	/** @size:		file size */
++	loff_t size;
++	/** @flags:		attribute flags (FS_ATTR_*) */
++	u32 attr;
++	/** create_time:	time of creation */
++	struct rtc_time create_time;
++	/** access_time:	time of last access */
++	struct rtc_time access_time;
++	/** change_time:	time of last modification */
++	struct rtc_time change_time;
++	/** name:		file name */
+ 	char name[256];
+ };
+ 
+-- 
+2.34.1
+

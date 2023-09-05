@@ -1,0 +1,57 @@
+From a913d9e0da17d3a066fe13d5b9ef2666f0c52890 Mon Sep 17 00:00:00 2001
+From: Vanessa Maegima <vanessa.maegima@foundries.io>
+Date: Tue, 11 Jan 2022 12:16:59 -0300
+Subject: [PATCH 308/322] [FIO internal] cmd: fiovb: increase fiovb_name buffer
+
+The alternative boot path includes a new variable, bootupgrade_primary_updated,
+that overflows the previous buffer length for the fiovb exported env variable,
+so increase the fiovb_name buffer.
+
+Signed-off-by: Vanessa Maegima <vanessa.maegima@foundries.io>
+---
+ cmd/fiovb.c | 8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
+
+diff --git a/cmd/fiovb.c b/cmd/fiovb.c
+index 22b970c374c..9d7981bb700 100644
+--- a/cmd/fiovb.c
++++ b/cmd/fiovb.c
+@@ -12,6 +12,8 @@
+ #include <fiovb.h>
+ #include <asm/arch/sys_proto.h>
+ 
++#define FIOVB_NAME_LEN	40
++
+ static struct fiovb_ops *fiovb_ops;
+ 
+ int do_fiovb_init(struct cmd_tbl *cmdtp, int flag, int argc, char * const argv[])
+@@ -46,7 +48,7 @@ int do_fiovb_read_pvalue(struct cmd_tbl *cmdtp, int flag, int argc,
+ 	size_t bytes_read;
+ 	void *buffer;
+ 	char *endp;
+-	char fiovb_name[30] = { 0 }; /* fiovb.name */
++	char fiovb_name[FIOVB_NAME_LEN] = { 0 }; /* fiovb.name */
+ 	char fiovb_val[32] = { 0 };
+ 
+ 	if (!fiovb_ops) {
+@@ -90,7 +92,7 @@ int do_fiovb_write_pvalue(struct cmd_tbl *cmdtp, int flag, int argc,
+ {
+ 	const char *name;
+ 	const char *value;
+-	char fiovb_name[30] = { 0 }; /* fiovb.name */
++	char fiovb_name[FIOVB_NAME_LEN] = { 0 }; /* fiovb.name */
+ 
+ 	if (!fiovb_ops) {
+ 		printf("Foundries.IO Verified Boot is not initialized, run 'fiovb init' first\n");
+@@ -121,7 +123,7 @@ int do_fiovb_delete_pvalue(struct cmd_tbl *cmdtp, int flag, int argc,
+ 			   char * const argv[])
+ {
+ 	const char *name;
+-	char fiovb_name[30] = { 0 }; /* fiovb.name */
++	char fiovb_name[FIOVB_NAME_LEN] = { 0 }; /* fiovb.name */
+ 
+ 	if (!fiovb_ops) {
+ 		printf("Foundries.IO Verified Boot is not initialized, run 'fiovb init' first\n");
+-- 
+2.34.1
+

@@ -1,0 +1,52 @@
+From dcba37656abf1df073a4665dea0cf10eea3f0cbc Mon Sep 17 00:00:00 2001
+From: Heinrich Schuchardt <xypron.glpk@gmx.de>
+Date: Sat, 15 May 2021 22:41:26 +0200
+Subject: [PATCH 244/322] [FIO fromtree] efi_loader: provide file attributes in
+ EFI_FILE_PROTOCOL.Read()
+
+When reading a directory using EFI_FILE_PROTOCOL.Read() provide file
+attributes and timestamps.
+
+Signed-off-by: Heinrich Schuchardt <xypron.glpk@gmx.de>
+(cherry picked from commit 79a61ccb236547a69db53ee52751e62b6a4361c3)
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+---
+ lib/efi_loader/efi_file.c | 15 +++++++++++++++
+ 1 file changed, 15 insertions(+)
+
+diff --git a/lib/efi_loader/efi_file.c b/lib/efi_loader/efi_file.c
+index 6b3f5962be2..6299fcbbf4e 100644
+--- a/lib/efi_loader/efi_file.c
++++ b/lib/efi_loader/efi_file.c
+@@ -480,6 +480,17 @@ static efi_status_t file_read(struct file_handle *fh, u64 *buffer_size,
+ 	return EFI_SUCCESS;
+ }
+ 
++static void rtc2efi(struct efi_time *time, struct rtc_time *tm)
++{
++	memset(time, 0, sizeof(struct efi_time));
++	time->year = tm->tm_year;
++	time->month = tm->tm_mon;
++	time->day = tm->tm_mday;
++	time->hour = tm->tm_hour;
++	time->minute = tm->tm_min;
++	time->second = tm->tm_sec;
++}
++
+ static efi_status_t dir_read(struct file_handle *fh, u64 *buffer_size,
+ 		void *buffer)
+ {
+@@ -535,6 +546,10 @@ static efi_status_t dir_read(struct file_handle *fh, u64 *buffer_size,
+ 	info->size = required_size;
+ 	info->file_size = dent->size;
+ 	info->physical_size = dent->size;
++	info->attribute = dent->attr;
++	rtc2efi(&info->create_time, &dent->create_time);
++	rtc2efi(&info->modification_time, &dent->change_time);
++	rtc2efi(&info->last_access_time, &dent->access_time);
+ 
+ 	if (dent->type == FS_DT_DIR)
+ 		info->attribute |= EFI_FILE_DIRECTORY;
+-- 
+2.34.1
+

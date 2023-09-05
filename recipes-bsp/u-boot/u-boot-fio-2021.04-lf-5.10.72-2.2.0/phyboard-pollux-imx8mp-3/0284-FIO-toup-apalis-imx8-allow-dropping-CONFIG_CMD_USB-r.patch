@@ -1,0 +1,43 @@
+From 8c6e5e3e5807ffb551c79ec5255b72d935c6cc9a Mon Sep 17 00:00:00 2001
+From: Michael Scott <mike@foundries.io>
+Date: Wed, 3 Nov 2021 22:45:12 -0700
+Subject: [PATCH 284/322] [FIO toup] apalis-imx8: allow dropping CONFIG_CMD_USB
+ requirement
+
+When CONFIG_DISTRO_DEFAULTS is not defined, don't include
+config_distro_bootcmd.h. This will break the build based
+on the stock defines:
+        func(MMC, mmc, 1) \
+        func(MMC, mmc, 2) \
+        func(MMC, mmc, 0) \
+        func(USB, usb, 0)
+
+Signed-off-by: Michael Scott <mike@foundries.io>
+---
+ include/configs/apalis-imx8.h | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/include/configs/apalis-imx8.h b/include/configs/apalis-imx8.h
+index 746e1d8f427..7423eb046d1 100644
+--- a/include/configs/apalis-imx8.h
++++ b/include/configs/apalis-imx8.h
+@@ -71,12 +71,16 @@
+ 	"m4boot_0=run loadm4image_0; dcache flush; bootaux ${loadaddr} 0\0" \
+ 	"m4boot_1=run loadm4image_1; dcache flush; bootaux ${loadaddr} 1\0" \
+ 
++#ifdef CONFIG_DISTRO_DEFAULTS
+ #define BOOT_TARGET_DEVICES(func) \
+ 	func(MMC, mmc, 1) \
+ 	func(MMC, mmc, 2) \
+ 	func(MMC, mmc, 0) \
+ 	func(USB, usb, 0)
+ #include <config_distro_bootcmd.h>
++#else
++#define BOOTENV ""
++#endif
+ 
+ #ifdef CONFIG_AHAB_BOOT
+ #define AHAB_ENV "sec_boot=yes\0"
+-- 
+2.34.1
+

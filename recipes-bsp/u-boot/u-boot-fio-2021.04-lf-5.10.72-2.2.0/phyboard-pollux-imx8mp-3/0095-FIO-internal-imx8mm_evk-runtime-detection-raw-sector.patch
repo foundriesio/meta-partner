@@ -1,0 +1,92 @@
+From e41b194fbb5b39fbc6fff90ad47492bfd26028e8 Mon Sep 17 00:00:00 2001
+From: Igor Opaniuk <igor.opaniuk@foundries.io>
+Date: Mon, 15 Feb 2021 19:48:15 +0200
+Subject: [PATCH 095/322] [FIO internal] imx8mm_evk: runtime detection raw
+ sector offsets
+
+Add runtime detection for the next boot image (U-Boot proper FIT)
+SD/MMC sector offset.
+
+Move SECONDARY_BOOT_SECTOR_OFFSET symbols to the common iMX Kconfig.
+
+Signed-off-by: Igor Opaniuk <igor.opaniuk@foundries.io>
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+---
+ arch/arm/mach-imx/Kconfig       | 17 +++++++++++++++++
+ arch/arm/mach-imx/imx8m/Kconfig |  9 ---------
+ include/configs/imx8mm_evk.h    | 10 ++++++++++
+ 3 files changed, 27 insertions(+), 9 deletions(-)
+
+diff --git a/arch/arm/mach-imx/Kconfig b/arch/arm/mach-imx/Kconfig
+index 60934400bed..9de4b5fe0ce 100644
+--- a/arch/arm/mach-imx/Kconfig
++++ b/arch/arm/mach-imx/Kconfig
+@@ -21,6 +21,23 @@ config GPT_TIMER
+ config FSL_CAAM_KB
+ 	bool
+ 
++config SECONDARY_BOOT_RUNTIME_DETECTION
++	bool "SD/MMC sector offset runtime detection"
++	default n
++	depends on (IMX8MQ || IMX8MM || MX6ULL || MX6UL) && SPL_MMC_SUPPORT
++	help
++	  Detect correct sector offset in SPL for the next boot image
++	  in runtime.
++
++config SECONDARY_BOOT_SECTOR_OFFSET
++	hex "SD/MMC sector offset used for ROM secondary boot"
++	default 0x0
++	depends on IMX8MQ || IMX8MM || MX6ULL || MX6UL
++	help
++	  Set the sector offset to non-zero value in SPL used for
++	  secondary boot image. This value should be same as the
++	  firstSectorNumber in secondary image table.
++
+ config IMX_RDC
+ 	bool "i.MX Resource domain controller driver"
+ 	depends on ARCH_MX6 || ARCH_MX7
+diff --git a/arch/arm/mach-imx/imx8m/Kconfig b/arch/arm/mach-imx/imx8m/Kconfig
+index 1130b75d1c1..82a60e800c6 100644
+--- a/arch/arm/mach-imx/imx8m/Kconfig
++++ b/arch/arm/mach-imx/imx8m/Kconfig
+@@ -27,15 +27,6 @@ config IMX8MP
+ config SYS_SOC
+ 	default "imx8m"
+ 
+-config SECONDARY_BOOT_SECTOR_OFFSET
+-	hex "SD/MMC sector offset used for ROM secondary boot"
+-	default 0x0
+-	depends on IMX8MQ || IMX8MM
+-	help
+-	  Set the sector offset to non-zero value in SPL used for
+-	  secondary boot image. This value should be same as the
+-	  firstSectorNumber in secondary image table.
+-
+ config SECURE_STICKY_BITS_LOCKUP
+ 	bool "Enable workaround to fix sticky bits lock up issue"
+ 	depends on IMX8MQ && IMX_HAB
+diff --git a/include/configs/imx8mm_evk.h b/include/configs/imx8mm_evk.h
+index 04298d2c9b3..77cf74d6fac 100644
+--- a/include/configs/imx8mm_evk.h
++++ b/include/configs/imx8mm_evk.h
+@@ -15,7 +15,17 @@
+ #define CONFIG_SPL_MAX_SIZE		(148 * 1024)
+ #define CONFIG_SYS_MONITOR_LEN		SZ_512K
+ #define CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_USE_SECTOR
++/*
++ * CONFIG_SECONDARY_BOOT_SECTOR_OFFSET was intended to be used as a compile time setting.
++ * If CONFIG_SECONDARY_BOOT_RUNTIME_DETECTION is defined, then only use the base offset of 0x300 here.
++ * CONFIG_SECONDARY_BOOT_SECTOR_OFFSET will be added dynamically if needed.
++ */
++#ifdef CONFIG_SECONDARY_BOOT_RUNTIME_DETECTION
++#define CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_SECTOR	(0x300)
++#else
+ #define CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_SECTOR	(0x300 + CONFIG_SECONDARY_BOOT_SECTOR_OFFSET)
++#endif /* CONFIG_SECONDARY_BOOT_RUNTIME_DETECTION */
++#define CONFIG_SYS_MMCSD_FS_BOOT_PARTITION	1
+ #define CONFIG_SYS_UBOOT_BASE	\
+ 	(QSPI0_AMBA_BASE + CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_SECTOR * 512)
+ 
+-- 
+2.34.1
+

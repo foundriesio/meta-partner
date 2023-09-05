@@ -1,0 +1,89 @@
+From 6d8616c36b9a6921c39a93eccae0ceaa2768be10 Mon Sep 17 00:00:00 2001
+From: Henry Beberman <hebeberm@microsoft.com>
+Date: Thu, 16 Sep 2021 16:09:57 +0300
+Subject: [PATCH 013/322] [FIO fromlist] spl: Add
+ CONFIG_SPL_FIT_SIGNATURE_STRICT
+
+SPL FIT load checks the signature on loadable images but just continues
+in the case of a failure. This is undesirable behavior because the boot
+process depends on the authenticity of each loadable part.
+
+Adding CONFIG_SPL_FIT_SIGNATURE_STRICT to halt the platform when any
+image fails its signature check, including loadable parts.
+
+SPL already supports image signature verification but had no mechanism
+to check that the FIT's configuration block was signed correctly.
+
+Add a check near the start of spl_load_simple_fit that verifies the
+FIT's configuration block, and fails if it's not present or the
+signature doesn't match what's stored in the SPL DTB.
+
+Signed-off-by: Henry Beberman <hebeberm@microsoft.com>
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+Co-developed-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+---
+ common/Kconfig.boot  |  7 +++++++
+ common/spl/spl_fit.c | 21 ++++++++++++++++++++-
+ 2 files changed, 27 insertions(+), 1 deletion(-)
+
+diff --git a/common/Kconfig.boot b/common/Kconfig.boot
+index 9c335f4f8ce..d125a2c269e 100644
+--- a/common/Kconfig.boot
++++ b/common/Kconfig.boot
+@@ -191,6 +191,13 @@ config SPL_FIT_SIGNATURE
+ 	select SPL_IMAGE_SIGN_INFO
+ 	select SPL_FIT_FULL_CHECK
+ 
++config SPL_FIT_SIGNATURE_STRICT
++	bool "Halt if loadables or firmware don't pass FIT signature verification"
++	select SPL_FIT_SIGNATURE
++	help
++	  Strictly requires each loadable or firmware in a FIT image to be
++	  passed verification. Halt if any loadable fails to be verified.
++
+ config SPL_LOAD_FIT
+ 	bool "Enable SPL loading U-Boot as a FIT (basic fitImage features)"
+ 	select SPL_FIT
+diff --git a/common/spl/spl_fit.c b/common/spl/spl_fit.c
+index 24f1d522056..6c1a53135a1 100644
+--- a/common/spl/spl_fit.c
++++ b/common/spl/spl_fit.c
+@@ -330,7 +330,12 @@ static int spl_load_fit_image(struct spl_load_info *info, ulong sector,
+ 		printf("## Checking hash(es) for Image %s ... ",
+ 		       fit_get_name(fit, node, NULL));
+ 		if (!fit_image_verify_with_data(fit, node, src, length))
+-			return -EPERM;
++			if (CONFIG_IS_ENABLED(FIT_SIGNATURE_STRICT)) {
++				puts("Invalid FIT signature found in a required image.\n");
++				hang();
++			} else {
++				return -EPERM;
++			}
+ 		puts("OK\n");
+ 	}
+ 
+@@ -628,6 +633,20 @@ int spl_load_simple_fit(struct spl_image_info *spl_image,
+ 	if (ret < 0)
+ 		return ret;
+ 
++	if (CONFIG_IS_ENABLED(FIT_SIGNATURE_STRICT)) {
++		int cfg_noffset = fit_conf_get_node(fit, NULL);
++
++		if (cfg_noffset >= 0) {
++			if (fit_config_verify(fit, cfg_noffset)) {
++				puts("Unable to verify the required FIT config.\n");
++				hang();
++			}
++		} else {
++			puts("SPL_FIT_SIGNATURE_STRICT needs a config node in FIT\n");
++			hang();
++		}
++	}
++
+ 	/* skip further processing if requested to enable load-only use cases */
+ 	if (spl_load_simple_fit_skip_processing())
+ 		return 0;
+-- 
+2.34.1
+

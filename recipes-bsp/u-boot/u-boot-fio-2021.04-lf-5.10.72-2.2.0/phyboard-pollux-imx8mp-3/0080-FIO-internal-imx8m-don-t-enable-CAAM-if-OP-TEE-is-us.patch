@@ -1,0 +1,29 @@
+From 871df00728a0c22434338b10cd07bdbbd5b2a65e Mon Sep 17 00:00:00 2001
+From: Igor Opaniuk <igor.opaniuk@foundries.io>
+Date: Thu, 28 Jan 2021 17:11:46 +0200
+Subject: [PATCH 080/322] [FIO internal] imx8m: don't enable CAAM if OP-TEE is
+ used
+
+Don't enable CAAM in U-Boot, if OP-TEE is used.
+
+Signed-off-by: Igor Opaniuk <igor.opaniuk@foundries.io>
+---
+ arch/arm/mach-imx/imx8m/Kconfig | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/arm/mach-imx/imx8m/Kconfig b/arch/arm/mach-imx/imx8m/Kconfig
+index 17eedf63cc9..1130b75d1c1 100644
+--- a/arch/arm/mach-imx/imx8m/Kconfig
++++ b/arch/arm/mach-imx/imx8m/Kconfig
+@@ -2,7 +2,7 @@ if ARCH_IMX8M
+ 
+ config IMX8M
+ 	bool
+-	select HAS_CAAM
++	select HAS_CAAM if !OPTEE
+ 	select ROM_UNIFIED_SECTIONS
+ 
+ config IMX8MQ
+-- 
+2.34.1
+

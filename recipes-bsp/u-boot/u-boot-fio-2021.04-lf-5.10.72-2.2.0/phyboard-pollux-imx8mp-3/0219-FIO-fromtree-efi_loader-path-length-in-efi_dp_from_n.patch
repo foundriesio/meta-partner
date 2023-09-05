@@ -1,0 +1,54 @@
+From 23f8348d069db9fa40467874d9855c21cc1100e1 Mon Sep 17 00:00:00 2001
+From: Heinrich Schuchardt <xypron.glpk@gmx.de>
+Date: Tue, 25 May 2021 12:07:30 +0200
+Subject: [PATCH 219/322] [FIO fromtree] efi_loader: path length in
+ efi_dp_from_name()
+
+Before this patch efi_dp_from_name() only accommodated a maximum file path
+length of 31 characters. This leads to boot failures due to file name
+truncation.
+
+Allow arbitrary path lengths.
+
+Signed-off-by: Heinrich Schuchardt <xypron.glpk@gmx.de>
+(cherry picked from commit 9a6b33bef246460215ce1d45e77f98c5aa57f6d0)
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+---
+ lib/efi_loader/efi_device_path.c | 9 +++++++--
+ 1 file changed, 7 insertions(+), 2 deletions(-)
+
+diff --git a/lib/efi_loader/efi_device_path.c b/lib/efi_loader/efi_device_path.c
+index 4b20859b255..76c2f82fe66 100644
+--- a/lib/efi_loader/efi_device_path.c
++++ b/lib/efi_loader/efi_device_path.c
+@@ -1171,7 +1171,7 @@ efi_status_t efi_dp_from_name(const char *dev, const char *devnr,
+ 	struct blk_desc *desc = NULL;
+ 	struct disk_partition fs_partition;
+ 	int part = 0;
+-	char filename[32] = { 0 }; /* dp->str is u16[32] long */
++	char *filename;
+ 	char *s;
+ 
+ 	if (path && !file)
+@@ -1198,12 +1198,17 @@ efi_status_t efi_dp_from_name(const char *dev, const char *devnr,
+ 	if (!path)
+ 		return EFI_SUCCESS;
+ 
+-	snprintf(filename, sizeof(filename), "%s", path);
++	filename = calloc(1, strlen(path) + 1);
++	if (!filename)
++		return EFI_OUT_OF_RESOURCES;
++
++	sprintf(filename, "%s", path);
+ 	/* DOS style file path: */
+ 	s = filename;
+ 	while ((s = strchr(s, '/')))
+ 		*s++ = '\\';
+ 	*file = efi_dp_from_file(desc, part, filename);
++	free(filename);
+ 
+ 	if (!*file)
+ 		return EFI_INVALID_PARAMETER;
+-- 
+2.34.1
+

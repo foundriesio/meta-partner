@@ -1,0 +1,31 @@
+From e284cd871126ff6c41c00a1c8c58003e05920503 Mon Sep 17 00:00:00 2001
+From: Vanessa Maegima <vanessa.maegima@foundries.io>
+Date: Mon, 16 Aug 2021 14:12:20 -0300
+Subject: [PATCH 130/322] [FIO internal-squish] arch: arm: mach-imx: fiohab:
+ fix typo
+
+Fix 'fiohav' typo.
+
+Fixed: bbb60f977a ("[FIO toup] arch: mach-imx: fiohab: use fiohab_dev var in fiovb_provisioned")
+Signed-off-by: Vanessa Maegima <vanessa.maegima@foundries.io>
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+---
+ arch/arm/mach-imx/fiohab.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/arm/mach-imx/fiohab.c b/arch/arm/mach-imx/fiohab.c
+index e166c791bcd..e5ffc5ae317 100644
+--- a/arch/arm/mach-imx/fiohab.c
++++ b/arch/arm/mach-imx/fiohab.c
+@@ -44,7 +44,7 @@ static int fiovb_provisioned(void)
+ 	unsigned int fiohab_dev = env_get_ulong("fiohab_dev", 10, 0xFFUL);
+ 
+ 	if (fiohab_dev == 0xFFUL) {
+-		printf("fiohav_dev var is not defined!\n");
++		printf("fiohab_dev var is not defined!\n");
+ 		return -EINVAL;
+ 	}
+ 
+-- 
+2.34.1
+

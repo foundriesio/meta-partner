@@ -1,0 +1,32 @@
+From 36288c49b9f04a1da56cecea31cf763007732c18 Mon Sep 17 00:00:00 2001
+From: Heinrich Schuchardt <xypron.glpk@gmx.de>
+Date: Tue, 29 Jun 2021 10:09:14 +0200
+Subject: [PATCH 238/322] [FIO fromtree] efi_loader: missing parentheses in
+ query_console_size
+
+After if we should use parentheses to keep the code readable.
+
+Fixes: a95f4c885991 ("efi_loader: NULL dereference in EFI console")
+Signed-off-by: Heinrich Schuchardt <xypron.glpk@gmx.de>
+(cherry picked from commit abd62e4d41112893d70ddcbe7faad887116ed323)
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+---
+ lib/efi_loader/efi_console.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/lib/efi_loader/efi_console.c b/lib/efi_loader/efi_console.c
+index 6040f3a99ab..3b012e1a669 100644
+--- a/lib/efi_loader/efi_console.c
++++ b/lib/efi_loader/efi_console.c
+@@ -342,7 +342,7 @@ static void query_console_size(void)
+ 	int rows = 25, cols = 80;
+ 	int ret = -ENODEV;
+ 
+-	if IS_ENABLED(CONFIG_DM_VIDEO)
++	if (IS_ENABLED(CONFIG_DM_VIDEO))
+ 		ret = query_vidconsole(&rows, &cols);
+ 	if (ret)
+ 		ret = query_console_serial(&rows, &cols);
+-- 
+2.34.1
+

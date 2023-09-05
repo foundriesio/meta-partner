@@ -1,0 +1,58 @@
+From 6a6c6bb12bde71ab24af5106b788f45f21dc5cc0 Mon Sep 17 00:00:00 2001
+From: Ilias Apalodimas <ilias.apalodimas@linaro.org>
+Date: Mon, 10 May 2021 21:19:14 +0300
+Subject: [PATCH 208/322] [FIO fromtree] efi_loader: Uninstall the TCG2
+ protocol if logging s-crtm fails
+
+Instead of just failing, clean up the installed config table and
+EventLog memory if logging an s-crtm event fails during the protocol
+installation
+
+Signed-off-by: Ilias Apalodimas <ilias.apalodimas@linaro.org>
+
+Eliminate label 'out:' by using return.
+Reviewed-by: Heinrich Schuchardt <xypron.glpk@gmx.de>
+
+(cherry picked from commit 97f446a8ff7ccefc1eb27c48c2e64d36dc8bd8e6)
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+---
+ lib/efi_loader/efi_tcg2.c | 8 +++-----
+ 1 file changed, 3 insertions(+), 5 deletions(-)
+
+diff --git a/lib/efi_loader/efi_tcg2.c b/lib/efi_loader/efi_tcg2.c
+index 40c94ab1333..c8616bf31e1 100644
+--- a/lib/efi_loader/efi_tcg2.c
++++ b/lib/efi_loader/efi_tcg2.c
+@@ -1103,8 +1103,7 @@ efi_status_t efi_tcg2_register(void)
+ 	ret = platform_get_tpm2_device(&dev);
+ 	if (ret != EFI_SUCCESS) {
+ 		log_warning("Unable to find TPMv2 device\n");
+-		ret = EFI_SUCCESS;
+-		goto out;
++		return EFI_SUCCESS;
+ 	}
+ 
+ 	ret = efi_init_event_log();
+@@ -1113,7 +1112,7 @@ efi_status_t efi_tcg2_register(void)
+ 
+ 	ret = efi_append_scrtm_version(dev);
+ 	if (ret != EFI_SUCCESS)
+-		goto out;
++		goto fail;
+ 
+ 	ret = efi_add_protocol(efi_root, &efi_guid_tcg2_protocol,
+ 			       (void *)&efi_tcg2_protocol);
+@@ -1121,9 +1120,8 @@ efi_status_t efi_tcg2_register(void)
+ 		log_err("Cannot install EFI_TCG2_PROTOCOL\n");
+ 		goto fail;
+ 	}
+-
+-out:
+ 	return ret;
++
+ fail:
+ 	tcg2_uninit();
+ 	return ret;
+-- 
+2.34.1
+

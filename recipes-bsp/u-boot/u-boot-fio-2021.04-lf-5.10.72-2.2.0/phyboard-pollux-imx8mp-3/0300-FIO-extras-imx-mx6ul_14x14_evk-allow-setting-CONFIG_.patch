@@ -1,0 +1,35 @@
+From 57b5bd8bd5ef559ee390ee18216696b7ad71fc01 Mon Sep 17 00:00:00 2001
+From: Michael Scott <mike@foundries.io>
+Date: Thu, 16 Dec 2021 15:53:05 -0800
+Subject: [PATCH 300/322] [FIO extras] imx: mx6ul_14x14_evk: allow setting
+ CONFIG_BOOTCOMMAND in defconfig
+
+Signed-off-by: Michael Scott <mike@foundries.io>
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+---
+ include/configs/mx6ul_14x14_evk.h | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/include/configs/mx6ul_14x14_evk.h b/include/configs/mx6ul_14x14_evk.h
+index d31f244468a..bef73a0addd 100644
+--- a/include/configs/mx6ul_14x14_evk.h
++++ b/include/configs/mx6ul_14x14_evk.h
+@@ -209,6 +209,7 @@
+ 				"fi; " \
+ 			"fi;\0" \
+ 
++#ifndef CONFIG_BOOTCOMMAND
+ #define CONFIG_BOOTCOMMAND \
+ 	   "run findfdt;" \
+ 	   "run findtee;" \
+@@ -224,6 +225,7 @@
+ 		   "fi; " \
+ 	   "else run netboot; fi"
+ #endif
++#endif
+ #else
+ #define CONFIG_EXTRA_ENV_SETTINGS
+ #endif /* CONFIG_SPL_BUILD */
+-- 
+2.34.1
+

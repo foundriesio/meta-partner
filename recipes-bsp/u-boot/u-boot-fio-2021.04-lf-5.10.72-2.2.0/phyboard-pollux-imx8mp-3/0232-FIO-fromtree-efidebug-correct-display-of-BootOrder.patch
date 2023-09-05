@@ -1,0 +1,31 @@
+From 0e03513f3bbe476c79d959b5d6a8892b754ffc3e Mon Sep 17 00:00:00 2001
+From: Heinrich Schuchardt <xypron.glpk@gmx.de>
+Date: Sat, 12 Jun 2021 00:01:44 +0200
+Subject: [PATCH 232/322] [FIO fromtree] efidebug: correct display of BootOrder
+
+Display the number of the boot option and not its index.
+
+Fixes: 2ecee31017bf ("efi_loader: use efi_create_indexed_name()")
+Signed-off-by: Heinrich Schuchardt <xypron.glpk@gmx.de>
+(cherry picked from commit 2b8723c5a11f03f152972b2879447b9a77c53aac)
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+---
+ cmd/efidebug.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/cmd/efidebug.c b/cmd/efidebug.c
+index c6352719dd8..8211a589acf 100644
+--- a/cmd/efidebug.c
++++ b/cmd/efidebug.c
+@@ -1340,7 +1340,7 @@ static int show_efi_boot_order(void)
+ 	num = size / sizeof(u16);
+ 	for (i = 0; i < num; i++) {
+ 		efi_create_indexed_name(var_name16, sizeof(var_name16),
+-					"Boot", i);
++					"Boot", bootorder[i]);
+ 
+ 		size = 0;
+ 		ret = EFI_CALL(efi_get_variable(var_name16,
+-- 
+2.34.1
+

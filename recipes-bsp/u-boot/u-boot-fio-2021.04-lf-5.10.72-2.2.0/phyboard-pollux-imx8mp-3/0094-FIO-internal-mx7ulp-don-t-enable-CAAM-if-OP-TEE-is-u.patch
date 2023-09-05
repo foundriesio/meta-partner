@@ -1,0 +1,29 @@
+From 040bd2e42b71d3435d854a53adc3d69a5a6028ae Mon Sep 17 00:00:00 2001
+From: Michael Scott <mike@foundries.io>
+Date: Tue, 23 Feb 2021 14:38:40 -0800
+Subject: [PATCH 094/322] [FIO internal] mx7ulp: don't enable CAAM if OP-TEE is
+ used
+
+Don't enable CAAM in U-Boot, if OP-TEE is used.
+
+Signed-off-by: Michael Scott <mike@foundries.io>
+---
+ arch/arm/mach-imx/mx7ulp/Kconfig | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/arm/mach-imx/mx7ulp/Kconfig b/arch/arm/mach-imx/mx7ulp/Kconfig
+index e895503451f..d239b1bc45e 100644
+--- a/arch/arm/mach-imx/mx7ulp/Kconfig
++++ b/arch/arm/mach-imx/mx7ulp/Kconfig
+@@ -9,7 +9,7 @@ config LDO_ENABLED_MODE
+ 	  Select this option to enable the PMC1 LDO.
+ 
+ config MX7ULP
+-	select HAS_CAAM
++	select HAS_CAAM if !OPTEE
+ 	bool
+ 
+ config IMX_M4_BIND
+-- 
+2.34.1
+

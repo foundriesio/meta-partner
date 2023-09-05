@@ -1,0 +1,71 @@
+From 91d9678b05dad92cfaf0d9738a70b156e961a421 Mon Sep 17 00:00:00 2001
+From: Heinrich Schuchardt <xypron.glpk@gmx.de>
+Date: Sat, 10 Jul 2021 11:14:13 +0200
+Subject: [PATCH 247/322] [FIO fromtree] efi_loader: set CapsuleLast after each
+ capsule
+
+If multiple capsules are applied, the FMP drivers for the individual
+capsules can expect the value of CapsuleLast to be accurate. Hence
+CapsuleLast must be updated after each capsule.
+
+Signed-off-by: Heinrich Schuchardt <xypron.glpk@gmx.de>
+(cherry picked from commit 70bad5462ca77dcd62efb6fdff03b26460df5f14)
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+---
+ lib/efi_loader/efi_capsule.c | 25 +++++++++++++------------
+ 1 file changed, 13 insertions(+), 12 deletions(-)
+
+diff --git a/lib/efi_loader/efi_capsule.c b/lib/efi_loader/efi_capsule.c
+index 7831a2723af..bef9d61f675 100644
+--- a/lib/efi_loader/efi_capsule.c
++++ b/lib/efi_loader/efi_capsule.c
+@@ -102,8 +102,20 @@ void set_capsule_result(int index, struct efi_capsule_header *capsule,
+ 				   EFI_VARIABLE_BOOTSERVICE_ACCESS |
+ 				   EFI_VARIABLE_RUNTIME_ACCESS,
+ 				   sizeof(result), &result, false);
+-	if (ret)
++	if (ret != EFI_SUCCESS) {
+ 		log_err("Setting %ls failed\n", variable_name16);
++		return;
++	}
++
++	/* Variable CapsuleLast must not include terminating 0x0000 */
++	ret = efi_set_variable_int(L"CapsuleLast", &efi_guid_capsule_report,
++				   EFI_VARIABLE_READ_ONLY |
++				   EFI_VARIABLE_NON_VOLATILE |
++				   EFI_VARIABLE_BOOTSERVICE_ACCESS |
++				   EFI_VARIABLE_RUNTIME_ACCESS,
++				   22, variable_name16, false);
++	if (ret != EFI_SUCCESS)
++		log_err("Setting %ls failed\n", L"CapsuleLast");
+ }
+ 
+ #ifdef CONFIG_EFI_CAPSULE_FIRMWARE_MANAGEMENT
+@@ -990,7 +1002,6 @@ efi_status_t efi_launch_capsules(void)
+ 	struct efi_capsule_header *capsule = NULL;
+ 	u16 **files;
+ 	unsigned int nfiles, index, i;
+-	u16 variable_name16[12];
+ 	efi_status_t ret;
+ 
+ 	if (!check_run_capsules())
+@@ -1042,16 +1053,6 @@ efi_status_t efi_launch_capsules(void)
+ 		free(files[i]);
+ 	free(files);
+ 
+-	/* CapsuleLast */
+-	efi_create_indexed_name(variable_name16, sizeof(variable_name16),
+-				"Capsule", index - 1);
+-	efi_set_variable_int(L"CapsuleLast", &efi_guid_capsule_report,
+-			     EFI_VARIABLE_READ_ONLY |
+-			     EFI_VARIABLE_NON_VOLATILE |
+-			     EFI_VARIABLE_BOOTSERVICE_ACCESS |
+-			     EFI_VARIABLE_RUNTIME_ACCESS,
+-			     22, variable_name16, false);
+-
+ 	return ret;
+ }
+ #endif /* CONFIG_EFI_CAPSULE_ON_DISK */
+-- 
+2.34.1
+

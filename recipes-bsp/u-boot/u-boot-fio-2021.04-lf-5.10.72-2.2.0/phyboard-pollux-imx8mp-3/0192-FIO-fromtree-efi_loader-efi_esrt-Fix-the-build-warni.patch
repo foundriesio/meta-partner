@@ -1,0 +1,39 @@
+From 87fa25c4bf8dda7850dd4990a0fb17a1164fdd0d Mon Sep 17 00:00:00 2001
+From: Sughosh Ganu <sughosh.ganu@linaro.org>
+Date: Thu, 8 Apr 2021 12:30:55 +0530
+Subject: [PATCH 192/322] [FIO fromtree] efi_loader: efi_esrt: Fix the build
+ warning for 32 bit systems
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Fix the build warning when building for 32 bit systems by using the
+length modifier for size_t.
+
+lib/efi_loader/efi_esrt.c: In function ‘efi_esrt_populate’:
+include/efi_loader.h:126:8: warning: format ‘%ld’ expects argument of type ‘long int’, but argument 8 has type ‘size_t’ {aka ‘unsigned int’} [-Wformat=]
+
+Signed-off-by: Sughosh Ganu <sughosh.ganu@linaro.org>
+Reviewed-by: Heinrich Schuchardt <xypron.glpk@gmx.de>
+(cherry picked from commit 5c3de47caa8163955b0df4761b7fb1a253aae1e8)
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+---
+ lib/efi_loader/efi_esrt.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/lib/efi_loader/efi_esrt.c b/lib/efi_loader/efi_esrt.c
+index 947bdb5e95f..8815e56e156 100644
+--- a/lib/efi_loader/efi_esrt.c
++++ b/lib/efi_loader/efi_esrt.c
+@@ -341,7 +341,7 @@ efi_status_t efi_esrt_populate(void)
+ 		return EFI_SUCCESS;
+ 	}
+ 
+-	EFI_PRINT("ESRT populate esrt from (%ld) available FMP handles\n",
++	EFI_PRINT("ESRT populate esrt from (%zd) available FMP handles\n",
+ 		  no_handles);
+ 
+ 	/*
+-- 
+2.34.1
+

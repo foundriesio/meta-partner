@@ -1,0 +1,47 @@
+From e2582725734657014df92586025576dba00dbdd6 Mon Sep 17 00:00:00 2001
+From: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+Date: Sat, 30 Oct 2021 16:24:48 +0300
+Subject: [PATCH 281/322] [FIO toup] mx6ullevk: Set CONFIG_SYS_BOOTMAPSZ to the
+ memory for relocation
+
+This patch sets CONFIG_SYS_BOOTMAPSZ to the amount of memory
+available to safely contain a kernel, device tree and initrd for
+relocation. The way with setting fdt_high as 0xffffffff to disable
+device tree relocation is removed.
+
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+---
+ include/configs/mx6ullevk.h | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/include/configs/mx6ullevk.h b/include/configs/mx6ullevk.h
+index f2da9d95bc3..48e03ef2429 100644
+--- a/include/configs/mx6ullevk.h
++++ b/include/configs/mx6ullevk.h
+@@ -86,7 +86,6 @@
+ 	TEE_ENV \
+ 	"splashimage=0x8c000000\0" \
+ 	"fdt_addr=0x83000000\0" \
+-	"fdt_high=0xffffffff\0"	  \
+ 	"tee_addr=0x84000000\0" \
+ 	"console=ttymxc0\0" \
+ 	"bootargs=console=ttymxc0,115200 ubi.mtd=nandrootfs "  \
+@@ -110,7 +109,6 @@
+ 	"script=boot.scr\0" \
+ 	"image=zImage\0" \
+ 	"console=ttymxc0\0" \
+-	"fdt_high=0xffffffff\0" \
+ 	"initrd_high=0xffffffff\0" \
+ 	"fdt_file=undefined\0" \
+ 	"fdt_addr=0x83000000\0" \
+@@ -234,6 +232,7 @@
+ #endif /* CONFIG_SPL_BUILD */
+ 
+ /* Miscellaneous configurable options */
++#define CONFIG_SYS_BOOTMAPSZ           (256 << 20)
+ 
+ #define CONFIG_SYS_LOAD_ADDR		CONFIG_LOADADDR
+ #define CONFIG_SYS_HZ			1000
+-- 
+2.34.1
+

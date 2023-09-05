@@ -1,0 +1,57 @@
+From 050e971b1907c2f6685dcf43d9c463641180781d Mon Sep 17 00:00:00 2001
+From: Heinrich Schuchardt <xypron.glpk@gmx.de>
+Date: Thu, 8 Apr 2021 22:02:29 +0200
+Subject: [PATCH 195/322] [FIO fromtree] tools/mkeficapsule: improve online
+ help
+
+Show short arguments along with long arguments in online help:
+
+    $ tools/mkeficapsule -h
+    Usage: mkeficapsule [options] <output file>
+    Options:
+        -f, --fit <fit image>       new FIT image file
+        -r, --raw <raw image>       new raw image file
+        -i, --index <index>         update image index
+        -I, --instance <instance>   update hardware instance
+        -K, --public-key <key file> public key esl file
+        -D, --dtb <dtb file>        dtb file
+        -O, --overlay               the dtb file is an overlay
+        -h, --help                  print a help message
+
+Signed-off-by: Heinrich Schuchardt <xypron.glpk@gmx.de>
+(cherry picked from commit 216406367819b52f965ee89b1a3829863c49aac0)
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+---
+ tools/mkeficapsule.c | 16 ++++++++--------
+ 1 file changed, 8 insertions(+), 8 deletions(-)
+
+diff --git a/tools/mkeficapsule.c b/tools/mkeficapsule.c
+index f2725124515..de0a6289888 100644
+--- a/tools/mkeficapsule.c
++++ b/tools/mkeficapsule.c
+@@ -64,14 +64,14 @@ static void print_usage(void)
+ 	printf("Usage: %s [options] <output file>\n"
+ 	       "Options:\n"
+ 
+-	       "\t--fit <fit image>       new FIT image file\n"
+-	       "\t--raw <raw image>       new raw image file\n"
+-	       "\t--index <index>         update image index\n"
+-	       "\t--instance <instance>   update hardware instance\n"
+-	       "\t--public-key <key file> public key esl file\n"
+-	       "\t--dtb <dtb file>        dtb file\n"
+-	       "\t--overlay               the dtb file is an overlay\n"
+-	       "\t--help                  print a help message\n",
++	       "\t-f, --fit <fit image>       new FIT image file\n"
++	       "\t-r, --raw <raw image>       new raw image file\n"
++	       "\t-i, --index <index>         update image index\n"
++	       "\t-I, --instance <instance>   update hardware instance\n"
++	       "\t-K, --public-key <key file> public key esl file\n"
++	       "\t-D, --dtb <dtb file>        dtb file\n"
++	       "\t-O, --overlay               the dtb file is an overlay\n"
++	       "\t-h, --help                  print a help message\n",
+ 	       tool_name);
+ }
+ 
+-- 
+2.34.1
+

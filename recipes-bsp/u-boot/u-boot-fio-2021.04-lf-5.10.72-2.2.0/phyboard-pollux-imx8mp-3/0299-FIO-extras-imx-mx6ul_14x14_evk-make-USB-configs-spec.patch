@@ -1,0 +1,31 @@
+From e28a67fb149e37a3309d633a0030eb470e69a3ac Mon Sep 17 00:00:00 2001
+From: Michael Scott <mike@foundries.io>
+Date: Thu, 16 Dec 2021 15:51:57 -0800
+Subject: [PATCH 299/322] [FIO extras] imx: mx6ul_14x14_evk: make USB configs
+ specific to CONFIG_USB
+
+Needed for having USB enabled even without CONFIG_USB_CMD (e.g.
+fastboot).
+
+Signed-off-by: Michael Scott <mike@foundries.io>
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+---
+ include/configs/mx6ul_14x14_evk.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/include/configs/mx6ul_14x14_evk.h b/include/configs/mx6ul_14x14_evk.h
+index 4bfa294c94f..d31f244468a 100644
+--- a/include/configs/mx6ul_14x14_evk.h
++++ b/include/configs/mx6ul_14x14_evk.h
+@@ -267,7 +267,7 @@
+ #endif
+ 
+ /* USB Configs */
+-#ifdef CONFIG_CMD_USB
++#ifdef CONFIG_USB
+ #define CONFIG_EHCI_HCD_INIT_AFTER_RESET
+ #define CONFIG_MXC_USB_PORTSC  (PORT_PTS_UTMI | PORT_PTS_PTW)
+ #define CONFIG_MXC_USB_FLAGS   0
+-- 
+2.34.1
+

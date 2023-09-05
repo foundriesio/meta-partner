@@ -1,0 +1,39 @@
+From ba27ca4ce512d1ab2b75fb6c43a1d6f5cbdaeefd Mon Sep 17 00:00:00 2001
+From: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+Date: Sat, 16 Oct 2021 22:57:15 +0300
+Subject: [PATCH 282/322] [FIO toup-squash] fit_image: use sha256 algo for
+ images hash signing
+
+In case the STRICT mode of FIT signature checking enabled, crc32,
+sha1, and md5 algorithms are disabled.
+Use sha256 for signing images. This fixes u-boot.img building
+error [1].
+
+[1]
+MKIMAGE u-boot.img
+Unsupported hash algorithm (crc32) for 'hash-1' hash node in 'firmware-1' image node
+./tools/mkimage Can't add hashes to FIT blob: -93
+make: *** [Makefile:1381: u-boot.img] Error 255
+
+Fixes: 4b14e827d5 ("[FIO extras] fit-image: dont use CRC32, MD5 and SHA1 if SIGNATURE_STRICT")
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+---
+ tools/fit_image.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/tools/fit_image.c b/tools/fit_image.c
+index d440d143c67..a4514124dfa 100644
+--- a/tools/fit_image.c
++++ b/tools/fit_image.c
+@@ -200,7 +200,7 @@ static void get_basename(char *str, int size, const char *fname)
+ static void add_crc_node(void *fdt)
+ {
+ 	fdt_begin_node(fdt, "hash-1");
+-	fdt_property_string(fdt, FIT_ALGO_PROP, "crc32");
++	fdt_property_string(fdt, FIT_ALGO_PROP, "sha256");
+ 	fdt_end_node(fdt);
+ }
+ 
+-- 
+2.34.1
+

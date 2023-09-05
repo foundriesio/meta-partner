@@ -1,0 +1,38 @@
+From ccf30f819f89306dd78aa83408f71a0c659f1996 Mon Sep 17 00:00:00 2001
+From: Igor Opaniuk <igor.opaniuk@foundries.io>
+Date: Wed, 16 Feb 2022 15:56:45 +0200
+Subject: [PATCH 315/322] [FIO internal] imx8mq_evk: check if
+ SECONDARY_BOOT_RUNTIME_DETECTION is defined
+
+As SECONDARY_BOOT_RUNTIME_DETECTION is a common symbol for both
+SPL/U-Boot, don't use CONFIG_IS_ENABLED() macro for checking if it's
+set, as
+
+CONFIG_IS_ENABLED(FOO) expands to
+1 if CONFIG_SPL_BUILD is undefined and CONFIG_FOO is set to 'y',
+1 if CONFIG_SPL_BUILD is defined and CONFIG_SPL_FOO is set to 'y',
+1 if CONFIG_TPL_BUILD is defined and CONFIG_TPL_FOO is set to 'y',
+
+but we don't have SPL_SECONDARY_BOOT_RUNTIME_DETECTION Kconfig symbol.
+
+Signed-off-by: Igor Opaniuk <igor.opaniuk@foundries.io>
+---
+ include/configs/imx8mq_evk.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/include/configs/imx8mq_evk.h b/include/configs/imx8mq_evk.h
+index 538d9fd0e6c..f4f18fb6231 100644
+--- a/include/configs/imx8mq_evk.h
++++ b/include/configs/imx8mq_evk.h
+@@ -21,7 +21,7 @@
+  * If CONFIG_SECONDARY_BOOT_RUNTIME_DETECTION is defined, then only use the base offset of 0x300 here.
+  * CONFIG_SECONDARY_BOOT_SECTOR_OFFSET will be added dynamically if needed.
+  */
+-#if CONFIG_IS_ENABLED(SECONDARY_BOOT_RUNTIME_DETECTION)
++#if defined(CONFIG_SECONDARY_BOOT_RUNTIME_DETECTION)
+ #define CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_SECTOR	(0x300)
+ #else
+ #define CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_SECTOR	(0x300 + CONFIG_SECONDARY_BOOT_SECTOR_OFFSET)
+-- 
+2.34.1
+

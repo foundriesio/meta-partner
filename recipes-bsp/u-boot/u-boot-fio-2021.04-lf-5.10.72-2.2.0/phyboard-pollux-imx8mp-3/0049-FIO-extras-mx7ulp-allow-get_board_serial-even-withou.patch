@@ -1,0 +1,33 @@
+From aef958fb9e485bd1189f43781ebf529c4c42f9f6 Mon Sep 17 00:00:00 2001
+From: Ricardo Salveti <ricardo@foundries.io>
+Date: Wed, 2 Sep 2020 12:24:06 -0300
+Subject: [PATCH 049/322] [FIO extras] mx7ulp: allow get_board_serial even
+ without fastboot
+
+get_board_serial should depend on SERIAL_TAG only.
+
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+---
+ arch/arm/mach-imx/mx7ulp/soc.c | 2 --
+ 1 file changed, 2 deletions(-)
+
+diff --git a/arch/arm/mach-imx/mx7ulp/soc.c b/arch/arm/mach-imx/mx7ulp/soc.c
+index c5164c5989c..78c9ace48a8 100644
+--- a/arch/arm/mach-imx/mx7ulp/soc.c
++++ b/arch/arm/mach-imx/mx7ulp/soc.c
+@@ -491,7 +491,6 @@ bool is_usb_boot(void)
+ 	return get_boot_device() == USB_BOOT;
+ }
+ 
+-#ifdef CONFIG_FSL_FASTBOOT
+ #ifdef CONFIG_SERIAL_TAG
+ void get_board_serial(struct tag_serialnr *serialnr)
+ {
+@@ -504,4 +503,3 @@ void get_board_serial(struct tag_serialnr *serialnr)
+ 	serialnr->high = (fuse->cfg2 & 0xFFFF) + ((fuse->cfg3 & 0xFFFF) << 16);
+ }
+ #endif /*CONFIG_SERIAL_TAG*/
+-#endif /*CONFIG_FSL_FASTBOOT*/
+-- 
+2.34.1
+

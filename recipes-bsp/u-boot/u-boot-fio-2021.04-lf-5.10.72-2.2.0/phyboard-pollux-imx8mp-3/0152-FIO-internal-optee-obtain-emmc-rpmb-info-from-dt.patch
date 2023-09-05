@@ -1,0 +1,227 @@
+From e84a36a99c61641fc75f623f6eb8445eeaa9cfac Mon Sep 17 00:00:00 2001
+From: Igor Opaniuk <igor.opaniuk@foundries.io>
+Date: Sun, 24 Jan 2021 11:39:45 +0200
+Subject: [PATCH 152/322] [FIO internal] optee: obtain emmc rpmb info from dt
+
+Add support for rpmb-dev property in optee node.
+Prioritize that provided eMMC info from DT for RPMB operations over
+the one provided by OP-TEE OS core in RPC calls.
+
+Signed-off-by: Igor Opaniuk <igor.opaniuk@foundries.io>
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+---
+ drivers/tee/optee/core.c          | 33 +++++++++++++
+ drivers/tee/optee/optee_private.h |  2 +-
+ drivers/tee/optee/rpmb.c          | 81 ++++++++++++++++++-------------
+ 3 files changed, 82 insertions(+), 34 deletions(-)
+
+diff --git a/drivers/tee/optee/core.c b/drivers/tee/optee/core.c
+index b898c32edc0..828ab9b00a4 100644
+--- a/drivers/tee/optee/core.c
++++ b/drivers/tee/optee/core.c
+@@ -12,6 +12,7 @@
+ #include <linux/arm-smccc.h>
+ #include <linux/err.h>
+ #include <linux/io.h>
++#include <mmc.h>
+ 
+ #include "optee_smc.h"
+ #include "optee_msg.h"
+@@ -607,14 +608,46 @@ static optee_invoke_fn *get_invoke_func(struct udevice *dev)
+ 	return ERR_PTR(-EINVAL);
+ }
+ 
++static struct mmc *get_rpmb_dev(struct udevice *dev)
++{
++	struct udevice *mmc_dev;
++	const fdt32_t *phandle_p;
++	u32 phandle;
++	int ret = 0;
++
++	debug("optee: looking for rpmb device in DT.\n");
++
++	phandle_p  = ofnode_get_property(dev_ofnode(dev),
++					 "rpmb-dev", NULL);
++	if (!phandle_p) {
++		debug("optee: missing \"rpmb-dev\" property\n");
++		return NULL;
++	}
++
++	phandle = fdt32_to_cpu(*phandle_p);
++
++	ret = uclass_get_device_by_phandle_id(UCLASS_MMC, phandle, &mmc_dev);
++	if (ret) {
++		printf("optee: invalid phandle value in \"rpmb-dev\".\n");
++		return NULL;
++	}
++
++	debug("optee: using phandle %d from \"rpmd-dev\" property.\n",
++	      phandle);
++	return mmc_get_mmc_dev(mmc_dev);
++}
++
+ static int optee_of_to_plat(struct udevice *dev)
+ {
+ 	struct optee_pdata *pdata = dev_get_plat(dev);
++	struct optee_private *priv = dev_get_priv(dev);
+ 
+ 	pdata->invoke_fn = get_invoke_func(dev);
+ 	if (IS_ERR(pdata->invoke_fn))
+ 		return PTR_ERR(pdata->invoke_fn);
+ 
++	priv->rpmb_mmc = get_rpmb_dev(dev);
++
+ 	return 0;
+ }
+ 
+diff --git a/drivers/tee/optee/optee_private.h b/drivers/tee/optee/optee_private.h
+index 1f07a27ee4b..8e5a2806225 100644
+--- a/drivers/tee/optee/optee_private.h
++++ b/drivers/tee/optee/optee_private.h
+@@ -19,8 +19,8 @@
+  */
+ struct optee_private {
+ 	struct mmc *rpmb_mmc;
+-	int rpmb_dev_id;
+ 	int rpmb_original_part;
++	bool rpmb_inited;
+ };
+ 
+ struct optee_msg_arg;
+diff --git a/drivers/tee/optee/rpmb.c b/drivers/tee/optee/rpmb.c
+index 0804fc963cf..15427eb3a40 100644
+--- a/drivers/tee/optee/rpmb.c
++++ b/drivers/tee/optee/rpmb.c
+@@ -45,73 +45,88 @@ static void release_mmc(struct optee_private *priv)
+ {
+ 	int rc;
+ 
+-	if (!priv->rpmb_mmc)
++	if (!priv->rpmb_mmc || !priv->rpmb_inited)
+ 		return;
+ 
+-	rc = blk_select_hwpart_devnum(IF_TYPE_MMC, priv->rpmb_dev_id,
+-				      priv->rpmb_original_part);
++	rc = mmc_switch_part(priv->rpmb_mmc, priv->rpmb_original_part);
+ 	if (rc)
+ 		debug("%s: blk_select_hwpart_devnum() failed: %d\n",
+ 		      __func__, rc);
+ 
+-	priv->rpmb_mmc = NULL;
++	priv->rpmb_inited = false;
++}
++
++static int check_mmc(struct mmc *mmc)
++{
++	if (!mmc) {
++		debug("Cannot find RPMB device\n");
++		return -ENODEV;
++	}
++	if (!(mmc->version & MMC_VERSION_MMC)) {
++		debug("Device id is not an eMMC device\n");
++		return -ENODEV;
++	}
++	if (mmc->version < MMC_VERSION_4_41) {
++		debug("RPMB is not supported before version 4.41\n");
++		return -ENODEV;
++	}
++
++	return 0;
+ }
+ 
+ static struct mmc *get_mmc(struct optee_private *priv, int dev_id)
+ {
+-	struct mmc *mmc;
+ 	int rc;
+ 
+-	if (priv->rpmb_mmc && priv->rpmb_dev_id == dev_id)
++	if (priv->rpmb_mmc && priv->rpmb_inited)
+ 		return priv->rpmb_mmc;
+ 
+ 	release_mmc(priv);
+ 
+-	mmc = find_mmc_device(dev_id);
+-	if (!mmc) {
+-		debug("Cannot find RPMB device\n");
+-		return NULL;
+-	}
+-	if (!(mmc->version & MMC_VERSION_MMC)) {
+-		debug("Device id %d is not an eMMC device\n", dev_id);
+-		return NULL;
+-	}
+-	if (mmc->version < MMC_VERSION_4_41) {
+-		debug("Device id %d: RPMB not supported before version 4.41\n",
+-		      dev_id);
++	/*
++	 * Check if priv->rpmb_mmc was already set from DT node,
++	 * otherwise use dev_id provided by OP-TEE OS
++	 * and find mmc device by its dev_id
++	 */
++	if (!priv->rpmb_mmc)
++		priv->rpmb_mmc = find_mmc_device(dev_id);
++
++	rc = check_mmc(priv->rpmb_mmc);
++	if (rc)
+ 		return NULL;
+-	}
+ 
+-	priv->rpmb_original_part = mmc_get_blk_desc(mmc)->hwpart;
++	priv->rpmb_original_part = mmc_get_blk_desc(priv->rpmb_mmc)->hwpart;
+ 
+-	rc = blk_select_hwpart_devnum(IF_TYPE_MMC, dev_id, MMC_PART_RPMB);
++	rc = mmc_switch_part(priv->rpmb_mmc, MMC_PART_RPMB);
+ 	if (rc) {
+ 		debug("Device id %d: cannot select RPMB partition: %d\n",
+ 		      dev_id, rc);
+ 		return NULL;
+ 	}
+ 
+-	priv->rpmb_mmc = mmc;
+-	priv->rpmb_dev_id = dev_id;
+-	return mmc;
++	priv->rpmb_inited = true;
++	return priv->rpmb_mmc;
+ }
+ 
+-static u32 rpmb_get_dev_info(u16 dev_id, struct rpmb_dev_info *info)
++static u32 rpmb_get_dev_info(struct optee_private *priv, u16 dev_id,
++			     struct rpmb_dev_info *info)
+ {
+-	struct mmc *mmc = find_mmc_device(dev_id);
++	if (!priv->rpmb_mmc)
++		priv->rpmb_mmc = find_mmc_device(dev_id);
++
+ 	int i;
+ 
+-	if (!mmc)
++	if (!priv->rpmb_mmc)
+ 		return TEE_ERROR_ITEM_NOT_FOUND;
+ 
+-	if (!mmc->ext_csd)
++	if (!(priv->rpmb_mmc->ext_csd))
+ 		return TEE_ERROR_GENERIC;
+ 
+-	for (i = 0; i < ARRAY_SIZE(mmc->cid); i++)
+-		((u32 *) info->cid)[i] = cpu_to_be32(mmc->cid[i]);
++	for (i = 0; i < ARRAY_SIZE(priv->rpmb_mmc->cid); i++)
++		((u32 *) info->cid)[i] = cpu_to_be32(priv->rpmb_mmc->cid[i]);
+ 
+-	info->rel_wr_sec_c = mmc->ext_csd[222];
+-	info->rpmb_size_mult = mmc->ext_csd[168];
++	info->rel_wr_sec_c = priv->rpmb_mmc->ext_csd[222];
++	info->rpmb_size_mult = priv->rpmb_mmc->ext_csd[168];
+ 	info->ret_code = RPMB_CMD_GET_DEV_INFO_RET_OK;
+ 
+ 	return TEE_SUCCESS;
+@@ -143,7 +158,7 @@ static u32 rpmb_process_request(struct optee_private *priv, void *req,
+ 			debug("Invalid req/rsp size\n");
+ 			return TEE_ERROR_BAD_PARAMETERS;
+ 		}
+-		return rpmb_get_dev_info(sreq->dev_id, rsp);
++		return rpmb_get_dev_info(priv, sreq->dev_id, rsp);
+ 
+ 	default:
+ 		debug("Unsupported RPMB command: %d\n", sreq->cmd);
+-- 
+2.34.1
+

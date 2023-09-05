@@ -1,0 +1,44 @@
+From 5ed3411e69ea151ee9ec9ddfd36bc3b604bcdaf1 Mon Sep 17 00:00:00 2001
+From: Igor Opaniuk <igor.opaniuk@foundries.io>
+Date: Tue, 26 Oct 2021 12:19:22 +0300
+Subject: [PATCH 287/322] [FIO internal] imx: detect boot0/boot1 partition to
+ boot in runtime
+
+As secondary boot image set should be flashed to boot1
+partition to the same offset the primary one, we should also detect in
+runtime what boot partition to use for reading FIT image.
+
+Signed-off-by: Igor Opaniuk <igor.opaniuk@foundries.io>
+---
+ arch/arm/mach-imx/spl.c | 10 +++++++++-
+ 1 file changed, 9 insertions(+), 1 deletion(-)
+
+diff --git a/arch/arm/mach-imx/spl.c b/arch/arm/mach-imx/spl.c
+index 7686eeeb042..d552cabe076 100644
+--- a/arch/arm/mach-imx/spl.c
++++ b/arch/arm/mach-imx/spl.c
+@@ -461,7 +461,8 @@ int mmc_image_load_late(struct mmc *mmc)
+ #endif
+ 
+ #if defined(CONFIG_SECONDARY_BOOT_RUNTIME_DETECTION) && \
+-    defined(CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_USE_SECTOR)
++    defined(CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_USE_SECTOR) && \
++    !defined(CONFIG_SPL_LOAD_IMX_CONTAINER)
+ unsigned long spl_mmc_get_uboot_raw_sector(struct mmc *mmc,
+ 					   unsigned long raw_sect)
+ {
+@@ -479,4 +480,11 @@ unsigned long spl_mmc_get_uboot_raw_sector(struct mmc *mmc,
+ 
+ 	return offset;
+ }
++
++#if defined(CONFIG_IMX8QM) || defined(CONFIG_IMX8QXP)
++int spl_mmc_emmc_boot_partition(struct mmc *mmc)
++{
++	return boot_mode_getprisec() ? 2 : 1;
++}
++#endif
+ #endif
+-- 
+2.34.1
+

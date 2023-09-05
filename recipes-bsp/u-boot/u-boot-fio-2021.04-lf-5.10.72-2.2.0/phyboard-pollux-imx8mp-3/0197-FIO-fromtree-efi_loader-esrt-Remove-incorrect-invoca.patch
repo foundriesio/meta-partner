@@ -1,0 +1,124 @@
+From ba08af6c2b1f2455081a91268fe8aa0e017f88b2 Mon Sep 17 00:00:00 2001
+From: Sughosh Ganu <sughosh.ganu@linaro.org>
+Date: Wed, 14 Apr 2021 12:38:25 +0530
+Subject: [PATCH 197/322] [FIO fromtree] efi_loader: esrt: Remove incorrect
+ invocations of EFI_CALL macro
+
+Remove function invocations using the EFI_CALL macro for those
+functions that do not have an EFI_ENTRY call in their definition. Such
+functions can use u-boot api's which rely on u-boot global data(gd)
+pointer. The Arm and RiscV architectures maintain a separate gd
+pointer, one for u-boot, and a separate gd for the efi application.
+
+Calling a function through the EFI_CALL macro changes the gd pointer
+to that used for the efi application, with u-boot gd being
+unavailable. Any function then trying to dereference u-boot's gd will
+result in an abort.
+
+Fix this issue by removing the EFI_CALL macro for all of such
+functions which do not begin by an EFI_ENTRY function call.
+
+Signed-off-by: Sughosh Ganu <sughosh.ganu@linaro.org>
+Reviewed-by: Heinrich Schuchardt <xypron.glpk@gmx.de>
+(cherry picked from commit 7d823747c695e8638b637abd0c19434f661e50d9)
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+---
+ lib/efi_loader/efi_esrt.c | 28 ++++++++++++++--------------
+ 1 file changed, 14 insertions(+), 14 deletions(-)
+
+diff --git a/lib/efi_loader/efi_esrt.c b/lib/efi_loader/efi_esrt.c
+index 40f53260e4d..3ca55ce23a2 100644
+--- a/lib/efi_loader/efi_esrt.c
++++ b/lib/efi_loader/efi_esrt.c
+@@ -139,7 +139,7 @@ efi_status_t efi_esrt_allocate_install(u32 num_entries)
+ 
+ 	/* If there was a previous ESRT, deallocate its memory now. */
+ 	if (esrt)
+-		ret = EFI_CALL(efi_free_pool(esrt));
++		ret = efi_free_pool(esrt);
+ 
+ 	esrt = new_esrt;
+ 
+@@ -253,8 +253,8 @@ efi_status_t efi_esrt_add_from_fmp(struct efi_firmware_management_protocol *fmp)
+ 		return EFI_INVALID_PARAMETER;
+ 	}
+ 
+-	ret = EFI_CALL(efi_allocate_pool(EFI_BOOT_SERVICES_DATA, info_size,
+-					 (void **)&img_info));
++	ret = efi_allocate_pool(EFI_BOOT_SERVICES_DATA, info_size,
++				(void **)&img_info);
+ 	if (ret != EFI_SUCCESS) {
+ 		EFI_PRINT("ESRT failed to allocate memory for image info.\n");
+ 		return ret;
+@@ -298,7 +298,7 @@ efi_status_t efi_esrt_add_from_fmp(struct efi_firmware_management_protocol *fmp)
+ 	}
+ 
+ out:
+-	EFI_CALL(efi_free_pool(img_info));
++	efi_free_pool(img_info);
+ 	return EFI_SUCCESS;
+ }
+ 
+@@ -384,8 +384,8 @@ efi_status_t efi_esrt_populate(void)
+ 			goto out;
+ 		}
+ 
+-		ret = EFI_CALL(efi_allocate_pool(EFI_BOOT_SERVICES_DATA, info_size,
+-						 (void **)&img_info));
++		ret = efi_allocate_pool(EFI_BOOT_SERVICES_DATA, info_size,
++					(void **)&img_info);
+ 		if (ret != EFI_SUCCESS) {
+ 			EFI_PRINT("ESRT failed to allocate memory for image info\n");
+ 			goto out;
+@@ -405,13 +405,13 @@ efi_status_t efi_esrt_populate(void)
+ 
+ 		if (ret != EFI_SUCCESS) {
+ 			EFI_PRINT("ESRT failed to obtain image info from FMP\n");
+-			EFI_CALL(efi_free_pool(img_info));
++			efi_free_pool(img_info);
+ 			goto out;
+ 		}
+ 
+ 		num_entries += desc_count;
+ 
+-		EFI_CALL(efi_free_pool(img_info));
++		efi_free_pool(img_info);
+ 	}
+ 
+ 	EFI_PRINT("ESRT create table with %u entries\n", num_entries);
+@@ -430,9 +430,9 @@ efi_status_t efi_esrt_populate(void)
+ 	 */
+ 	it_handle = base_handle;
+ 	for (u32 idx = 0; idx < no_handles; idx++, it_handle++) {
+-		ret = EFI_CALL(efi_search_protocol(*it_handle,
+-						   &efi_guid_firmware_management_protocol,
+-						   &handler));
++		ret = efi_search_protocol(*it_handle,
++					  &efi_guid_firmware_management_protocol,
++					  &handler);
+ 
+ 		if (ret != EFI_SUCCESS) {
+ 			EFI_PRINT("ESRT unable to find FMP handle (%u)\n",
+@@ -448,7 +448,7 @@ efi_status_t efi_esrt_populate(void)
+ 
+ out:
+ 
+-	EFI_CALL(efi_free_pool(base_handle));
++	efi_free_pool(base_handle);
+ 
+ 	return ret;
+ }
+@@ -490,8 +490,8 @@ efi_status_t efi_esrt_register(void)
+ 		return ret;
+ 	}
+ 
+-	ret = EFI_CALL(efi_create_event(EVT_NOTIFY_SIGNAL, TPL_CALLBACK,
+-					efi_esrt_new_fmp_notify, NULL, NULL, &ev));
++	ret = efi_create_event(EVT_NOTIFY_SIGNAL, TPL_CALLBACK,
++			       efi_esrt_new_fmp_notify, NULL, NULL, &ev);
+ 	if (ret != EFI_SUCCESS) {
+ 		EFI_PRINT("ESRT failed to create event\n");
+ 		return ret;
+-- 
+2.34.1
+

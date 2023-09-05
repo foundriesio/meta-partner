@@ -1,0 +1,51 @@
+From 2732e9a4935fdd53ab281e20ff9302899f54e330 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Marek=20Beh=C3=BAn?= <marek.behun@nic.cz>
+Date: Thu, 20 May 2021 13:23:56 +0200
+Subject: [PATCH 212/322] [FIO fromtree] efi_loader: fix warning when linking
+ with LTO
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+When linking with LTO, the compiler complains about type mismatch of
+variables `__efi_runtime_start`, `__efi_runtime_stop`,
+`__efi_runtime_rel_start` and `__efi_runtime_rel_stop`:
+
+ include/efi_loader.h:218:21: warning: type of ‘__efi_runtime_start’
+                                       does not match original
+                                       declaration [-Wlto-type-mismatch]
+    218 | extern unsigned int __efi_runtime_start, __efi_runtime_stop;
+        |                     ^
+  arch/sandbox/lib/sections.c:7:6: note: ‘__efi_runtime_start’ was
+                                         previously declared here
+      7 | char __efi_runtime_start[0] __attribute__((section(".__efi_run
+        |      ^
+
+Change the type to char[] in include/efi_loader.h.
+
+Signed-off-by: Marek Behún <marek.behun@nic.cz>
+Reviewed-by: Bin Meng <bmeng.cn@gmail.com>
+(cherry picked from commit 2bdc6f579b698ea32cf112310e903238d92a3c5a)
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+---
+ include/efi_loader.h | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/include/efi_loader.h b/include/efi_loader.h
+index 19721ef6d4b..921f7bd816e 100644
+--- a/include/efi_loader.h
++++ b/include/efi_loader.h
+@@ -219,8 +219,8 @@ extern const efi_guid_t efi_esrt_guid;
+ /* GUID of memory only reset control */
+ extern const efi_guid_t efi_memory_only_reset_control_guid;
+ 
+-extern unsigned int __efi_runtime_start, __efi_runtime_stop;
+-extern unsigned int __efi_runtime_rel_start, __efi_runtime_rel_stop;
++extern char __efi_runtime_start[], __efi_runtime_stop[];
++extern char __efi_runtime_rel_start[], __efi_runtime_rel_stop[];
+ 
+ /**
+  * struct efi_open_protocol_info_item - open protocol info item
+-- 
+2.34.1
+

@@ -1,0 +1,35 @@
+From 15dfd2e5bf33c55acde1fc2765bfedeeba3a0cdf Mon Sep 17 00:00:00 2001
+From: Igor Opaniuk <igor.opaniuk@foundries.io>
+Date: Mon, 14 Jun 2021 18:29:30 +0300
+Subject: [PATCH 129/322] [FIO internal] spl: enable hw_watchdog for non-dm
+ case
+
+Call hw_watchdog_init() for the case when SPL watchdog support is
+enabled, however without DM support (CONFIG_WDT).
+
+Signed-off-by: Igor Opaniuk <igor.opaniuk@foundries.io>
+---
+ common/spl/spl.c | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
+
+diff --git a/common/spl/spl.c b/common/spl/spl.c
+index 3b9d5c2dcd6..03fa714d07b 100644
+--- a/common/spl/spl.c
++++ b/common/spl/spl.c
+@@ -660,8 +660,12 @@ void board_init_r(gd_t *dummy1, ulong dummy2)
+ 	spl_board_init();
+ #endif
+ 
+-#if defined(CONFIG_SPL_WATCHDOG_SUPPORT) && CONFIG_IS_ENABLED(WDT)
++#if defined(CONFIG_SPL_WATCHDOG_SUPPORT)
++#if CONFIG_IS_ENABLED(WDT)
+ 	initr_watchdog();
++#else /* SPL_HW_WATCHDOG */
++	hw_watchdog_init();
++#endif
+ #endif
+ 
+ 	if (IS_ENABLED(CONFIG_SPL_OS_BOOT) || CONFIG_IS_ENABLED(HANDOFF) ||
+-- 
+2.34.1
+

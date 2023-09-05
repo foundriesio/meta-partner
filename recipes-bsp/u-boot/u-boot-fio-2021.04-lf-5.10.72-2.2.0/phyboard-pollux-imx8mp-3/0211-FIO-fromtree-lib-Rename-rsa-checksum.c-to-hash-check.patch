@@ -1,0 +1,165 @@
+From 3e527fb5031027a3aa9be3bd9774322a4338e966 Mon Sep 17 00:00:00 2001
+From: Alexandru Gagniuc <mr.nuke.me@gmail.com>
+Date: Fri, 19 Feb 2021 12:45:10 -0600
+Subject: [PATCH 211/322] [FIO fromtree] lib: Rename rsa-checksum.c to
+ hash-checksum.c
+
+rsa-checksum.c sontains the hash_calculate() implementations. Despite
+the "rsa-" file prefix, this function is useful for other algorithms.
+
+To prevent confusion, move this file to lib/, and rename it to
+hash-checksum.c, to give it a more "generic" feel.
+
+Signed-off-by: Alexandru Gagniuc <mr.nuke.me@gmail.com>
+Reviewed-by: Simon Glass <sjg@chromium.org>
+(cherry picked from commit 0bcb28dfb946b32ed7550fc4c24c5dcea6718554)
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+---
+ common/image-fit-sig.c                             | 2 +-
+ common/image-sig.c                                 | 2 +-
+ include/image.h                                    | 2 +-
+ include/u-boot/{rsa-checksum.h => hash-checksum.h} | 0
+ lib/Makefile                                       | 1 +
+ lib/crypto/pkcs7_verify.c                          | 2 +-
+ lib/crypto/x509_public_key.c                       | 2 +-
+ lib/{rsa/rsa-checksum.c => hash-checksum.c}        | 3 ++-
+ lib/rsa/Makefile                                   | 2 +-
+ tools/Makefile                                     | 3 ++-
+ 10 files changed, 11 insertions(+), 8 deletions(-)
+ rename include/u-boot/{rsa-checksum.h => hash-checksum.h} (100%)
+ rename lib/{rsa/rsa-checksum.c => hash-checksum.c} (96%)
+
+diff --git a/common/image-fit-sig.c b/common/image-fit-sig.c
+index c9044b7c0a2..041590755e3 100644
+--- a/common/image-fit-sig.c
++++ b/common/image-fit-sig.c
+@@ -17,7 +17,7 @@ DECLARE_GLOBAL_DATA_PTR;
+ #include <image.h>
+ #include <linux/kconfig.h>
+ #include <u-boot/rsa.h>
+-#include <u-boot/rsa-checksum.h>
++#include <u-boot/hash-checksum.h>
+ 
+ #define IMAGE_MAX_HASHED_NODES		100
+ 
+diff --git a/common/image-sig.c b/common/image-sig.c
+index d8bd1995803..1be9da582a4 100644
+--- a/common/image-sig.c
++++ b/common/image-sig.c
+@@ -17,7 +17,7 @@ DECLARE_GLOBAL_DATA_PTR;
+ #endif /* !USE_HOSTCC*/
+ #include <image.h>
+ #include <u-boot/rsa.h>
+-#include <u-boot/rsa-checksum.h>
++#include <u-boot/hash-checksum.h>
+ #include <linux/kconfig.h>
+ 
+ #define IMAGE_MAX_HASHED_NODES		100
+diff --git a/include/image.h b/include/image.h
+index 1df06cade29..31a6de0faf2 100644
+--- a/include/image.h
++++ b/include/image.h
+@@ -1278,7 +1278,7 @@ struct image_region {
+ };
+ 
+ #if IMAGE_ENABLE_VERIFY
+-# include <u-boot/rsa-checksum.h>
++# include <u-boot/hash-checksum.h>
+ #endif
+ struct checksum_algo {
+ 	const char *name;
+diff --git a/include/u-boot/rsa-checksum.h b/include/u-boot/hash-checksum.h
+similarity index 100%
+rename from include/u-boot/rsa-checksum.h
+rename to include/u-boot/hash-checksum.h
+diff --git a/lib/Makefile b/lib/Makefile
+index 6ed6d209be2..05bda256fb8 100644
+--- a/lib/Makefile
++++ b/lib/Makefile
+@@ -61,6 +61,7 @@ endif
+ obj-$(CONFIG_$(SPL_)ACPIGEN) += acpi/
+ obj-$(CONFIG_$(SPL_)MD5) += md5.o
+ obj-$(CONFIG_$(SPL_)RSA) += rsa/
++obj-$(CONFIG_FIT_SIGNATURE) += hash-checksum.o
+ obj-$(CONFIG_SHA1) += sha1.o
+ obj-$(CONFIG_SHA256) += sha256.o
+ obj-$(CONFIG_SHA512_ALGO) += sha512.o
+diff --git a/lib/crypto/pkcs7_verify.c b/lib/crypto/pkcs7_verify.c
+index 284e61c29ae..54c677bcad3 100644
+--- a/lib/crypto/pkcs7_verify.c
++++ b/lib/crypto/pkcs7_verify.c
+@@ -15,7 +15,7 @@
+ #include <linux/bitops.h>
+ #include <linux/compat.h>
+ #include <linux/asn1.h>
+-#include <u-boot/rsa-checksum.h>
++#include <u-boot/hash-checksum.h>
+ #include <crypto/public_key.h>
+ #include <crypto/pkcs7_parser.h>
+ #else
+diff --git a/lib/crypto/x509_public_key.c b/lib/crypto/x509_public_key.c
+index 91810a86404..d557ab27ae3 100644
+--- a/lib/crypto/x509_public_key.c
++++ b/lib/crypto/x509_public_key.c
+@@ -19,7 +19,7 @@
+ #include <linux/kernel.h>
+ #ifdef __UBOOT__
+ #include <crypto/x509_parser.h>
+-#include <u-boot/rsa-checksum.h>
++#include <u-boot/hash-checksum.h>
+ #else
+ #include <linux/slab.h>
+ #include <keys/asymmetric-subtype.h>
+diff --git a/lib/rsa/rsa-checksum.c b/lib/hash-checksum.c
+similarity index 96%
+rename from lib/rsa/rsa-checksum.c
+rename to lib/hash-checksum.c
+index e60debb7df3..d732ecc38fd 100644
+--- a/lib/rsa/rsa-checksum.c
++++ b/lib/hash-checksum.c
+@@ -13,7 +13,8 @@
+ #else
+ #include "fdt_host.h"
+ #endif
+-#include <u-boot/rsa.h>
++#include <hash.h>
++#include <image.h>
+ 
+ int hash_calculate(const char *name,
+ 		    const struct image_region region[],
+diff --git a/lib/rsa/Makefile b/lib/rsa/Makefile
+index 8b75d41f04b..c9ac72c1e26 100644
+--- a/lib/rsa/Makefile
++++ b/lib/rsa/Makefile
+@@ -5,6 +5,6 @@
+ # (C) Copyright 2000-2007
+ # Wolfgang Denk, DENX Software Engineering, wd@denx.de.
+ 
+-obj-$(CONFIG_$(SPL_TPL_)RSA_VERIFY) += rsa-verify.o rsa-checksum.o
++obj-$(CONFIG_$(SPL_TPL_)RSA_VERIFY) += rsa-verify.o
+ obj-$(CONFIG_$(SPL_TPL_)RSA_VERIFY_WITH_PKEY) += rsa-keyprop.o
+ obj-$(CONFIG_RSA_SOFTWARE_EXP) += rsa-mod-exp.o
+diff --git a/tools/Makefile b/tools/Makefile
+index 62de7e6fe07..e968b20fbde 100644
+--- a/tools/Makefile
++++ b/tools/Makefile
+@@ -67,7 +67,7 @@ LIBFDT_OBJS := $(addprefix libfdt/, fdt.o fdt_ro.o fdt_wip.o fdt_sw.o fdt_rw.o \
+ 		fdt_strerror.o fdt_empty_tree.o fdt_addresses.o fdt_overlay.o)
+ 
+ RSA_OBJS-$(CONFIG_FIT_SIGNATURE) := $(addprefix lib/rsa/, \
+-					rsa-sign.o rsa-verify.o rsa-checksum.o \
++					rsa-sign.o rsa-verify.o \
+ 					rsa-mod-exp.o)
+ 
+ AES_OBJS-$(CONFIG_FIT_CIPHER) := $(addprefix lib/aes/, \
+@@ -106,6 +106,7 @@ dumpimage-mkimage-objs := aisimage.o \
+ 			socfpgaimage.o \
+ 			sunxi_egon.o \
+ 			lib/crc16.o \
++			lib/hash-checksum.o \
+ 			lib/sha1.o \
+ 			lib/sha256.o \
+ 			lib/sha512.o \
+-- 
+2.34.1
+

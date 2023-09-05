@@ -1,0 +1,52 @@
+From 46deabd03d393fe7968f72c0cbca8d8e391c6f99 Mon Sep 17 00:00:00 2001
+From: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+Date: Sat, 25 Sep 2021 20:11:25 +0300
+Subject: [PATCH 063/322] Revert "[FIO toup] drivers: MXC_OCOTP: split SPL
+ config out"
+
+This reverts commit 53080490103fd8f62c247d9eb867c35796b0b3b9.
+
+It is superseded with a commit from the u-boot list.
+
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+---
+ drivers/misc/Kconfig  | 9 ---------
+ drivers/misc/Makefile | 2 +-
+ 2 files changed, 1 insertion(+), 10 deletions(-)
+
+diff --git a/drivers/misc/Kconfig b/drivers/misc/Kconfig
+index 4e9b8f00b9c..58e76d6411c 100644
+--- a/drivers/misc/Kconfig
++++ b/drivers/misc/Kconfig
+@@ -233,15 +233,6 @@ config MXC_OCOTP
+ 	  Programmable memory pages that are stored on the some
+ 	  Freescale i.MX processors.
+ 
+-config SPL_MXC_OCOTP
+-	bool "Enable MXC OCOTP Driver"
+-	depends on ARCH_IMX8M || ARCH_MX6 || ARCH_MX7 || ARCH_MX7ULP || ARCH_VF610
+-	default y
+-	help
+-	  If you say Y here, you will get support for the One Time
+-	  Programmable memory pages that are stored on the some
+-	  Freescale i.MX processors.
+-
+ config IMX_M4_MU
+ 	bool "Enable i.MX MU Driver to communicate with Cortex M4"
+ 	depends on MISC
+diff --git a/drivers/misc/Makefile b/drivers/misc/Makefile
+index 5c949490e5b..664be80e5a2 100644
+--- a/drivers/misc/Makefile
++++ b/drivers/misc/Makefile
+@@ -51,7 +51,7 @@ obj-$(CONFIG_IMX8ULP) += imx8ulp/
+ obj-$(CONFIG_LED_STATUS) += status_led.o
+ obj-$(CONFIG_LED_STATUS_GPIO) += gpio_led.o
+ obj-$(CONFIG_MPC83XX_SERDES) += mpc83xx_serdes.o
+-obj-$(CONFIG_$(SPL_)MXC_OCOTP) += mxc_ocotp.o
++obj-$(CONFIG_MXC_OCOTP) += mxc_ocotp.o
+ obj-$(CONFIG_MXS_OCOTP) += mxs_ocotp.o
+ obj-$(CONFIG_NUVOTON_NCT6102D) += nuvoton_nct6102d.o
+ obj-$(CONFIG_P2SB) += p2sb-uclass.o
+-- 
+2.34.1
+

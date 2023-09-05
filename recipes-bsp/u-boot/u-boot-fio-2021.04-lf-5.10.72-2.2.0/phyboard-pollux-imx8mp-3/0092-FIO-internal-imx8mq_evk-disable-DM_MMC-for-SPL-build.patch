@@ -1,0 +1,29 @@
+From 5bc283b7d4eabea04c980d6dbd56a5d61215a245 Mon Sep 17 00:00:00 2001
+From: Igor Opaniuk <igor.opaniuk@foundries.io>
+Date: Tue, 23 Feb 2021 00:43:28 +0200
+Subject: [PATCH 092/322] [FIO internal] imx8mq_evk: disable DM_MMC for SPL
+ build
+
+Drop undef DM_MMC for the SPL build, and use for that SPL_DM_MMC Kconfig
+symbol.
+
+Signed-off-by: Igor Opaniuk <igor.opaniuk@foundries.io>
+---
+ include/configs/imx8mq_evk.h | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/include/configs/imx8mq_evk.h b/include/configs/imx8mq_evk.h
+index 6e2c93b042e..90af5324ebf 100644
+--- a/include/configs/imx8mq_evk.h
++++ b/include/configs/imx8mq_evk.h
+@@ -33,7 +33,6 @@
+ /* For RAW image gives a error info not panic */
+ #define CONFIG_SPL_ABORT_ON_RAW_IMAGE
+ 
+-#undef CONFIG_DM_MMC
+ #undef CONFIG_DM_PMIC
+ #undef CONFIG_DM_PMIC_PFUZE100
+ #undef CONFIG_DM_I2C
+-- 
+2.34.1
+

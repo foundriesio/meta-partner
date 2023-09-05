@@ -1,0 +1,55 @@
+From f828a6e55865866f09a5aefbe7843fd95723f19c Mon Sep 17 00:00:00 2001
+From: Michael Scott <mike@foundries.io>
+Date: Mon, 19 Apr 2021 12:29:13 -0700
+Subject: [PATCH 138/322] [FIO extras] hash: honor SPL_CRC32_SUPPORT config
+
+This patch makes sure that if SPL_CRC32_SUPPORT is not enabled,
+we are not including the crc32 hash functions.  This not only
+avoids potential threat vectors which would use crc32 path
+unknowingly, but also reduces SPL size considerably.
+
+Signed-off-by: Michael Scott <mike@foundries.io>
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+---
+ common/hash.c | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/common/hash.c b/common/hash.c
+index 683a9771625..bebe32a6b58 100644
+--- a/common/hash.c
++++ b/common/hash.c
+@@ -183,6 +183,7 @@ static int hash_finish_crc16_ccitt(struct hash_algo *algo, void *ctx,
+ }
+ #endif
+ 
++#if !defined(CONFIG_SPL_BUILD) || defined(CONFIG_SPL_CRC32_SUPPORT)
+ static int hash_init_crc32(struct hash_algo *algo, void **ctxp)
+ {
+ 	uint32_t *ctx = malloc(sizeof(uint32_t));
+@@ -208,6 +209,7 @@ static int hash_finish_crc32(struct hash_algo *algo, void *ctx, void *dest_buf,
+ 	free(ctx);
+ 	return 0;
+ }
++#endif
+ 
+ /*
+  * These are the hash algorithms we support.  If we have hardware acceleration
+@@ -287,6 +289,7 @@ static struct hash_algo hash_algo[] = {
+ 		.hash_finish	= hash_finish_crc16_ccitt,
+ 	},
+ #endif
++#if !defined(CONFIG_SPL_BUILD) || defined(CONFIG_SPL_CRC32_SUPPORT)
+ 	{
+ 		.name		= "crc32",
+ 		.digest_size	= 4,
+@@ -296,6 +299,7 @@ static struct hash_algo hash_algo[] = {
+ 		.hash_update	= hash_update_crc32,
+ 		.hash_finish	= hash_finish_crc32,
+ 	},
++#endif
+ };
+ 
+ /* Try to minimize code size for boards that don't want much hashing */
+-- 
+2.34.1
+

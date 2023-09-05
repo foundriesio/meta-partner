@@ -1,0 +1,39 @@
+From 664b4714974682c2f336d16b95a2d023d51727bc Mon Sep 17 00:00:00 2001
+From: Ricardo Salveti <ricardo@foundries.io>
+Date: Wed, 25 Aug 2021 18:47:18 +0300
+Subject: [PATCH 051/322] [FIO fromlist] board: ea: mx7ulp_com: allocate
+ specific region of memory to OP-TEE
+
+On the iMX7ULP uCOM board, OP-TEE uses the memory region defined by the
+maximum DRAM address minus CONFIG_OPTEE_TZDRAM_SIZE, so subtract
+CONFIG_OPTEE_TZDRAM_SIZE from the available DRAM size to avoid
+conflicts.
+
+Note the OPTEE boot process itself subtracts the DRAM region it
+lives in from the memory map passed to Linux.
+
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+Reviewed-by: Fabio Estevam <festevam@gmail.com>
+---
+ board/ea/mx7ulp_com/mx7ulp_com.c | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/board/ea/mx7ulp_com/mx7ulp_com.c b/board/ea/mx7ulp_com/mx7ulp_com.c
+index 5b2d444366c..7fce75ade9d 100644
+--- a/board/ea/mx7ulp_com/mx7ulp_com.c
++++ b/board/ea/mx7ulp_com/mx7ulp_com.c
+@@ -20,6 +20,10 @@ int dram_init(void)
+ {
+ 	gd->ram_size = imx_ddr_size();
+ 
++#ifdef CONFIG_OPTEE_TZDRAM_SIZE
++	gd->ram_size -= CONFIG_OPTEE_TZDRAM_SIZE;
++#endif
++
+ 	return 0;
+ }
+ 
+-- 
+2.34.1
+

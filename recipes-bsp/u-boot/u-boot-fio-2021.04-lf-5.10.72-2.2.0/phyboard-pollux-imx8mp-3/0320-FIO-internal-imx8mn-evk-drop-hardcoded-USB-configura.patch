@@ -1,0 +1,37 @@
+From 58a464fe99178df42d1971d031dc8183d77dd3ed Mon Sep 17 00:00:00 2001
+From: Michael Scott <mike@foundries.io>
+Date: Wed, 3 Aug 2022 15:05:46 -0700
+Subject: [PATCH 320/322] [FIO internal] imx8mn-evk: drop hardcoded USB
+ configuration
+
+Drop hardcoded USB configuration from imx8mn-evk header.
+
+Signed-off-by: Michael Scott <mike@foundries.io>
+---
+ include/configs/imx8mn_evk.h | 10 ----------
+ 1 file changed, 10 deletions(-)
+
+diff --git a/include/configs/imx8mn_evk.h b/include/configs/imx8mn_evk.h
+index 39f9e2ff3fd..7515fdadfd4 100644
+--- a/include/configs/imx8mn_evk.h
++++ b/include/configs/imx8mn_evk.h
+@@ -244,16 +244,6 @@
+ 
+ #define CONFIG_SYS_I2C_SPEED		100000
+ 
+-/* USB configs */
+-#ifndef CONFIG_SPL_BUILD
+-#define CONFIG_USBD_HS
+-
+-#define CONFIG_CMD_USB_MASS_STORAGE
+-#define CONFIG_USB_GADGET_MASS_STORAGE
+-#define CONFIG_USB_FUNCTION_MASS_STORAGE
+-
+-#endif
+-
+ #define CONFIG_USB_GADGET_VBUS_DRAW 2
+ 
+ #define CONFIG_MXC_USB_PORTSC  (PORT_PTS_UTMI | PORT_PTS_PTW)
+-- 
+2.34.1
+

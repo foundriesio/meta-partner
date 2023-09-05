@@ -1,0 +1,84 @@
+From db279e748e98b9027374377deb0069ac1dca3132 Mon Sep 17 00:00:00 2001
+From: Ilias Apalodimas <ilias.apalodimas@linaro.org>
+Date: Wed, 24 Mar 2021 16:50:46 +0200
+Subject: [PATCH 180/322] [FIO fromtree] efi_loader: Add an S-CRTM even for
+ firmware version
+
+TCG PC Client Platform Firmware Profile Spec mandates that an S-CRTM
+event for the version identifier using the event type EV_S_CRTM_VERSION
+must be measured.
+
+So since we are trying to add more conformance into U-Boot, let's add
+the event using U_BOOT_VERSION_STRING, extend PCR[0] accordingly and log
+it in the EventLog
+
+Signed-off-by: Ilias Apalodimas <ilias.apalodimas@linaro.org>
+(cherry picked from commit f69a2016b6330b70915c371491af33f5fd58c849)
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+---
+ lib/efi_loader/efi_tcg2.c | 35 +++++++++++++++++++++++++++++++++++
+ 1 file changed, 35 insertions(+)
+
+diff --git a/lib/efi_loader/efi_tcg2.c b/lib/efi_loader/efi_tcg2.c
+index 35ae8ed5962..09046844c72 100644
+--- a/lib/efi_loader/efi_tcg2.c
++++ b/lib/efi_loader/efi_tcg2.c
+@@ -13,6 +13,7 @@
+ #include <efi_loader.h>
+ #include <efi_tcg2.h>
+ #include <log.h>
++#include <version.h>
+ #include <tpm-v2.h>
+ #include <u-boot/sha1.h>
+ #include <u-boot/sha256.h>
+@@ -1063,6 +1064,36 @@ out:
+ 	return ret;
+ }
+ 
++/**
++ * efi_append_scrtm_version - Append an S-CRTM EV_S_CRTM_VERSION event on the
++ *			      eventlog and extend the PCRs
++ *
++ * @dev:	TPM device
++ *
++ * @Return:	status code
++ */
++static efi_status_t efi_append_scrtm_version(struct udevice *dev)
++{
++	struct tpml_digest_values digest_list;
++	u8 ver[] = U_BOOT_VERSION_STRING;
++	const int pcr_index = 0;
++	efi_status_t ret;
++
++	ret = tcg2_create_digest(ver, sizeof(ver), &digest_list);
++	if (ret != EFI_SUCCESS)
++		goto out;
++
++	ret = tcg2_pcr_extend(dev, pcr_index, &digest_list);
++	if (ret != EFI_SUCCESS)
++		goto out;
++
++	ret = tcg2_agile_log_append(pcr_index, EV_S_CRTM_VERSION, &digest_list,
++				    sizeof(ver), ver);
++
++out:
++	return ret;
++}
++
+ /**
+  * efi_tcg2_register() - register EFI_TCG2_PROTOCOL
+  *
+@@ -1086,6 +1117,10 @@ efi_status_t efi_tcg2_register(void)
+ 	if (ret != EFI_SUCCESS)
+ 		goto fail;
+ 
++	ret = efi_append_scrtm_version(dev);
++	if (ret != EFI_SUCCESS)
++		goto out;
++
+ 	ret = efi_add_protocol(efi_root, &efi_guid_tcg2_protocol,
+ 			       (void *)&efi_tcg2_protocol);
+ 	if (ret != EFI_SUCCESS) {
+-- 
+2.34.1
+

@@ -1,0 +1,469 @@
+From 46a6121b13dbfbf84786a95a0a4860f48f794b24 Mon Sep 17 00:00:00 2001
+From: Masahisa Kojima <masahisa.kojima@linaro.org>
+Date: Wed, 26 May 2021 12:09:58 +0900
+Subject: [PATCH 227/322] [FIO fromtree] efi_loader: add PE/COFF image
+ measurement
+
+"TCG PC Client Platform Firmware Profile Specification"
+requires to measure every attempt to load and execute
+a OS Loader(a UEFI application) into PCR[4].
+This commit adds the PE/COFF image measurement, extends PCR,
+and appends measurement into Event Log.
+
+Acked-by: Ilias Apalodimas <ilias.apalodimas@linaro.org>
+Tested-by: Ilias Apalodimas <ilias.apalodimas@linaro.org>
+Signed-off-by: Masahisa Kojima <masahisa.kojima@linaro.org>
+Replace CONFIG_HASH_CALCULATE by CONFIG_HASH
+Fix conversions between pointers and u64.
+Signed-off-by: Heinrich Schuchardt <xypron.glpk@gmx.de>
+Reviewed-by: Ilias Apalodimas <ilias.apalodimas@linaro.org>
+(cherry picked from commit 163a0d7e2cbdbdf26d90ac8d30c0495b814f3245)
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+---
+ include/efi_loader.h              |   6 +
+ include/efi_tcg2.h                |   9 ++
+ include/tpm-v2.h                  |  18 +++
+ lib/efi_loader/Kconfig            |   1 +
+ lib/efi_loader/efi_image_loader.c |  62 ++++++---
+ lib/efi_loader/efi_tcg2.c         | 207 ++++++++++++++++++++++++++++--
+ 6 files changed, 277 insertions(+), 26 deletions(-)
+
+diff --git a/include/efi_loader.h b/include/efi_loader.h
+index 114832973ff..d728a67b148 100644
+--- a/include/efi_loader.h
++++ b/include/efi_loader.h
+@@ -428,6 +428,10 @@ efi_status_t efi_disk_register(void);
+ efi_status_t efi_rng_register(void);
+ /* Called by efi_init_obj_list() to install EFI_TCG2_PROTOCOL */
+ efi_status_t efi_tcg2_register(void);
++/* measure the pe-coff image, extend PCR and add Event Log */
++efi_status_t tcg2_measure_pe_image(void *efi, u64 efi_size,
++				   struct efi_loaded_image_obj *handle,
++				   struct efi_loaded_image *loaded_image_info);
+ /* Create handles and protocols for the partitions of a block device */
+ int efi_disk_create_partitions(efi_handle_t parent, struct blk_desc *desc,
+ 			       const char *if_typename, int diskid,
+@@ -888,6 +892,8 @@ bool efi_secure_boot_enabled(void);
+ 
+ bool efi_capsule_auth_enabled(void);
+ 
++void *efi_prepare_aligned_image(void *efi, u64 *efi_size);
++
+ bool efi_image_parse(void *efi, size_t len, struct efi_image_regions **regp,
+ 		     WIN_CERTIFICATE **auth, size_t *auth_len);
+ 
+diff --git a/include/efi_tcg2.h b/include/efi_tcg2.h
+index 40e241ce315..bcfb98168aa 100644
+--- a/include/efi_tcg2.h
++++ b/include/efi_tcg2.h
+@@ -9,6 +9,7 @@
+ #if !defined _EFI_TCG2_PROTOCOL_H_
+ #define _EFI_TCG2_PROTOCOL_H_
+ 
++#include <efi_api.h>
+ #include <tpm-v2.h>
+ 
+ #define EFI_TCG2_PROTOCOL_GUID \
+@@ -53,6 +54,14 @@ struct efi_tcg2_event {
+ 	u8 event[];
+ } __packed;
+ 
++struct uefi_image_load_event {
++	efi_physical_addr_t image_location_in_memory;
++	u64 image_length_in_memory;
++	u64 image_link_time_address;
++	u64 length_of_device_path;
++	struct efi_device_path device_path[];
++};
++
+ struct efi_tcg2_boot_service_capability {
+ 	u8 size;
+ 	struct efi_tcg2_version structure_version;
+diff --git a/include/tpm-v2.h b/include/tpm-v2.h
+index 56eaa65815f..d553b7f8bd7 100644
+--- a/include/tpm-v2.h
++++ b/include/tpm-v2.h
+@@ -62,6 +62,24 @@ struct udevice;
+ #define EV_CPU_MICROCODE	((u32)0x00000009)
+ #define EV_TABLE_OF_DEVICES	((u32)0x0000000B)
+ 
++/*
++ * event types, cf.
++ * "TCG PC Client Platform Firmware Profile Specification", Family "2.0"
++ * rev 1.04, June 3, 2019
++ */
++#define EV_EFI_EVENT_BASE			((u32)0x80000000)
++#define EV_EFI_VARIABLE_DRIVER_CONFIG		((u32)0x80000001)
++#define EV_EFI_VARIABLE_BOOT			((u32)0x80000002)
++#define EV_EFI_BOOT_SERVICES_APPLICATION	((u32)0x80000003)
++#define EV_EFI_BOOT_SERVICES_DRIVER		((u32)0x80000004)
++#define EV_EFI_RUNTIME_SERVICES_DRIVER		((u32)0x80000005)
++#define EV_EFI_GPT_EVENT			((u32)0x80000006)
++#define EV_EFI_ACTION				((u32)0x80000007)
++#define EV_EFI_PLATFORM_FIRMWARE_BLOB		((u32)0x80000008)
++#define EV_EFI_HANDOFF_TABLES			((u32)0x80000009)
++#define EV_EFI_HCRTM_EVENT			((u32)0x80000010)
++#define EV_EFI_VARIABLE_AUTHORITY		((u32)0x800000E0)
++
+ /* TPMS_TAGGED_PROPERTY Structure */
+ struct tpms_tagged_property {
+ 	u32 property;
+diff --git a/lib/efi_loader/Kconfig b/lib/efi_loader/Kconfig
+index a6f38d13858..6242caceb7f 100644
+--- a/lib/efi_loader/Kconfig
++++ b/lib/efi_loader/Kconfig
+@@ -309,6 +309,7 @@ config EFI_TCG2_PROTOCOL
+ 	select SHA512_ALGO
+ 	select SHA384
+ 	select SHA512
++	select HASH
+ 	help
+ 	  Provide a EFI_TCG2_PROTOCOL implementation using the TPM hardware
+ 	  of the platform.
+diff --git a/lib/efi_loader/efi_image_loader.c b/lib/efi_loader/efi_image_loader.c
+index 915bf791bdf..d923e8a8800 100644
+--- a/lib/efi_loader/efi_image_loader.c
++++ b/lib/efi_loader/efi_image_loader.c
+@@ -303,6 +303,38 @@ static int cmp_pe_section(const void *arg1, const void *arg2)
+ 		return 1;
+ }
+ 
++/**
++ * efi_prepare_aligned_image() - prepare 8-byte aligned image
++ * @efi:		pointer to the EFI binary
++ * @efi_size:		size of @efi binary
++ *
++ * If @efi is not 8-byte aligned, this function newly allocates
++ * the image buffer.
++ *
++ * Return:	valid pointer to a image, return NULL if allocation fails.
++ */
++void *efi_prepare_aligned_image(void *efi, u64 *efi_size)
++{
++	size_t new_efi_size;
++	void *new_efi;
++
++	/*
++	 * Size must be 8-byte aligned and the trailing bytes must be
++	 * zero'ed. Otherwise hash value may be incorrect.
++	 */
++	if (!IS_ALIGNED(*efi_size, 8)) {
++		new_efi_size = ALIGN(*efi_size, 8);
++		new_efi = calloc(new_efi_size, 1);
++		if (!new_efi)
++			return NULL;
++		memcpy(new_efi, efi, *efi_size);
++		*efi_size = new_efi_size;
++		return new_efi;
++	} else {
++		return efi;
++	}
++}
++
+ /**
+  * efi_image_parse() - parse a PE image
+  * @efi:	Pointer to image
+@@ -562,7 +594,7 @@ static bool efi_image_authenticate(void *efi, size_t efi_size)
+ 	struct efi_signature_store *db = NULL, *dbx = NULL;
+ 	void *new_efi = NULL;
+ 	u8 *auth, *wincerts_end;
+-	size_t new_efi_size, auth_size;
++	size_t auth_size;
+ 	bool ret = false;
+ 
+ 	EFI_PRINT("%s: Enter, %d\n", __func__, ret);
+@@ -570,21 +602,11 @@ static bool efi_image_authenticate(void *efi, size_t efi_size)
+ 	if (!efi_secure_boot_enabled())
+ 		return true;
+ 
+-	/*
+-	 * Size must be 8-byte aligned and the trailing bytes must be
+-	 * zero'ed. Otherwise hash value may be incorrect.
+-	 */
+-	if (efi_size & 0x7) {
+-		new_efi_size = (efi_size + 0x7) & ~0x7ULL;
+-		new_efi = calloc(new_efi_size, 1);
+-		if (!new_efi)
+-			return false;
+-		memcpy(new_efi, efi, efi_size);
+-		efi = new_efi;
+-		efi_size = new_efi_size;
+-	}
++	new_efi = efi_prepare_aligned_image(efi, (u64 *)&efi_size);
++	if (!new_efi)
++		return false;
+ 
+-	if (!efi_image_parse(efi, efi_size, &regs, &wincerts,
++	if (!efi_image_parse(new_efi, efi_size, &regs, &wincerts,
+ 			     &wincerts_len)) {
+ 		EFI_PRINT("Parsing PE executable image failed\n");
+ 		goto err;
+@@ -726,7 +748,8 @@ err:
+ 	efi_sigstore_free(dbx);
+ 	pkcs7_free_message(msg);
+ 	free(regs);
+-	free(new_efi);
++	if (new_efi != efi)
++		free(new_efi);
+ 
+ 	EFI_PRINT("%s: Exit, %d\n", __func__, ret);
+ 	return ret;
+@@ -892,6 +915,13 @@ efi_status_t efi_load_pe(struct efi_loaded_image_obj *handle,
+ 		goto err;
+ 	}
+ 
++#if CONFIG_IS_ENABLED(EFI_TCG2_PROTOCOL)
++	/* Measure an PE/COFF image */
++	if (tcg2_measure_pe_image(efi, efi_size, handle,
++				  loaded_image_info))
++		log_err("PE image measurement failed\n");
++#endif
++
+ 	/* Copy PE headers */
+ 	memcpy(efi_reloc, efi,
+ 	       sizeof(*dos)
+diff --git a/lib/efi_loader/efi_tcg2.c b/lib/efi_loader/efi_tcg2.c
+index ee743f5951f..1319a8b3786 100644
+--- a/lib/efi_loader/efi_tcg2.c
++++ b/lib/efi_loader/efi_tcg2.c
+@@ -13,8 +13,10 @@
+ #include <efi_loader.h>
+ #include <efi_tcg2.h>
+ #include <log.h>
++#include <malloc.h>
+ #include <version.h>
+ #include <tpm-v2.h>
++#include <u-boot/hash-checksum.h>
+ #include <u-boot/sha1.h>
+ #include <u-boot/sha256.h>
+ #include <u-boot/sha512.h>
+@@ -710,6 +712,183 @@ out:
+ 	return EFI_EXIT(ret);
+ }
+ 
++/**
++ * tcg2_hash_pe_image() - calculate PE/COFF image hash
++ *
++ * @efi:		pointer to the EFI binary
++ * @efi_size:		size of @efi binary
++ * @digest_list:	list of digest algorithms to extend
++ *
++ * Return:	status code
++ */
++static efi_status_t tcg2_hash_pe_image(void *efi, u64 efi_size,
++				       struct tpml_digest_values *digest_list)
++{
++	WIN_CERTIFICATE *wincerts = NULL;
++	size_t wincerts_len;
++	struct efi_image_regions *regs = NULL;
++	void *new_efi = NULL;
++	u8 hash[TPM2_SHA512_DIGEST_SIZE];
++	efi_status_t ret;
++	u32 active;
++	int i;
++
++	new_efi = efi_prepare_aligned_image(efi, &efi_size);
++	if (!new_efi)
++		return EFI_OUT_OF_RESOURCES;
++
++	if (!efi_image_parse(new_efi, efi_size, &regs, &wincerts,
++			     &wincerts_len)) {
++		log_err("Parsing PE executable image failed\n");
++		ret = EFI_UNSUPPORTED;
++		goto out;
++	}
++
++	ret = __get_active_pcr_banks(&active);
++	if (ret != EFI_SUCCESS) {
++		goto out;
++	}
++
++	digest_list->count = 0;
++	for (i = 0; i < MAX_HASH_COUNT; i++) {
++		u16 hash_alg = hash_algo_list[i].hash_alg;
++
++		if (!(active & alg_to_mask(hash_alg)))
++			continue;
++		switch (hash_alg) {
++		case TPM2_ALG_SHA1:
++			hash_calculate("sha1", regs->reg, regs->num, hash);
++			break;
++		case TPM2_ALG_SHA256:
++			hash_calculate("sha256", regs->reg, regs->num, hash);
++			break;
++		case TPM2_ALG_SHA384:
++			hash_calculate("sha384", regs->reg, regs->num, hash);
++			break;
++		case TPM2_ALG_SHA512:
++			hash_calculate("sha512", regs->reg, regs->num, hash);
++			break;
++		default:
++			EFI_PRINT("Unsupported algorithm %x\n", hash_alg);
++			return EFI_INVALID_PARAMETER;
++		}
++		digest_list->digests[i].hash_alg = hash_alg;
++		memcpy(&digest_list->digests[i].digest, hash, (u32)alg_to_len(hash_alg));
++		digest_list->count++;
++	}
++
++out:
++	if (new_efi != efi)
++		free(new_efi);
++	free(regs);
++
++	return ret;
++}
++
++/**
++ * tcg2_measure_pe_image() - measure PE/COFF image
++ *
++ * @efi:		pointer to the EFI binary
++ * @efi_size:		size of @efi binary
++ * @handle:		loaded image handle
++ * @loaded_image:	loaded image protocol
++ *
++ * Return:	status code
++ */
++efi_status_t tcg2_measure_pe_image(void *efi, u64 efi_size,
++				   struct efi_loaded_image_obj *handle,
++				   struct efi_loaded_image *loaded_image)
++{
++	struct tpml_digest_values digest_list;
++	efi_status_t ret;
++	struct udevice *dev;
++	u32 pcr_index, event_type, event_size;
++	struct uefi_image_load_event *image_load_event;
++	struct efi_device_path *device_path;
++	u32 device_path_length;
++	IMAGE_DOS_HEADER *dos;
++	IMAGE_NT_HEADERS32 *nt;
++	struct efi_handler *handler;
++
++	ret = platform_get_tpm2_device(&dev);
++	if (ret != EFI_SUCCESS)
++		return ret;
++
++	switch (handle->image_type) {
++	case IMAGE_SUBSYSTEM_EFI_APPLICATION:
++		pcr_index = 4;
++		event_type = EV_EFI_BOOT_SERVICES_APPLICATION;
++		break;
++	case IMAGE_SUBSYSTEM_EFI_BOOT_SERVICE_DRIVER:
++		pcr_index = 2;
++		event_type = EV_EFI_BOOT_SERVICES_DRIVER;
++		break;
++	case IMAGE_SUBSYSTEM_EFI_RUNTIME_DRIVER:
++		pcr_index = 2;
++		event_type = EV_EFI_RUNTIME_SERVICES_DRIVER;
++		break;
++	default:
++		return EFI_UNSUPPORTED;
++	}
++
++	ret = tcg2_hash_pe_image(efi, efi_size, &digest_list);
++	if (ret != EFI_SUCCESS)
++		return ret;
++
++	ret = tcg2_pcr_extend(dev, pcr_index, &digest_list);
++	if (ret != EFI_SUCCESS)
++		return ret;
++
++	ret = EFI_CALL(efi_search_protocol(&handle->header,
++					   &efi_guid_loaded_image_device_path,
++					   &handler));
++	if (ret != EFI_SUCCESS)
++		return ret;
++
++	device_path = EFI_CALL(handler->protocol_interface);
++	device_path_length = efi_dp_size(device_path);
++	if (device_path_length > 0) {
++		/* add end node size */
++		device_path_length += sizeof(struct efi_device_path);
++	}
++	event_size = sizeof(struct uefi_image_load_event) + device_path_length;
++	image_load_event = (struct uefi_image_load_event *)malloc(event_size);
++	if (!image_load_event)
++		return EFI_OUT_OF_RESOURCES;
++
++	image_load_event->image_location_in_memory = (uintptr_t)efi;
++	image_load_event->image_length_in_memory = efi_size;
++	image_load_event->length_of_device_path = device_path_length;
++
++	dos = (IMAGE_DOS_HEADER *)efi;
++	nt = (IMAGE_NT_HEADERS32 *)(efi + dos->e_lfanew);
++	if (nt->OptionalHeader.Magic == IMAGE_NT_OPTIONAL_HDR64_MAGIC) {
++		IMAGE_NT_HEADERS64 *nt64 = (IMAGE_NT_HEADERS64 *)nt;
++
++		image_load_event->image_link_time_address =
++				nt64->OptionalHeader.ImageBase;
++	} else if (nt->OptionalHeader.Magic == IMAGE_NT_OPTIONAL_HDR32_MAGIC) {
++		image_load_event->image_link_time_address =
++				nt->OptionalHeader.ImageBase;
++	} else {
++		ret = EFI_INVALID_PARAMETER;
++		goto out;
++	}
++
++	if (device_path_length > 0) {
++		memcpy(image_load_event->device_path, device_path,
++		       device_path_length);
++	}
++
++	ret = tcg2_agile_log_append(pcr_index, event_type, &digest_list,
++				    event_size, (u8 *)image_load_event);
++
++out:
++	free(image_load_event);
++
++	return ret;
++}
++
+ /**
+  * efi_tcg2_hash_log_extend_event() - extend and optionally log events
+  *
+@@ -761,24 +940,32 @@ efi_tcg2_hash_log_extend_event(struct efi_tcg2_protocol *this, u64 flags,
+ 	/*
+ 	 * if PE_COFF_IMAGE is set we need to make sure the image is not
+ 	 * corrupted, verify it and hash the PE/COFF image in accordance with
+-	 * the  procedure  specified  in  "Calculating  the  PE  Image  Hash"
+-	 * section  of the "Windows Authenticode Portable Executable Signature
++	 * the procedure specified in "Calculating the PE Image Hash"
++	 * section of the "Windows Authenticode Portable Executable Signature
+ 	 * Format"
+-	 * Not supported for now
+ 	 */
+ 	if (flags & PE_COFF_IMAGE) {
+-		ret = EFI_UNSUPPORTED;
+-		goto out;
+-	}
++		IMAGE_NT_HEADERS32 *nt;
+ 
+-	pcr_index = efi_tcg_event->header.pcr_index;
+-	event_type = efi_tcg_event->header.event_type;
++		ret = efi_check_pe((void *)(uintptr_t)data_to_hash,
++				   data_to_hash_len, (void **)&nt);
++		if (ret != EFI_SUCCESS) {
++			log_err("Not a valid PE-COFF file\n");
++			goto out;
++		}
++		ret = tcg2_hash_pe_image((void *)(uintptr_t)data_to_hash,
++					 data_to_hash_len, &digest_list);
++	} else {
++		ret = tcg2_create_digest((u8 *)(uintptr_t)data_to_hash,
++					 data_to_hash_len, &digest_list);
++	}
+ 
+-	ret = tcg2_create_digest((u8 *)(uintptr_t)data_to_hash,
+-				 data_to_hash_len, &digest_list);
+ 	if (ret != EFI_SUCCESS)
+ 		goto out;
+ 
++	pcr_index = efi_tcg_event->header.pcr_index;
++	event_type = efi_tcg_event->header.event_type;
++
+ 	ret = tcg2_pcr_extend(dev, pcr_index, &digest_list);
+ 	if (ret != EFI_SUCCESS)
+ 		goto out;
+-- 
+2.34.1
+

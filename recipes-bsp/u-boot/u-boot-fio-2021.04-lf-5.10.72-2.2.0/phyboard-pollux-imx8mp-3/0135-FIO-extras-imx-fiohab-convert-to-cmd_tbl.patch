@@ -1,0 +1,29 @@
+From 4df18c9315bbf006e0641f113e427ddd942def8f Mon Sep 17 00:00:00 2001
+From: Ricardo Salveti <ricardo@foundries.io>
+Date: Wed, 29 Sep 2021 11:54:27 -0300
+Subject: [PATCH 135/322] [FIO extras] imx: fiohab: convert to cmd_tbl
+
+Commit 091401131085 removed the cmd_tbl_t typedef, so update
+the fiohab close command to use struct cmd_tbl instead.
+
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+---
+ arch/arm/mach-imx/fiohab.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/arm/mach-imx/fiohab.c b/arch/arm/mach-imx/fiohab.c
+index ac3d79c4a65..80a2f59ff6d 100644
+--- a/arch/arm/mach-imx/fiohab.c
++++ b/arch/arm/mach-imx/fiohab.c
+@@ -127,7 +127,7 @@ static int hab_status(void)
+  * if RPMB keys have been provisioned as it would render it unavailable
+  * afterwards
+  */
+-static int do_fiohab_close(cmd_tbl_t *cmdtp, int flag, int argc,
++static int do_fiohab_close(struct cmd_tbl *cmdtp, int flag, int argc,
+ 			   char *const argv[])
+ {
+ 	struct srk_fuse {
+-- 
+2.34.1
+

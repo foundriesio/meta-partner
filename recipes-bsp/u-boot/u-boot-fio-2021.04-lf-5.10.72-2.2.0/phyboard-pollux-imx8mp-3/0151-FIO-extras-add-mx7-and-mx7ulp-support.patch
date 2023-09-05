@@ -1,0 +1,29 @@
+From c96cc9b8d23fd1f7eff2cc7e7c366ac908528167 Mon Sep 17 00:00:00 2001
+From: Tim Anderson <tim.anderson@foundries.io>
+Date: Fri, 11 Jun 2021 12:56:25 -0700
+Subject: [PATCH 151/322] [FIO extras] add mx7 and mx7ulp support
+
+This adds the offset to the boot rom data structure for imx7
+
+Signed-off-by: Tim Anderson <tim.anderson@foundries.io>
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+---
+ drivers/fastboot/fb_fsl/fb_fsl_partitions.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/fastboot/fb_fsl/fb_fsl_partitions.c b/drivers/fastboot/fb_fsl/fb_fsl_partitions.c
+index 229080c2a5c..91005ac0435 100644
+--- a/drivers/fastboot/fb_fsl/fb_fsl_partitions.c
++++ b/drivers/fastboot/fb_fsl/fb_fsl_partitions.c
+@@ -66,7 +66,7 @@ static ulong secondary_image_table_mmc_offset(void)
+ {
+ 	if (is_imx8mq() || is_imx8mm() || ((is_imx8qm() || is_imx8qxp()) && is_soc_rev(CHIP_REV_A))) {
+ 		return 0x8200;
+-	} else if (is_mx6()) {
++	} else if (is_mx6() || is_mx7() || is_mx7ulp()) {
+ 		return 0x200;
+ 	}
+ }
+-- 
+2.34.1
+

@@ -1,0 +1,33 @@
+From 79c2802105e9f4139d73f734e19d226e6e6445dc Mon Sep 17 00:00:00 2001
+From: Ricardo Salveti <ricardo@foundries.io>
+Date: Thu, 20 Aug 2020 18:57:06 -0300
+Subject: [PATCH 033/322] [FIO extras] spl: mmc: only load legacy if set
+
+Make sure to check if SPL legacy image format is enabled before trying
+to execute the image.
+
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+---
+ common/spl/spl_mmc.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/common/spl/spl_mmc.c b/common/spl/spl_mmc.c
+index d3ce1efc5f8..4be76177acd 100644
+--- a/common/spl/spl_mmc.c
++++ b/common/spl/spl_mmc.c
+@@ -111,8 +111,11 @@ int mmc_load_image_raw_sector(struct spl_image_info *spl_image,
+ 		load.read = h_spl_load_read;
+ 
+ 		ret = spl_load_imx_container(spl_image, &load, sector);
+-	} else {
++	} else if (IS_ENABLED(CONFIG_SPL_LEGACY_IMAGE_FORMAT)) {
+ 		ret = mmc_load_legacy(spl_image, mmc, sector, header);
++	} else {
++		puts("mmc_load_image_raw_sector: unsupported image format\n");
++		return -1;
+ 	}
+ 
+ end:
+-- 
+2.34.1
+

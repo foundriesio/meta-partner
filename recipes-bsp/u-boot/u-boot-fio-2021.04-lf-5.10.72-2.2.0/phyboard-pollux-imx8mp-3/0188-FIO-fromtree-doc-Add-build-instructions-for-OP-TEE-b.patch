@@ -1,0 +1,89 @@
+From 43ede3e3be4630a879489e2e203e3d81f06ba07b Mon Sep 17 00:00:00 2001
+From: Ilias Apalodimas <ilias.apalodimas@linaro.org>
+Date: Thu, 1 Apr 2021 13:35:38 +0300
+Subject: [PATCH 188/322] [FIO fromtree] doc: Add build instructions for OP-TEE
+ backed EFI variables
+
+Since that invlolves external projects and not only U-Boot, add guidance
+for supported platforms
+
+Signed-off-by: Ilias Apalodimas <ilias.apalodimas@linaro.org>
+Signed-off-by: Heinrich Schuchardt <xypron.glpk@gmx.de>
+(cherry picked from commit bfb5ce4edd2cd62ad23b5ce578e93d0c82fe3000)
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+---
+ doc/uefi/uefi.rst | 58 ++++++++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 57 insertions(+), 1 deletion(-)
+
+diff --git a/doc/uefi/uefi.rst b/doc/uefi/uefi.rst
+index d92a32016ec..4f2b8b036db 100644
+--- a/doc/uefi/uefi.rst
++++ b/doc/uefi/uefi.rst
+@@ -219,7 +219,63 @@ non-volatile variables. When calling the variable services via the
+ OP-TEE API U-Boot's OP-TEE supplicant relays calls to the RPMB driver
+ which has to be enabled via CONFIG_SUPPORT_EMMC_RPMB=y.
+ 
+-[1] https://optee.readthedocs.io/ - OP-TEE documentation
++EDK2 Build instructions
++***********************
++
++.. code-block:: bash
++
++    $ git clone https://github.com/tianocore/edk2.git
++    $ git clone https://github.com/tianocore/edk2-platforms.git
++    $ cd edk2
++    $ git submodule init && git submodule update --init --recursive
++    $ cd ..
++    $ export WORKSPACE=$(pwd)
++    $ export PACKAGES_PATH=$WORKSPACE/edk2:$WORKSPACE/edk2-platforms
++    $ export ACTIVE_PLATFORM="Platform/StandaloneMm/PlatformStandaloneMmPkg/PlatformStandaloneMmRpmb.dsc"
++    $ export GCC5_AARCH64_PREFIX=aarch64-linux-gnu-
++    $ source edk2/edksetup.sh
++    $ make -C edk2/BaseTools
++    $ build -p $ACTIVE_PLATFORM -b RELEASE -a AARCH64 -t GCC5 -n `nproc`
++
++OP-TEE Build instructions
++*************************
++
++.. code-block:: bash
++
++    $ git clone https://github.com/OP-TEE/optee_os.git
++    $ cd optee_os
++    $ ln -s ../Build/MmStandaloneRpmb/RELEASE_GCC5/FV/BL32_AP_MM.fd
++    $ export ARCH=arm
++    $ CROSS_COMPILE32=arm-linux-gnueabihf- make -j32 CFG_ARM64_core=y \
++        PLATFORM=<myboard> CFG_STMM_PATH=BL32_AP_MM.fd CFG_RPMB_FS=y \
++        CFG_RPMB_FS_DEV_ID=0 CFG_CORE_HEAP_SIZE=524288 CFG_RPMB_WRITE_KEY=1 \
++        CFG_CORE_HEAP_SIZE=524288 CFG_CORE_DYN_SHM=y CFG_RPMB_TESTKEY=y \
++        CFG_REE_FS=n CFG_CORE_ARM64_PA_BITS=48  CFG_TEE_CORE_LOG_LEVEL=1 \
++        CFG_TEE_TA_LOG_LEVEL=1 CFG_SCTLR_ALIGNMENT_CHECK=n
++
++U-Boot Build instructions
++*************************
++
++Although the StandAloneMM binary comes from EDK2, using and storing the
++variables is currently available in U-Boot only.
++
++.. code-block:: bash
++
++    $ git clone https://github.com/u-boot/u-boot.git
++    $ cd u-boot
++    $ export CROSS_COMPILE=aarch64-linux-gnu-
++    $ export ARCH=<arch>
++    $ make <myboard>_defconfig
++    $ make menuconfig
++
++Enable ``CONFIG_OPTEE``, ``CONFIG_CMD_OPTEE_RPMB`` and ``CONFIG_EFI_MM_COMM_TEE``
++
++.. warning::
++
++    - Your OP-TEE platform port must support Dynamic shared memory, since that's
++      the only kind of memory U-Boot supports for now.
++
++[1] https://optee.readthedocs.io/en/latest/building/efi_vars/stmm.html
+ 
+ Executing the boot manager
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~
+-- 
+2.34.1
+

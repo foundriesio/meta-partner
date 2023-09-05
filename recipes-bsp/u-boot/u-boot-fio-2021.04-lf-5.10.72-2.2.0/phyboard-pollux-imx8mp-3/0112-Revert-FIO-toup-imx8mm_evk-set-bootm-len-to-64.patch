@@ -1,0 +1,30 @@
+From de986eb39507a54eb91db8b083767c85e3a9b0bc Mon Sep 17 00:00:00 2001
+From: Ricardo Salveti <ricardo@foundries.io>
+Date: Mon, 27 Sep 2021 21:34:02 -0300
+Subject: [PATCH 112/322] Revert "[FIO toup] imx8mm_evk: set bootm len to 64"
+
+This reverts commit dfdd7315604abd5e76e9a6caaff4b34db95bc64e.
+
+Not required anymore as upstream is already defining bootm len to 32,
+which is already enough for LmP.
+
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+---
+ include/configs/imx8mm_evk.h | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/include/configs/imx8mm_evk.h b/include/configs/imx8mm_evk.h
+index 77cf74d6fac..3f7d4a1b8e0 100644
+--- a/include/configs/imx8mm_evk.h
++++ b/include/configs/imx8mm_evk.h
+@@ -238,7 +238,6 @@
+ #define CONFIG_SYS_SDRAM_BASE           0x40000000
+ #define PHYS_SDRAM                      0x40000000
+ #define PHYS_SDRAM_SIZE			0x80000000 /* 2GB DDR */
+-#define CONFIG_SYS_BOOTM_LEN		SZ_64M
+ 
+ #define CONFIG_MXC_UART_BASE		UART2_BASE_ADDR
+ 
+-- 
+2.34.1
+

@@ -1,0 +1,53 @@
+From 654bcaf1d3090a732c07a22a129fa3b7bd9ee503 Mon Sep 17 00:00:00 2001
+From: Ilias Apalodimas <ilias.apalodimas@linaro.org>
+Date: Wed, 9 Jun 2021 18:14:47 +0300
+Subject: [PATCH 233/322] [FIO fromtree] smbios: Fix BIOS Characteristics
+ Extension Byte 2
+
+We currently define the EFI support of an SMBIOS table as the third bit of
+"BIOS Characteristics Extension Byte 1". The latest DMTF spec defines it
+on "BIOS Characteristics Extension Byte 2".
+
+Signed-off-by: Ilias Apalodimas <ilias.apalodimas@linaro.org>
+
+Remove superfluous assignment.
+Signed-off-by: Heinrich Schuchardt <xypron.glpk@gmx.de>
+(cherry picked from commit ff192304b69944734a661227c2d00aab5b15cdaf)
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+---
+ include/smbios.h | 2 +-
+ lib/smbios.c     | 4 ++--
+ 2 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/include/smbios.h b/include/smbios.h
+index ecc4fd1de3b..407fd401171 100644
+--- a/include/smbios.h
++++ b/include/smbios.h
+@@ -56,7 +56,7 @@ struct __packed smbios_entry {
+ #define BIOS_CHARACTERISTICS_SELECTABLE_BOOT	(1 << 16)
+ 
+ #define BIOS_CHARACTERISTICS_EXT1_ACPI		(1 << 0)
+-#define BIOS_CHARACTERISTICS_EXT1_UEFI		(1 << 3)
++#define BIOS_CHARACTERISTICS_EXT2_UEFI		(1 << 3)
+ #define BIOS_CHARACTERISTICS_EXT2_TARGET	(1 << 2)
+ 
+ struct __packed smbios_type0 {
+diff --git a/lib/smbios.c b/lib/smbios.c
+index 7d463c84a93..3ddc5ea2188 100644
+--- a/lib/smbios.c
++++ b/lib/smbios.c
+@@ -233,9 +233,9 @@ static int smbios_write_type0(ulong *current, int handle,
+ 	t->bios_characteristics_ext1 = BIOS_CHARACTERISTICS_EXT1_ACPI;
+ #endif
+ #ifdef CONFIG_EFI_LOADER
+-	t->bios_characteristics_ext1 |= BIOS_CHARACTERISTICS_EXT1_UEFI;
++	t->bios_characteristics_ext2 |= BIOS_CHARACTERISTICS_EXT2_UEFI;
+ #endif
+-	t->bios_characteristics_ext2 = BIOS_CHARACTERISTICS_EXT2_TARGET;
++	t->bios_characteristics_ext2 |= BIOS_CHARACTERISTICS_EXT2_TARGET;
+ 
+ 	/* bios_major_release has only one byte, so drop century */
+ 	t->bios_major_release = U_BOOT_VERSION_NUM % 100;
+-- 
+2.34.1
+

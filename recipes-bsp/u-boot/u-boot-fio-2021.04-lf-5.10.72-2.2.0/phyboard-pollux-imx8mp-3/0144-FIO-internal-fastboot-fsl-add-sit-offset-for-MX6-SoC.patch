@@ -1,0 +1,30 @@
+From 9b94089221e130ef5c4eb3e1acfa357b7362bab0 Mon Sep 17 00:00:00 2001
+From: Igor Opaniuk <igor.opaniuk@foundries.io>
+Date: Tue, 27 Apr 2021 16:10:15 +0300
+Subject: [PATCH 144/322] [FIO internal] fastboot: fsl: add sit offset for MX6
+ SoCs
+
+Add Secondary Image Table offset for all MX6 SoCs, which is used
+in redundant boot setups.
+
+Signed-off-by: Igor Opaniuk <igor.opaniuk@foundries.io>
+---
+ drivers/fastboot/fb_fsl/fb_fsl_partitions.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/fastboot/fb_fsl/fb_fsl_partitions.c b/drivers/fastboot/fb_fsl/fb_fsl_partitions.c
+index f6ef7eb9f26..229080c2a5c 100644
+--- a/drivers/fastboot/fb_fsl/fb_fsl_partitions.c
++++ b/drivers/fastboot/fb_fsl/fb_fsl_partitions.c
+@@ -66,7 +66,7 @@ static ulong secondary_image_table_mmc_offset(void)
+ {
+ 	if (is_imx8mq() || is_imx8mm() || ((is_imx8qm() || is_imx8qxp()) && is_soc_rev(CHIP_REV_A))) {
+ 		return 0x8200;
+-	} else if (is_mx6ull() || is_mx6ul()) {
++	} else if (is_mx6()) {
+ 		return 0x200;
+ 	}
+ }
+-- 
+2.34.1
+

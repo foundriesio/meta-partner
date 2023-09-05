@@ -1,0 +1,189 @@
+From ba33aa09f54e0547f1ae4b859cb63192bbf7ebb5 Mon Sep 17 00:00:00 2001
+From: Jorge Ramirez-Ortiz <jorge@foundries.io>
+Date: Sun, 14 Feb 2021 16:27:23 +0100
+Subject: [PATCH 078/322] [FIO fromlist] common: SCP03 control (enable and
+ provision of keys)
+
+This Trusted Application allows enabling SCP03 as well as provisioning
+the keys on TEE controlled secure element (ie, NXP SE050).
+
+All the information flowing on buses (ie I2C) between the processor
+and the secure element must be encrypted. Secure elements are
+pre-provisioned with a set of keys known to the user so that the
+secure channel protocol (encryption) can be enforced on the first
+boot. This situation is however unsafe since the keys are publically
+available.
+
+For example, in the case of the NXP SE050, these keys would be
+available in the OP-TEE source tree [2] and of course in the
+documentation corresponding to the part.
+
+To address that, users are required to rotate/provision those keys
+(ie, generate new keys and write them in the secure element's
+persistent memory).
+
+For information on SCP03, check the Global Platform HomePage and
+google for that term [1]
+[1] globalplatform.org
+[2] https://github.com/OP-TEE/optee_os/
+    check:
+    core/drivers/crypto/se050/adaptors/utils/scp_config.c
+
+Signed-off-by: Jorge Ramirez-Ortiz <jorge@foundries.io>
+Reviewed-by: Simon Glass <sjg@chromium.org>
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+---
+ common/Kconfig               |  8 ++++++
+ common/Makefile              |  1 +
+ common/scp03.c               | 53 ++++++++++++++++++++++++++++++++++++
+ include/scp03.h              | 21 ++++++++++++++
+ include/tee/optee_ta_scp03.h | 21 ++++++++++++++
+ 5 files changed, 104 insertions(+)
+ create mode 100644 common/scp03.c
+ create mode 100644 include/scp03.h
+ create mode 100644 include/tee/optee_ta_scp03.h
+
+diff --git a/common/Kconfig b/common/Kconfig
+index c5df066a695..53fe914732b 100644
+--- a/common/Kconfig
++++ b/common/Kconfig
+@@ -604,6 +604,14 @@ config SPL_FIOVB
+ 	 This option enables compilation of Foundries.IO verified boot
+ 	 operations
+ 
++config SCP03
++	bool "Build SCP03 - Secure Channel Protocol O3 - controls"
++	depends on OPTEE || SANDBOX
++	depends on TEE
++	help
++	  This option allows U-Boot to enable and or provision SCP03 on an OPTEE
++	  controlled Secured Element.
++
+ config SPL_HASH
+ 	bool # "Support hashing API (SHA1, SHA256, etc.)"
+ 	help
+diff --git a/common/Makefile b/common/Makefile
+index e7d0d79aa72..a8ce695dfa6 100644
+--- a/common/Makefile
++++ b/common/Makefile
+@@ -138,3 +138,4 @@ obj-$(CONFIG_$(SPL_TPL_)YMODEM_SUPPORT) += xyzModem.o
+ 
+ obj-$(CONFIG_AVB_VERIFY) += avb_verify.o
+ obj-$(CONFIG_$(SPL_)FIOVB) += fiovb.o
++obj-$(CONFIG_SCP03) += scp03.o
+diff --git a/common/scp03.c b/common/scp03.c
+new file mode 100644
+index 00000000000..09ef7b5ba3d
+--- /dev/null
++++ b/common/scp03.c
+@@ -0,0 +1,53 @@
++// SPDX-License-Identifier: GPL-2.0+
++/*
++ * (C) Copyright 2021, Foundries.IO
++ *
++ */
++
++#include <common.h>
++#include <scp03.h>
++#include <tee.h>
++#include <tee/optee_ta_scp03.h>
++
++static int scp03_enable(bool provision)
++{
++	const struct tee_optee_ta_uuid uuid = PTA_SCP03_UUID;
++	struct tee_open_session_arg session;
++	struct tee_invoke_arg invoke;
++	struct tee_param param;
++	struct udevice *tee = NULL;
++
++	tee = tee_find_device(tee, NULL, NULL, NULL);
++	if (!tee)
++		return -ENODEV;
++
++	memset(&session, 0, sizeof(session));
++	tee_optee_ta_uuid_to_octets(session.uuid, &uuid);
++	if (tee_open_session(tee, &session, 0, NULL))
++		return -ENXIO;
++
++	memset(&param, 0, sizeof(param));
++	param.attr = TEE_PARAM_ATTR_TYPE_VALUE_INPUT;
++	param.u.value.a = provision;
++
++	memset(&invoke, 0, sizeof(invoke));
++	invoke.func = PTA_CMD_ENABLE_SCP03;
++	invoke.session = session.session;
++
++	if (tee_invoke_func(tee, &invoke, 1, &param))
++		return -EIO;
++
++	tee_close_session(tee, session.session);
++
++	return 0;
++}
++
++int tee_enable_scp03(void)
++{
++	return scp03_enable(false);
++}
++
++int tee_provision_scp03(void)
++{
++	return scp03_enable(true);
++}
+diff --git a/include/scp03.h b/include/scp03.h
+new file mode 100644
+index 00000000000..729667ccd1c
+--- /dev/null
++++ b/include/scp03.h
+@@ -0,0 +1,21 @@
++/* SPDX-License-Identifier: GPL-2.0+ */
++/*
++ * (C) Copyright 2021, Foundries.IO
++ *
++ */
++
++#ifndef _SCP03_H
++#define _SCP03_H
++
++/*
++ * Requests to OPTEE to enable or provision the Secure Channel Protocol on its
++ * Secure Element
++ *
++ *  If key provisioning is requested, OPTEE shall generate new SCP03 keys and
++ *  write them to the Secure Element.
++ *
++ *  Both functions return < 0 on error else 0.
++ */
++int tee_enable_scp03(void);
++int tee_provision_scp03(void);
++#endif /* _SCP03_H */
+diff --git a/include/tee/optee_ta_scp03.h b/include/tee/optee_ta_scp03.h
+new file mode 100644
+index 00000000000..13f9956d983
+--- /dev/null
++++ b/include/tee/optee_ta_scp03.h
+@@ -0,0 +1,21 @@
++/* SPDX-License-Identifier: BSD-3-Clause */
++/*
++ * (C) Copyright 2021, Foundries.IO
++ *
++ */
++#ifndef __TA_SCP03_H
++#define __TA_SCP03_H
++
++#define PTA_SCP03_UUID { 0xbe0e5821, 0xe718, 0x4f77, \
++			{ 0xab, 0x3e, 0x8e, 0x6c, 0x73, 0xa9, 0xc7, 0x35 } }
++
++/*
++ * Enable Secure Channel Protocol functionality (SCP03) on the Secure Element.
++ *   Setting the operation value to something different than NULL will trigger
++ *   the SCP03 provisioning request.
++ *
++ *   in	params[0].a = operation
++ */
++#define PTA_CMD_ENABLE_SCP03	0
++
++#endif /*__TA_SCP03_H*/
+-- 
+2.34.1
+

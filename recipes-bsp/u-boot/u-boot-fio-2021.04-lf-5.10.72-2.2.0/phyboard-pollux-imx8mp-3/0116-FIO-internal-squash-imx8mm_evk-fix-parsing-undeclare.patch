@@ -1,0 +1,44 @@
+From 8e0df50b3fb1ac0b933a6e473a74b74b82e67ba3 Mon Sep 17 00:00:00 2001
+From: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+Date: Tue, 28 Sep 2021 14:39:01 +0300
+Subject: [PATCH 116/322] [FIO internal-squash] imx8mm_evk: fix parsing
+ undeclared function
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+The setup_typec() declares only on particular circumstances. This
+issue has no consequences but a compiler warning.
+Use the same clauses to avoid building warning [1].
+
+[1]
+board/freescale/imx8mm_evk/imx8mm_evk.c: In function ‘board_init’:
+board/freescale/imx8mm_evk/imx8mm_evk.c:307:3: warning: implicit declaration of function ‘setup_typec’;
+...
+
+Fixes: b6b1a255ab ("[FIO internal] imx8mm_evk: fix build issues when SPL_DM=y")
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+---
+ board/freescale/imx8mm_evk/imx8mm_evk.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/board/freescale/imx8mm_evk/imx8mm_evk.c b/board/freescale/imx8mm_evk/imx8mm_evk.c
+index 61cb8b02aa4..93da5d81151 100644
+--- a/board/freescale/imx8mm_evk/imx8mm_evk.c
++++ b/board/freescale/imx8mm_evk/imx8mm_evk.c
+@@ -302,9 +302,9 @@ int board_init(void)
+ {
+ 	struct arm_smccc_res res;
+ 
+-	if (IS_ENABLED(CONFIG_USB_TCPC) &&
+-	   !IS_ENABLED(CONFIG_SPL_BUILD))
+-		setup_typec();
++#if defined(CONFIG_USB_TCPC) && !defined(CONFIG_SPL_BUILD)
++	setup_typec();
++#endif
+ 
+ 	if (IS_ENABLED(CONFIG_FEC_MXC))
+ 		setup_fec();
+-- 
+2.34.1
+

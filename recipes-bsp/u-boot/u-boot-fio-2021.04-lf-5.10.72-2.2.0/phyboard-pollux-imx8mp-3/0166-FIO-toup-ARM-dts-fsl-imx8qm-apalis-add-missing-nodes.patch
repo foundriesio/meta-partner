@@ -1,0 +1,47 @@
+From eceeecb1880beaf9f6507b11b5aa9e74a30e21d5 Mon Sep 17 00:00:00 2001
+From: Igor Opaniuk <igor.opaniuk@foundries.io>
+Date: Thu, 12 Aug 2021 16:19:13 +0300
+Subject: [PATCH 166/322] [FIO toup] ARM: dts: fsl-imx8qm-apalis: add missing
+ nodes for spl
+
+Add additional nodes to u-boot.dtsi, that fix SPL serial output issues.
+
+Signed-off-by: Igor Opaniuk <igor.opaniuk@foundries.io>
+---
+ arch/arm/dts/fsl-imx8qm-apalis-u-boot.dtsi | 20 ++++++++++++++++++++
+ 1 file changed, 20 insertions(+)
+
+diff --git a/arch/arm/dts/fsl-imx8qm-apalis-u-boot.dtsi b/arch/arm/dts/fsl-imx8qm-apalis-u-boot.dtsi
+index 4743d3ba146..770dd7dbdb9 100644
+--- a/arch/arm/dts/fsl-imx8qm-apalis-u-boot.dtsi
++++ b/arch/arm/dts/fsl-imx8qm-apalis-u-boot.dtsi
+@@ -41,6 +41,26 @@
+ 	u-boot,dm-spl;
+ };
+ 
++&{/regulators} {
++	u-boot,dm-spl;
++};
++
++&reg_usdhc2_vmmc {
++	u-boot,dm-spl;
++};
++
++&pinctrl_usdhc2 {
++	u-boot,dm-spl;
++};
++
++&pinctrl_lpuart0 {
++	u-boot,dm-spl;
++};
++
++&pinctrl_lpuart1 {
++	u-boot,dm-spl;
++};
++
+ &pd_lsio {
+ 	u-boot,dm-spl;
+ };
+-- 
+2.34.1
+

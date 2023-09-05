@@ -1,0 +1,31 @@
+From fb1c446240373d6f134367b9cdad9725fce4f3cd Mon Sep 17 00:00:00 2001
+From: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+Date: Sun, 9 Jan 2022 18:33:33 +0200
+Subject: [PATCH 306/322] Revert "[FIO internal-squash] cmd: fiovb: add include
+ for boot_mode_is_closed"
+
+This reverts commit aea6917404ce3bfd1b3c22110bd9ded9f00a82ad.
+
+The commit duplicates another one which does the same:
+f84c8adf48 ("[FIO extras-squash] cmd: fiovb: fix using undeclared function boot_mode_is_closed()")
+
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+---
+ cmd/fiovb.c | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/cmd/fiovb.c b/cmd/fiovb.c
+index 06b15c2fa3c..22b970c374c 100644
+--- a/cmd/fiovb.c
++++ b/cmd/fiovb.c
+@@ -4,7 +4,6 @@
+  * SPDX-License-Identifier:	GPL-2.0+
+  */
+ #include <common.h>
+-#include <asm/arch/sys_proto.h>
+ #include <command.h>
+ #include <env.h>
+ #include <image.h>
+-- 
+2.34.1
+

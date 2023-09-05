@@ -1,0 +1,30 @@
+From 7eb8aab44e6dc3b1f6775c01ba6d081357dadb23 Mon Sep 17 00:00:00 2001
+From: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+Date: Sun, 12 Sep 2021 17:32:55 +0300
+Subject: [PATCH 054/322] [FIO fromlist] mx7ulp: select soc features
+
+Force selecting features present in SoC i.MX7ULP.
+
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+Reviewed-by: Igor Opaniuk <igor.opaniuk@foundries.io>
+---
+ arch/arm/mach-imx/mx7ulp/Kconfig | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/arch/arm/mach-imx/mx7ulp/Kconfig b/arch/arm/mach-imx/mx7ulp/Kconfig
+index 45ccffa903d..60c645f7e44 100644
+--- a/arch/arm/mach-imx/mx7ulp/Kconfig
++++ b/arch/arm/mach-imx/mx7ulp/Kconfig
+@@ -9,6 +9,9 @@ config LDO_ENABLED_MODE
+ 	  Select this option to enable the PMC1 LDO.
+ 
+ config MX7ULP
++	select ARCH_SUPPORT_PSCI
++	select CPU_V7_HAS_NONSEC
++	select CPU_V7_HAS_VIRT
+ 	select HAS_CAAM
+ 	bool
+ 
+-- 
+2.34.1
+

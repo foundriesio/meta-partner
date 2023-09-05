@@ -1,0 +1,44 @@
+From 70602f6de9329c6ba086598e3e8faa87f4e9a20a Mon Sep 17 00:00:00 2001
+From: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+Date: Sat, 16 Oct 2021 23:07:26 +0300
+Subject: [PATCH 290/322] [FIO toup-squash] image-fit: improve disabling weak
+ hash algorithms
+
+Rearrange algo list to remove an extra ifdef section.
+
+Fixes: 4b14e827d5 ("[FIO extras] fit-image: dont use CRC32, MD5 and SHA1 if SIGNATURE_STRICT")
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+---
+ common/image-fit.c | 9 +++------
+ 1 file changed, 3 insertions(+), 6 deletions(-)
+
+diff --git a/common/image-fit.c b/common/image-fit.c
+index 8891d40e2c6..fa9999eedbf 100644
+--- a/common/image-fit.c
++++ b/common/image-fit.c
+@@ -1224,6 +1224,9 @@ int calculate_hash(const void *data, int data_len, const char *algo,
+ 		sha1_csum_wd((unsigned char *)data, data_len,
+ 			     (unsigned char *)value, CHUNKSZ_SHA1);
+ 		*value_len = 20;
++	} else if (IMAGE_ENABLE_MD5 && strcmp(algo, "md5") == 0) {
++		md5_wd((unsigned char *)data, data_len, value, CHUNKSZ_MD5);
++		*value_len = 16;
+ 	} else
+ #endif
+ 	if (IMAGE_ENABLE_SHA256 && strcmp(algo, "sha256") == 0) {
+@@ -1238,12 +1241,6 @@ int calculate_hash(const void *data, int data_len, const char *algo,
+ 		sha512_csum_wd((unsigned char *)data, data_len,
+ 			       (unsigned char *)value, CHUNKSZ_SHA512);
+ 		*value_len = SHA512_SUM_LEN;
+-#if (!defined(CONFIG_SPL_BUILD) && !defined(CONFIG_FIT_SIGNATURE_STRICT)) || \
+-    (defined(CONFIG_SPL_BUILD) && !defined(CONFIG_SPL_FIT_SIGNATURE_STRICT))
+-	} else if (IMAGE_ENABLE_MD5 && strcmp(algo, "md5") == 0) {
+-		md5_wd((unsigned char *)data, data_len, value, CHUNKSZ_MD5);
+-		*value_len = 16;
+-#endif
+ 	} else {
+ 		debug("Unsupported hash alogrithm\n");
+ 		return -1;
+-- 
+2.34.1
+

@@ -1,0 +1,29 @@
+From 0b689d1ecf212b756bf8931a0f3b03edaf1270fb Mon Sep 17 00:00:00 2001
+From: Igor Opaniuk <igor.opaniuk@foundries.io>
+Date: Tue, 15 Feb 2022 21:51:21 +0200
+Subject: [PATCH 313/322] [FIO internal] imx8: don't probe caam job ring driver
+
+Don't probe CAAM job ring driver, if OP-TEE support is enabled,
+as job rings are handled by OP-TEE OS core instead.
+
+Signed-off-by: Igor Opaniuk <igor.opaniuk@foundries.io>
+---
+ arch/arm/mach-imx/imx8/cpu.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/arm/mach-imx/imx8/cpu.c b/arch/arm/mach-imx/imx8/cpu.c
+index 1a5f905c4c2..f0c81e2aac5 100644
+--- a/arch/arm/mach-imx/imx8/cpu.c
++++ b/arch/arm/mach-imx/imx8/cpu.c
+@@ -105,7 +105,7 @@ int arch_cpu_init_dm(void)
+ #if defined(CONFIG_ARCH_MISC_INIT)
+ int arch_misc_init(void)
+ {
+-#if !defined(CONFIG_ANDROID_SUPPORT) && !defined(CONFIG_ANDROID_AUTO_SUPPORT)
++#if !defined(CONFIG_ANDROID_SUPPORT) && !defined(CONFIG_ANDROID_AUTO_SUPPORT) && !defined(CONFIG_OPTEE)
+ 	struct udevice *dev;
+ 	int node, ret;
+ 
+-- 
+2.34.1
+

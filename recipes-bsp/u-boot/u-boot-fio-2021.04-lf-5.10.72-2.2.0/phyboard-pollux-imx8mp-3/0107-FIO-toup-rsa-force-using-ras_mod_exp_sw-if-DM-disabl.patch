@@ -1,0 +1,71 @@
+From c47e500159c2876c459a5c10021d07bafadd441d Mon Sep 17 00:00:00 2001
+From: Igor Opaniuk <igor.opaniuk@foundries.io>
+Date: Tue, 13 Apr 2021 19:30:30 +0300
+Subject: [PATCH 107/322] [FIO toup] rsa: force using ras_mod_exp_sw if DM
+ disabled
+
+Using software implementation of Modular Exp allows us to verify
+signatures in FIT images in case the Driver Model is disabled.
+
+Signed-off-by: Igor Opaniuk <igor.opaniuk@foundries.io>
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+---
+ common/Kconfig.boot  | 2 --
+ lib/rsa/rsa-verify.c | 6 ++++++
+ 2 files changed, 6 insertions(+), 2 deletions(-)
+
+diff --git a/common/Kconfig.boot b/common/Kconfig.boot
+index 7aa8b52916f..edeb3043c22 100644
+--- a/common/Kconfig.boot
++++ b/common/Kconfig.boot
+@@ -76,7 +76,6 @@ config FIT_FULL_CHECK
+ 
+ config FIT_SIGNATURE
+ 	bool "Enable signature verification of FIT uImages"
+-	depends on DM
+ 	select HASH
+ 	select RSA
+ 	select RSA_VERIFY
+@@ -186,7 +185,6 @@ config SPL_FIT_FULL_CHECK
+ 
+ config SPL_FIT_SIGNATURE
+ 	bool "Enable signature verification of FIT firmware within SPL"
+-	depends on SPL_DM
+ 	depends on SPL_LOAD_FIT || SPL_LOAD_FIT_FULL
+ 	select FIT_SIGNATURE
+ 	select SPL_FIT
+diff --git a/lib/rsa/rsa-verify.c b/lib/rsa/rsa-verify.c
+index aee76f42d57..dc95852a92b 100644
+--- a/lib/rsa/rsa-verify.c
++++ b/lib/rsa/rsa-verify.c
+@@ -320,7 +320,9 @@ static int rsa_verify_key(struct image_sign_info *info,
+ {
+ 	int ret;
+ #if !defined(USE_HOSTCC)
++#if CONFIG_IS_ENABLED(DM)
+ 	struct udevice *mod_exp_dev;
++#endif
+ #endif
+ 	struct checksum_algo *checksum = info->checksum;
+ 	struct padding_algo *padding = info->padding;
+@@ -347,6 +349,7 @@ static int rsa_verify_key(struct image_sign_info *info,
+ 	hash_len = checksum->checksum_len;
+ 
+ #if !defined(USE_HOSTCC)
++#if CONFIG_IS_ENABLED(DM)
+ 	ret = uclass_get_device(UCLASS_MOD_EXP, 0, &mod_exp_dev);
+ 	if (ret) {
+ 		printf("RSA: Can't find Modular Exp implementation\n");
+@@ -354,6 +357,9 @@ static int rsa_verify_key(struct image_sign_info *info,
+ 	}
+ 
+ 	ret = rsa_mod_exp(mod_exp_dev, sig, sig_len, prop, buf);
++#else
++	ret = rsa_mod_exp_sw(sig, sig_len, prop, buf);
++#endif
+ #else
+ 	ret = rsa_mod_exp_sw(sig, sig_len, prop, buf);
+ #endif
+-- 
+2.34.1
+

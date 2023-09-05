@@ -1,0 +1,57 @@
+From 1edf55e90140f9bfd05fc881b82a9e7805013e9d Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Marek=20Beh=C3=BAn?= <marek.behun@nic.cz>
+Date: Thu, 20 May 2021 13:23:58 +0200
+Subject: [PATCH 214/322] [FIO fromtree] efi_loader: add macro for const EFI
+ runtime data
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Add macro __efi_runtime_rodata, for const variables with similar purpose
+as those using __efi_runtime_data.
+
+Signed-off-by: Marek Behún <marek.behun@nic.cz>
+Reviewed-by: Heinrich Schuchardt <xypron.glpk@gmx.de>
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+---
+ include/efi_loader.h | 17 +++++++++++++++++
+ 1 file changed, 17 insertions(+)
+
+diff --git a/include/efi_loader.h b/include/efi_loader.h
+index 0ea01c90d98..114832973ff 100644
+--- a/include/efi_loader.h
++++ b/include/efi_loader.h
+@@ -696,6 +696,22 @@ ssize_t efi_dp_check_length(const struct efi_device_path *dp,
+  */
+ #define __efi_runtime_data __attribute__ ((section (".data.efi_runtime")))
+ 
++/**
++ * __efi_runtime_rodata - declares a read-only variable for EFI runtime section
++ *
++ * This macro indicates that a variable is read-only (const) and should go into
++ * the EFI runtime section, and thus still be available when the OS is running.
++ *
++ * Only use on variables also declared const.
++ *
++ * Example:
++ *
++ * ::
++ *
++ *   static const __efi_runtime_rodata my_const_table[] = { 1, 2, 3 };
++ */
++#define __efi_runtime_rodata __attribute__ ((section (".rodata.efi_runtime")))
++
+ /**
+  * __efi_runtime - declares a function for EFI runtime section
+  *
+@@ -913,6 +929,7 @@ efi_status_t efi_launch_capsules(void);
+ 
+ /* Without CONFIG_EFI_LOADER we don't have a runtime section, stub it out */
+ #define __efi_runtime_data
++#define __efi_runtime_rodata
+ #define __efi_runtime
+ static inline efi_status_t efi_add_runtime_mmio(void *mmio_ptr, u64 len)
+ {
+-- 
+2.34.1
+

@@ -1,0 +1,35 @@
+From 1b4717c3fd155f79f6223e49cbeb7f837b5a8c78 Mon Sep 17 00:00:00 2001
+From: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+Date: Sat, 25 Sep 2021 22:08:07 +0300
+Subject: [PATCH 069/322] Revert "[FIO extras] spl: mmc: only load legacy if
+ set"
+
+This reverts commit 5e1dee21cf09acdaf670f879f6971569c1f04ae6.
+
+Superseded with a fixed commit.
+
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+---
+ common/spl/spl_mmc.c | 5 +----
+ 1 file changed, 1 insertion(+), 4 deletions(-)
+
+diff --git a/common/spl/spl_mmc.c b/common/spl/spl_mmc.c
+index 4be76177acd..d3ce1efc5f8 100644
+--- a/common/spl/spl_mmc.c
++++ b/common/spl/spl_mmc.c
+@@ -111,11 +111,8 @@ int mmc_load_image_raw_sector(struct spl_image_info *spl_image,
+ 		load.read = h_spl_load_read;
+ 
+ 		ret = spl_load_imx_container(spl_image, &load, sector);
+-	} else if (IS_ENABLED(CONFIG_SPL_LEGACY_IMAGE_FORMAT)) {
+-		ret = mmc_load_legacy(spl_image, mmc, sector, header);
+ 	} else {
+-		puts("mmc_load_image_raw_sector: unsupported image format\n");
+-		return -1;
++		ret = mmc_load_legacy(spl_image, mmc, sector, header);
+ 	}
+ 
+ end:
+-- 
+2.34.1
+

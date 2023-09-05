@@ -1,0 +1,30 @@
+From 52a4eedd5f09ed9a2abf474f10ae2348f3d6d6ea Mon Sep 17 00:00:00 2001
+From: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+Date: Fri, 1 Oct 2021 17:20:54 +0300
+Subject: [PATCH 252/322] [FIO extras-squash] mx6ullevk: include required
+ header files for SPL
+
+This fixes several declaration warnings.
+
+Fixes: 97ba0443a8 ("[FIO extras] imx: support SPL build for TARGET_MX6ULL_14X14_EVK")
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+---
+ board/freescale/mx6ullevk/spl.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/board/freescale/mx6ullevk/spl.c b/board/freescale/mx6ullevk/spl.c
+index c28521b4484..090bc8a2bbd 100644
+--- a/board/freescale/mx6ullevk/spl.c
++++ b/board/freescale/mx6ullevk/spl.c
+@@ -11,6 +11,8 @@
+ #include <asm/arch/imx-regs.h>
+ #include <asm/arch/mx6ull_pins.h>
+ #include <asm/mach-imx/iomux-v3.h>
++#include <clock_legacy.h>
++#include <init.h>
+ 
+ DECLARE_GLOBAL_DATA_PTR;
+ 
+-- 
+2.34.1
+

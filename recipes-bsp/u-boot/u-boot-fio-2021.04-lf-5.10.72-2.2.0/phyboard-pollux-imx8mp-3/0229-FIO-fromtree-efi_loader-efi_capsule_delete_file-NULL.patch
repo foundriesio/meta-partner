@@ -1,0 +1,33 @@
+From 8dd0474cbb2e63275cc0a6376242c88ecf814f6f Mon Sep 17 00:00:00 2001
+From: Heinrich Schuchardt <xypron.glpk@gmx.de>
+Date: Wed, 2 Jun 2021 19:28:22 +0200
+Subject: [PATCH 229/322] [FIO fromtree] efi_loader: efi_capsule_delete_file()
+ NULL dereference
+
+If opening a file fails, the file handle pointer is not valid and must not
+be dereferenced.
+
+Signed-off-by: Heinrich Schuchardt <xypron.glpk@gmx.de>
+(cherry picked from commit e27b0ff1b7135f966c1379acde48134dd6b15545)
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+---
+ lib/efi_loader/efi_capsule.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/lib/efi_loader/efi_capsule.c b/lib/efi_loader/efi_capsule.c
+index 9ead0d2c781..60309d4a07d 100644
+--- a/lib/efi_loader/efi_capsule.c
++++ b/lib/efi_loader/efi_capsule.c
+@@ -901,7 +901,8 @@ static efi_status_t efi_capsule_delete_file(const u16 *filename)
+ 	/* ignore an error */
+ 	EFI_CALL((*dirh->close)(dirh));
+ 
+-	ret = EFI_CALL((*fh->delete)(fh));
++	if (ret == EFI_SUCCESS)
++		ret = EFI_CALL((*fh->delete)(fh));
+ 
+ 	return ret;
+ }
+-- 
+2.34.1
+

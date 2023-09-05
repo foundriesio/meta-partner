@@ -1,0 +1,173 @@
+From 34b791b6db106fbf12ea41257ac225787883323f Mon Sep 17 00:00:00 2001
+From: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+Date: Tue, 30 Nov 2021 15:50:01 +0200
+Subject: [PATCH 294/322] [FIO internal] lib: don't select MD5 and SHA1 if
+ strict signature enabled
+
+Don't force selecting MD5 and SHA1 algorithms if FIT_SIGNATURE_STRICT
+is set. It allows reducing SPL/U-Boot size.
+
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+---
+ common/Kconfig      |  4 ++--
+ common/Kconfig.boot |  8 ++++----
+ common/hash.c       |  7 +++++--
+ common/spl/Kconfig  | 10 +++++-----
+ lib/Kconfig         |  8 ++++++++
+ lib/Makefile        |  2 +-
+ lib/tpm-v1.c        |  2 +-
+ 7 files changed, 26 insertions(+), 15 deletions(-)
+
+diff --git a/common/Kconfig b/common/Kconfig
+index 53fe914732b..11b85472607 100644
+--- a/common/Kconfig
++++ b/common/Kconfig
+@@ -738,7 +738,7 @@ source "common/spl/Kconfig"
+ 
+ config IMAGE_SIGN_INFO
+ 	bool
+-	select SHA1
++	select SHA1 if !FIT_SIGNATURE_STRICT
+ 	select SHA256
+ 	help
+ 	  Enable image_sign_info helper functions.
+@@ -747,7 +747,7 @@ if IMAGE_SIGN_INFO
+ 
+ config SPL_IMAGE_SIGN_INFO
+ 	bool
+-	select SHA1
++	select SPL_SHA1 if !SPL_FIT_SIGNATURE_STRICT
+ 	select SHA256
+ 	help
+ 	  Enable image_sign_info helper functions in SPL.
+diff --git a/common/Kconfig.boot b/common/Kconfig.boot
+index edeb3043c22..f71b892d88d 100644
+--- a/common/Kconfig.boot
++++ b/common/Kconfig.boot
+@@ -11,10 +11,10 @@ config ANDROID_BOOT_IMAGE
+ 
+ config FIT
+ 	bool "Support Flattened Image Tree"
+-	select MD5 if (!SPL_BUILD && !FIT_SIGNATURE_STRICT) || \
+-		      (SPL_BUILD && !SPL_FIT_SIGNATURE_STRICT)
+-	select SHA1 if (!SPL_BUILD && !FIT_SIGNATURE_STRICT) || \
+-		       (SPL_BUILD && !SPL_FIT_SIGNATURE_STRICT)
++	select MD5 if (!SPL_BUILD && !FIT_SIGNATURE_STRICT)
++	select SPL_MD5 if (SPL_BUILD && !SPL_FIT_SIGNATURE_STRICT)
++	select SHA1 if (!SPL_BUILD && !FIT_SIGNATURE_STRICT)
++	select SPL_SHA1 if (SPL_BUILD && !SPL_FIT_SIGNATURE_STRICT)
+ 	help
+ 	  This option allows you to boot the new uImage structure,
+ 	  Flattened Image Tree.  FIT is formally a FDT, which can include
+diff --git a/common/hash.c b/common/hash.c
+index bebe32a6b58..11dad118f22 100644
+--- a/common/hash.c
++++ b/common/hash.c
+@@ -41,7 +41,9 @@ DECLARE_GLOBAL_DATA_PTR;
+ 
+ static void reloc_update(void);
+ 
+-#if defined(CONFIG_SHA1) && !defined(CONFIG_SHA_PROG_HW_ACCEL)
++#if ((defined(CONFIG_SHA1) && !defined(CONFIG_SPL_BUILD)) || \
++     (defined(CONFIG_SPL_SHA1) && defined(CONFIG_SPL_BUILD))) && \
++     !defined(CONFIG_SHA_PROG_HW_ACCEL)
+ static int hash_init_sha1(struct hash_algo *algo, void **ctxp)
+ {
+ 	sha1_context *ctx = malloc(sizeof(sha1_context));
+@@ -217,7 +219,8 @@ static int hash_finish_crc32(struct hash_algo *algo, void *ctx, void *dest_buf,
+  * Note that algorithm names must be in lower case.
+  */
+ static struct hash_algo hash_algo[] = {
+-#ifdef CONFIG_SHA1
++#if (defined(CONFIG_SHA1) && !defined(CONFIG_SPL_BUILD)) || \
++    (defined(CONFIG_SPL_SHA1) && defined(CONFIG_SPL_BUILD))
+ 	{
+ 		.name 		= "sha1",
+ 		.digest_size	= SHA1_SUM_LEN,
+diff --git a/common/spl/Kconfig b/common/spl/Kconfig
+index 7410736fe5a..42b5cd6b5a7 100644
+--- a/common/spl/Kconfig
++++ b/common/spl/Kconfig
+@@ -418,7 +418,7 @@ config SPL_MD5_SUPPORT
+ config SPL_SHA1_SUPPORT
+ 	bool "Support SHA1"
+ 	depends on SPL_FIT && !SPL_FIT_SIGNATURE_STRICT
+-	select SHA1
++	select SPL_SHA1
+ 	help
+ 	  Enable this to support SHA1 in FIT images within SPL. A SHA1
+ 	  checksum is a 160-bit (20-byte) hash value used to check that the
+@@ -497,7 +497,7 @@ config SPL_CRYPTO_SUPPORT
+ 
+ config SPL_HASH_SUPPORT
+ 	bool "Support hashing drivers"
+-	select SHA1 if !SPL_FIT_SIGNATURE_STRICT
++	select SPL_SHA1 if !SPL_FIT_SIGNATURE_STRICT
+ 	select SHA256
+ 	help
+ 	  Enable hashing drivers in SPL. These drivers can be used to
+@@ -508,13 +508,13 @@ config SPL_HASH_SUPPORT
+ config TPL_HASH_SUPPORT
+ 	bool "Support hashing drivers in TPL"
+ 	depends on TPL
+-	select SHA1 if !SPL_FIT_SIGNATURE_STRICT
++	select SPL_SHA1 if !SPL_FIT_SIGNATURE_STRICT
+ 	select SHA256
+ 	help
+-	  Enable hashing drivers in SPL. These drivers can be used to
++	  Enable hashing drivers in TPL. These drivers can be used to
+ 	  accelerate secure boot processing in secure applications. Enable
+ 	  this option to build system-specific drivers for hash acceleration
+-	  as part of an SPL build.
++	  as part of a TPL build.
+ 
+ config SPL_DMA
+ 	bool "Support DMA drivers"
+diff --git a/lib/Kconfig b/lib/Kconfig
+index 1980e13b4cd..ba7ffedd601 100644
+--- a/lib/Kconfig
++++ b/lib/Kconfig
+@@ -389,6 +389,14 @@ config SHA1
+ 	  The SHA1 algorithm produces a 160-bit (20-byte) hash value
+ 	  (digest).
+ 
++config SPL_SHA1
++	bool "Enable SHA1 support in SPL"
++	help
++	  This option enables support of hashing using SHA1 algorithm
++	  in SPL. The hash is calculated in software.
++	  The SHA1 algorithm produces a 160-bit (20-byte) hash value
++	  (digest).
++
+ config SHA256
+ 	bool "Enable SHA256 support"
+ 	help
+diff --git a/lib/Makefile b/lib/Makefile
+index 0fc93af4d20..69bad4a6f1e 100644
+--- a/lib/Makefile
++++ b/lib/Makefile
+@@ -62,7 +62,7 @@ obj-$(CONFIG_$(SPL_)ACPIGEN) += acpi/
+ obj-$(CONFIG_$(SPL_)MD5) += md5.o
+ obj-$(CONFIG_$(SPL_)RSA) += rsa/
+ obj-$(CONFIG_HASH) += hash-checksum.o
+-obj-$(CONFIG_SHA1) += sha1.o
++obj-$(CONFIG_$(SPL_TPL_)SHA1) += sha1.o
+ obj-$(CONFIG_SHA256) += sha256.o
+ obj-$(CONFIG_SHA512_ALGO) += sha512.o
+ 
+diff --git a/lib/tpm-v1.c b/lib/tpm-v1.c
+index a846fe00dd3..b50e1f31774 100644
+--- a/lib/tpm-v1.c
++++ b/lib/tpm-v1.c
+@@ -17,7 +17,7 @@
+ 
+ #ifdef CONFIG_TPM_AUTH_SESSIONS
+ 
+-#ifndef CONFIG_SHA1
++#if !CONFIG_IS_ENABLED(SHA1)
+ #error "TPM_AUTH_SESSIONS require SHA1 to be configured, too"
+ #endif /* !CONFIG_SHA1 */
+ 
+-- 
+2.34.1
+

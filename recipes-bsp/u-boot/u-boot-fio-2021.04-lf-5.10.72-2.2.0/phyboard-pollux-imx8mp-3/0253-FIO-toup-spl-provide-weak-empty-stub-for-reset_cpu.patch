@@ -1,0 +1,32 @@
+From 17fbef799fc9250807405b4c2782176239c1fcdc Mon Sep 17 00:00:00 2001
+From: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+Date: Mon, 4 Oct 2021 15:09:41 +0300
+Subject: [PATCH 253/322] [FIO toup] spl: provide weak empty stub for
+ reset_cpu()
+
+This stub needs to link SPL properly.
+
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+---
+ common/spl/spl.c | 8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+diff --git a/common/spl/spl.c b/common/spl/spl.c
+index 5b147cb77b5..eea6f4ff278 100644
+--- a/common/spl/spl.c
++++ b/common/spl/spl.c
+@@ -870,3 +870,11 @@ ulong bootcount_load(void)
+ 	return 0;
+ }
+ #endif
++
++/**
++ * Weak default function for board-specific reset. Provide empty stub only.
++ */
++__weak void reset_cpu(ulong addr)
++{
++	/* Nothing to do! */
++}
+-- 
+2.34.1
+

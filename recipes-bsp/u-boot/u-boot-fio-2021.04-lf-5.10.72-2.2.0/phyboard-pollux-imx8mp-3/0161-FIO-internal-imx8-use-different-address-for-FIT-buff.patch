@@ -1,0 +1,67 @@
+From 0138e99844cf83032e617946f4076890f9491ca2 Mon Sep 17 00:00:00 2001
+From: Igor Opaniuk <igor.opaniuk@foundries.io>
+Date: Fri, 30 Jul 2021 18:32:30 +0300
+Subject: [PATCH 161/322] [FIO internal] imx8: use different address for FIT
+ buffer in board_spl_fit_buffer_addr()
+
+Calculation of buffer address for loading FIT image seems to work for imx8m,
+but not for other SoCs like iMX8QM, where CONFIG_SYS_TEXT_BASE=0x80020000,
+As 0x20000 is not sufficient space for that.
+
+Default memory layout for iMX8QM is:
+* SYS_SDRAM_BASE       0x80000000      0.125MiB
+* SYS_TEXT_BASE        0x80020000      2.375MiB
+* kernel_addr_r        0x80280000      45.5MiB
+* fdt_addr_r           0x83000000      1MiB
+
+Use kernel_addr_r for that instead.
+
+This fixes corruption of FIT image on iMX8QM:
+spl_load_simple_fit: Cannot find /images node: -4
+
+Also move that function outside of CONFIG_SPL_IMX_HAB define, as
+it can be used also when SPL HAB support is not enabled.
+
+Signed-off-by: Igor Opaniuk <igor.opaniuk@foundries.io>
+---
+ arch/arm/mach-imx/spl.c | 10 ++++++++--
+ 1 file changed, 8 insertions(+), 2 deletions(-)
+
+diff --git a/arch/arm/mach-imx/spl.c b/arch/arm/mach-imx/spl.c
+index f3974f973b3..c2f0992a562 100644
+--- a/arch/arm/mach-imx/spl.c
++++ b/arch/arm/mach-imx/spl.c
+@@ -333,11 +333,13 @@ ulong board_spl_fit_size_align(ulong size)
+ 	return size;
+ }
+ 
++#endif
+ #endif
+ 
+ void* board_spl_fit_buffer_addr(ulong fit_size, int sectors, int bl_len)
+ {
+ 	int align_len = ARCH_DMA_MINALIGN - 1;
++	uintptr_t base_addr;
+ 
+ 	/* Some devices like SDP, NOR, NAND, SPI are using bl_len =1, so their fit address
+ 	 * is different with SD/MMC, this cause mismatch with signed address. Thus, adjust
+@@ -346,10 +348,14 @@ void* board_spl_fit_buffer_addr(ulong fit_size, int sectors, int bl_len)
+ 	if (bl_len < 512)
+ 		bl_len = 512;
+ 
+-	return  (void *)((CONFIG_SYS_TEXT_BASE - fit_size - bl_len -
++	if (is_imx8qm() || is_imx8qxp() || is_imx8dxl())
++		base_addr = 0x80280000;
++	else
++		base_addr = CONFIG_SYS_TEXT_BASE;
++
++	return (void *)((base_addr - fit_size - bl_len -
+ 			align_len) & ~align_len);
+ }
+-#endif
+ 
+ #if defined(CONFIG_MX6) && (defined(CONFIG_SPL_OS_BOOT) || \
+ 		defined(CONFIG_SPL_ATF) || defined(CONFIG_SPL_OPTEE))
+-- 
+2.34.1
+

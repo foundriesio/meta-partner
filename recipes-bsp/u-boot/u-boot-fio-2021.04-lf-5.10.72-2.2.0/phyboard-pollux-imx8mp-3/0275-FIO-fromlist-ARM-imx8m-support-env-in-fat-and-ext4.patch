@@ -1,0 +1,88 @@
+From 6eeeea4fd42c52c9c2b43e47fae08313ca39f3bf Mon Sep 17 00:00:00 2001
+From: Ricardo Salveti <ricardo@foundries.io>
+Date: Wed, 20 Oct 2021 15:50:18 -0300
+Subject: [PATCH 275/322] [FIO fromlist] ARM: imx8m: support env in fat and
+ ext4
+
+Change boot device logic to also allow environment stored in fat and in
+ext4 when booting from SD or from eMMC.
+
+As the boot device check for SD and for eMMC was depending on
+ENV_IS_IN_MMC being defined, change the ifdef blocks at env_get_location
+to use IS_ENABLED instead for all modes, returning NOWHERE when no valid
+mode is found.
+
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+Signed-off-by: Vanessa Maegima <vanessa.maegima@foundries.io>
+---
+ arch/arm/mach-imx/imx8m/soc.c | 42 ++++++++++++++---------------------
+ 1 file changed, 17 insertions(+), 25 deletions(-)
+
+diff --git a/arch/arm/mach-imx/imx8m/soc.c b/arch/arm/mach-imx/imx8m/soc.c
+index 9cbbd727dce..e5fa5b59f66 100644
+--- a/arch/arm/mach-imx/imx8m/soc.c
++++ b/arch/arm/mach-imx/imx8m/soc.c
+@@ -1633,43 +1633,35 @@ void do_error(struct pt_regs *pt_regs, unsigned int esr)
+ enum env_location env_get_location(enum env_operation op, int prio)
+ {
+ 	enum boot_device dev = get_boot_device();
+-	enum env_location env_loc = ENVL_UNKNOWN;
+ 
+-	if (prio > 1)
+-		return env_loc;
+-#if defined(CONFIG_ENV_IS_NOWHERE) && defined(CONFIG_ENV_APPEND)
+-	if(prio == 1)
+-		return ENVL_NOWHERE;
+-#endif
++	if (prio)
++		return ENVL_UNKNOWN;
++
+ 	switch (dev) {
+-#ifdef CONFIG_ENV_IS_IN_SPI_FLASH
+ 	case QSPI_BOOT:
+-		env_loc = ENVL_SPI_FLASH;
+-		break;
+-#endif
+-#ifdef CONFIG_ENV_IS_IN_NAND
++		if (IS_ENABLED(CONFIG_ENV_IS_IN_SPI_FLASH))
++			return ENVL_SPI_FLASH;
++		return ENVL_NOWHERE;
+ 	case NAND_BOOT:
+-		env_loc = ENVL_NAND;
+-		break;
+-#endif
+-#ifdef CONFIG_ENV_IS_IN_MMC
++		if (IS_ENABLED(CONFIG_ENV_IS_IN_NAND))
++			return ENVL_NAND;
++		return ENVL_NOWHERE;
+ 	case SD1_BOOT:
+ 	case SD2_BOOT:
+ 	case SD3_BOOT:
+ 	case MMC1_BOOT:
+ 	case MMC2_BOOT:
+ 	case MMC3_BOOT:
+-		env_loc =  ENVL_MMC;
+-		break;
+-#endif
++		if (IS_ENABLED(CONFIG_ENV_IS_IN_MMC))
++			return ENVL_MMC;
++		else if (IS_ENABLED(CONFIG_ENV_IS_IN_EXT4))
++			return ENVL_EXT4;
++		else if (IS_ENABLED(CONFIG_ENV_IS_IN_FAT))
++			return ENVL_FAT;
++		return ENVL_NOWHERE;
+ 	default:
+-#if defined(CONFIG_ENV_IS_NOWHERE)
+-		env_loc = ENVL_NOWHERE;
+-#endif
+-		break;
++		return ENVL_NOWHERE;
+ 	}
+-
+-	return env_loc;
+ }
+ 
+ #ifndef ENV_IS_EMBEDDED
+-- 
+2.34.1
+

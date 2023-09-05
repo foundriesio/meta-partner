@@ -1,0 +1,30 @@
+From 0ebe00eb9f874e28af151228a07bbd2b598a11de Mon Sep 17 00:00:00 2001
+From: Michael Scott <mike@foundries.io>
+Date: Wed, 3 Aug 2022 15:22:57 -0700
+Subject: [PATCH 321/322] [FIO toup] imx8mn_evk: define default dfu_alt_info
+ for emmc updates
+
+Define dfu_alt_info to allow updating SPL/imx-boot and u-boot.itb via
+DFU (which is also used by EFI capsule updates).
+
+Signed-off-by: Michael Scott <mike@foundries.io>
+---
+ include/configs/imx8mn_evk.h | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/include/configs/imx8mn_evk.h b/include/configs/imx8mn_evk.h
+index 7515fdadfd4..50703534200 100644
+--- a/include/configs/imx8mn_evk.h
++++ b/include/configs/imx8mn_evk.h
+@@ -124,6 +124,8 @@
+ 	"fdt_addr=0x43000000\0"			\
+ 	"fdt_high=0xffffffffffffffff\0"		\
+ 	"boot_fit=no\0" \
++	"dfu_alt_info=mmc 2=imx-boot raw 0x0 0x300 mmcpart 1;" \
++		"u-boot-itb raw 0x300 0xD00 mmcpart 1\0" \
+ 	"fdtfile=" CONFIG_DEFAULT_FDT_FILE "\0" \
+ 	"bootm_size=0x10000000\0" \
+ 	"mmcdev="__stringify(CONFIG_SYS_MMC_ENV_DEV)"\0" \
+-- 
+2.34.1
+

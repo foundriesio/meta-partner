@@ -1,0 +1,38 @@
+From dffec63e0d01cfc65b6d594c198b53a529611788 Mon Sep 17 00:00:00 2001
+From: Ilias Apalodimas <ilias.apalodimas@linaro.org>
+Date: Mon, 10 May 2021 21:15:08 +0300
+Subject: [PATCH 207/322] [FIO fromtree] efi_loader: Clean up tcg2 once in case
+ of failure
+
+efi_init_event_log() calls tcg2_uninit() in case of failure.
+We can skip that since the function is called on efi_tcg2_register()
+which also cleans up if an error occurs
+
+Signed-off-by: Ilias Apalodimas <ilias.apalodimas@linaro.org>
+Reviewed-by: Heinrich Schuchardt <xypron.glpk@gmx.de>
+(cherry picked from commit b76edf6b0753ada33d1ae486c621f5284d034055)
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+---
+ lib/efi_loader/efi_tcg2.c | 4 ----
+ 1 file changed, 4 deletions(-)
+
+diff --git a/lib/efi_loader/efi_tcg2.c b/lib/efi_loader/efi_tcg2.c
+index 06e97b0b270..40c94ab1333 100644
+--- a/lib/efi_loader/efi_tcg2.c
++++ b/lib/efi_loader/efi_tcg2.c
+@@ -1053,12 +1053,8 @@ static efi_status_t efi_init_event_log(void)
+ 	event_log.last_event_size = event_log.pos;
+ 
+ 	ret = create_final_event();
+-	if (ret != EFI_SUCCESS)
+-		goto out;
+ 
+-	return EFI_SUCCESS;
+ out:
+-	tcg2_uninit();
+ 	return ret;
+ }
+ 
+-- 
+2.34.1
+

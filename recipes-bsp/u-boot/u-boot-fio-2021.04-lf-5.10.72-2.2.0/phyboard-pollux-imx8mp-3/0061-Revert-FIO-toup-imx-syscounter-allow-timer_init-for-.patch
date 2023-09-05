@@ -1,0 +1,31 @@
+From 0abac7fd9531d97e45682a70254e866afc6d7c1c Mon Sep 17 00:00:00 2001
+From: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+Date: Sat, 25 Sep 2021 20:09:35 +0300
+Subject: [PATCH 061/322] Revert "[FIO toup] imx: syscounter: allow timer_init
+ for SPL build"
+
+This reverts commit c67e4165bd7ea37e9c8f907165f0e057fd73f7c0.
+
+Superseded with a commit from the list.
+
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+---
+ arch/arm/mach-imx/syscounter.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/arm/mach-imx/syscounter.c b/arch/arm/mach-imx/syscounter.c
+index e69a168a952..6dfed365d29 100644
+--- a/arch/arm/mach-imx/syscounter.c
++++ b/arch/arm/mach-imx/syscounter.c
+@@ -59,7 +59,7 @@ static inline unsigned long long us_to_tick(unsigned long long usec)
+ 	return usec;
+ }
+ 
+-#if !defined(CONFIG_SKIP_LOWLEVEL_INIT) || defined(CONFIG_SPL_BUILD)
++#ifndef CONFIG_SKIP_LOWLEVEL_INIT
+ int timer_init(void)
+ {
+ 	struct sctr_regs *sctr = (struct sctr_regs *)SCTR_BASE_ADDR;
+-- 
+2.34.1
+

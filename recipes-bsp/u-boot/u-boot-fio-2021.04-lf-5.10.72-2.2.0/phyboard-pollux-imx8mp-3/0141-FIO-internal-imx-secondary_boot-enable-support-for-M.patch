@@ -1,0 +1,79 @@
+From 8cf91f7dfe96f2c26a96d5353756d2afc782cc3d Mon Sep 17 00:00:00 2001
+From: Igor Opaniuk <igor.opaniuk@foundries.io>
+Date: Mon, 19 Apr 2021 23:49:31 +0300
+Subject: [PATCH 141/322] [FIO internal] imx: secondary_boot: enable support
+ for MX6
+
+Enable support of imx_secondary_boot and imx_is_closed cmds
+for MX6 SoCs. Use U-Boot wrappers to get/write PERSIST_SECONDARY_BOOT
+instead of doing SMC call to SM (SRC register is currently accessible
+from NW).
+
+Signed-off-by: Igor Opaniuk <igor.opaniuk@foundries.io>
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+---
+ arch/arm/mach-imx/Kconfig              |  2 +-
+ arch/arm/mach-imx/imx_secondary_boot.c | 21 +++++++++++++++------
+ 2 files changed, 16 insertions(+), 7 deletions(-)
+
+diff --git a/arch/arm/mach-imx/Kconfig b/arch/arm/mach-imx/Kconfig
+index 436bd64501d..53fc5bdf2e0 100644
+--- a/arch/arm/mach-imx/Kconfig
++++ b/arch/arm/mach-imx/Kconfig
+@@ -55,7 +55,7 @@ config IMX_BOOTAUX
+ config CMD_SECONDARY_BOOT
+ 	bool "Use SiP service exposed by trusted firmware for redundant boot control"
+ 	default n
+-	depends on ARCH_IMX8M
++	depends on ARCH_IMX8M || ARCH_MX6
+ 	help
+ 	  Command for triggering SiP service provided by TF-A for setting/clearing
+ 	  SRC GPR10 PERSIST_SECONDARY_BOOT bit, that identifies which image will be
+diff --git a/arch/arm/mach-imx/imx_secondary_boot.c b/arch/arm/mach-imx/imx_secondary_boot.c
+index 4eb5c14e747..52dada7a6c8 100644
+--- a/arch/arm/mach-imx/imx_secondary_boot.c
++++ b/arch/arm/mach-imx/imx_secondary_boot.c
+@@ -19,16 +19,21 @@ static int do_imx_secondary_boot(struct cmd_tbl *cmdtp, int flag,
+ 				 int argc, char * const argv[])
+ {
+ 	u32 secondary = 0;
+-	struct arm_smccc_res res;
++	__maybe_unused struct arm_smccc_res res;
+ 	char secondary_val[2] = { 0 };
+ 	int ret;
+ 
+ 	/* If we just want to retrieve current value */
+ 	if (argc == 1) {
+-		arm_smccc_smc(IMX_SIP_SRC, IMX_SIP_SRC_IS_SECONDARY_BOOT, 0, 0,
+-			      0, 0, 0, 0, &res);
++		if (CONFIG_IS_ENABLED(ARCH_IMX8M)) {
++			arm_smccc_smc(IMX_SIP_SRC,
++				      IMX_SIP_SRC_IS_SECONDARY_BOOT, 0, 0,
++				      0, 0, 0, 0, &res);
++			secondary = res.a0;
++		} else {
++			secondary = boot_mode_getprisec();
++		}
+ 
+-		secondary = res.a0;
+ 		printf("Secondary boot bit = %d\n", secondary);
+ 		ret = snprintf(secondary_val, sizeof(secondary_val),
+ 			       "%d", secondary);
+@@ -47,8 +52,12 @@ static int do_imx_secondary_boot(struct cmd_tbl *cmdtp, int flag,
+ 	if (!(secondary == 0 || secondary == 1))
+ 		return CMD_RET_USAGE;
+ 
+-	arm_smccc_smc(IMX_SIP_SRC, IMX_SIP_SRC_SET_SECONDARY_BOOT, secondary, 0,
+-		      0, 0, 0, 0, &res);
++	if (CONFIG_IS_ENABLED(ARCH_IMX8M)) {
++		arm_smccc_smc(IMX_SIP_SRC, IMX_SIP_SRC_SET_SECONDARY_BOOT,
++			      secondary, 0, 0, 0, 0, 0, &res);
++	} else {
++		boot_mode_enable_secondary(secondary);
++	}
+ 
+ 	return CMD_RET_SUCCESS;
+ }
+-- 
+2.34.1
+

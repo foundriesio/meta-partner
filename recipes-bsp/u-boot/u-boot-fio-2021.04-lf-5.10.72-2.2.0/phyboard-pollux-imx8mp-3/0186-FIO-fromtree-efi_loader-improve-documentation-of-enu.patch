@@ -1,0 +1,54 @@
+From ac86170a07d4002abbaca2d72808040c189bb547 Mon Sep 17 00:00:00 2001
+From: Heinrich Schuchardt <xypron.glpk@gmx.de>
+Date: Sun, 28 Mar 2021 10:41:00 +0200
+Subject: [PATCH 186/322] [FIO fromtree] efi_loader: improve documentation of
+ enum efi_test_phase
+
+* Avoid a warning: "Incorrect use of kernel-doc format".
+* Remove duplicate text.
+* Clarify usage of EFI_SETTING_VIRTUAL_ADDRESS_MAP.
+
+Signed-off-by: Heinrich Schuchardt <xypron.glpk@gmx.de>
+(cherry picked from commit b411b62fb4a02b8c885fa86a1e8c5145cfa1b65f)
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+---
+ include/efi_selftest.h | 12 ++++++++----
+ 1 file changed, 8 insertions(+), 4 deletions(-)
+
+diff --git a/include/efi_selftest.h b/include/efi_selftest.h
+index 07b619901c0..94ceb147330 100644
+--- a/include/efi_selftest.h
++++ b/include/efi_selftest.h
+@@ -53,21 +53,25 @@
+  */
+ enum efi_test_phase {
+ 	/**
+-	 * @EFI_EXECUTE_BEFORE_BOOTTIME_EXIT: - execute before ExitBootServices
++	 * @EFI_EXECUTE_BEFORE_BOOTTIME_EXIT:
+ 	 *
+ 	 * Setup, execute, and teardown are executed before ExitBootServices().
+ 	 */
+ 	EFI_EXECUTE_BEFORE_BOOTTIME_EXIT = 1,
+ 	/**
+-	 * @EFI_SETUP_BEFORE_BOOTTIME_EXIT: - setup before ExitBootServices
++	 * @EFI_SETUP_BEFORE_BOOTTIME_EXIT:
+ 	 *
+ 	 * Setup is executed before ExitBootServices() while execute, and
+ 	 * teardown are executed after ExitBootServices().
+ 	 */
+ 	EFI_SETUP_BEFORE_BOOTTIME_EXIT,
+ 	/**
+-	 * @EFI_SETTING_VIRTUAL_ADDRESS_MAP - calls SetVirtualAddressMap()
+-	 * Execute calls SetVirtualAddressMap().
++	 * @EFI_SETTING_VIRTUAL_ADDRESS_MAP:
++	 *
++	 * Execute calls SetVirtualAddressMap(). Setup is executed before
++	 * ExitBootServices() while execute is executed after
++	 * ExitBootServices(), and after the execute of tests marked as
++	 * @EFI_SETUP_BEFORE_BOOTTIME_EXIT. Teardown is executed thereafter.
+ 	 */
+ 	EFI_SETTING_VIRTUAL_ADDRESS_MAP,
+ };
+-- 
+2.34.1
+

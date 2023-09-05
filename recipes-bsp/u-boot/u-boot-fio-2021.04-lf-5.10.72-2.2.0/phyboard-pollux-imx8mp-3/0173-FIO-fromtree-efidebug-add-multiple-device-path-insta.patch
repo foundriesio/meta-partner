@@ -1,0 +1,539 @@
+From 5f72695ecf9ebc9c87ac2b353e01553a94a573ec Mon Sep 17 00:00:00 2001
+From: Ilias Apalodimas <ilias.apalodimas@linaro.org>
+Date: Wed, 17 Mar 2021 21:55:01 +0200
+Subject: [PATCH 173/322] [FIO fromtree] efidebug: add multiple device path
+ instances on Boot####
+
+The UEFI spec allows a packed array of UEFI device paths in the
+FilePathList[] of an EFI_LOAD_OPTION. The first file path must
+describe the loaded image but the rest are OS specific.
+
+Previous patches parse the device path and try to use the second
+member of the array as an initrd. So let's modify efidebug slightly
+and install the second file described in the command line as the
+initrd device path.
+
+Signed-off-by: Ilias Apalodimas <ilias.apalodimas@linaro.org>
+(cherry picked from commit cbea241e935ec754df44d5de0ad20b801f2d3f90)
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+---
+ cmd/efidebug.c                                | 191 ++++++++++++++----
+ doc/board/emulation/qemu_capsule_update.rst   |   4 +-
+ doc/uefi/uefi.rst                             |   2 +-
+ .../test_efi_capsule/test_capsule_firmware.py |   6 +-
+ test/py/tests/test_efi_secboot/test_signed.py |  16 +-
+ .../test_efi_secboot/test_signed_intca.py     |   8 +-
+ .../tests/test_efi_secboot/test_unsigned.py   |   8 +-
+ 7 files changed, 177 insertions(+), 58 deletions(-)
+
+diff --git a/cmd/efidebug.c b/cmd/efidebug.c
+index 55c7abe3d07..80ddd598e0a 100644
+--- a/cmd/efidebug.c
++++ b/cmd/efidebug.c
+@@ -9,6 +9,7 @@
+ #include <common.h>
+ #include <command.h>
+ #include <efi_dt_fixup.h>
++#include <efi_load_initrd.h>
+ #include <efi_loader.h>
+ #include <efi_rng.h>
+ #include <exports.h>
+@@ -19,6 +20,7 @@
+ #include <part.h>
+ #include <search.h>
+ #include <linux/ctype.h>
++#include <linux/err.h>
+ 
+ #define BS systab.boottime
+ #define RT systab.runtime
+@@ -798,6 +800,54 @@ static int do_efi_show_tables(struct cmd_tbl *cmdtp, int flag,
+ 	return CMD_RET_SUCCESS;
+ }
+ 
++/**
++ * create_initrd_dp() - Create a special device for our Boot### option
++ *
++ * @dev:	Device
++ * @part:	Disk partition
++ * @file:	Filename
++ * Return:	Pointer to the device path or ERR_PTR
++ *
++ */
++static
++struct efi_device_path *create_initrd_dp(const char *dev, const char *part,
++					 const char *file)
++
++{
++	struct efi_device_path *tmp_dp = NULL, *tmp_fp = NULL;
++	struct efi_device_path *initrd_dp = NULL;
++	efi_status_t ret;
++	const struct efi_initrd_dp id_dp = {
++		.vendor = {
++			{
++			DEVICE_PATH_TYPE_MEDIA_DEVICE,
++			DEVICE_PATH_SUB_TYPE_VENDOR_PATH,
++			sizeof(id_dp.vendor),
++			},
++			EFI_INITRD_MEDIA_GUID,
++		},
++		.end = {
++			DEVICE_PATH_TYPE_END,
++			DEVICE_PATH_SUB_TYPE_END,
++			sizeof(id_dp.end),
++		}
++	};
++
++	ret = efi_dp_from_name(dev, part, file, &tmp_dp, &tmp_fp);
++	if (ret != EFI_SUCCESS) {
++		printf("Cannot create device path for \"%s %s\"\n", part, file);
++		goto out;
++	}
++
++	initrd_dp = efi_dp_append((const struct efi_device_path *)&id_dp,
++				  tmp_fp);
++
++out:
++	efi_free_pool(tmp_dp);
++	efi_free_pool(tmp_fp);
++	return initrd_dp;
++}
++
+ /**
+  * do_efi_boot_add() - set UEFI load option
+  *
+@@ -810,7 +860,9 @@ static int do_efi_show_tables(struct cmd_tbl *cmdtp, int flag,
+  *
+  * Implement efidebug "boot add" sub-command. Create or change UEFI load option.
+  *
+- *     efidebug boot add <id> <label> <interface> <devnum>[:<part>] <file> <options>
++ * efidebug boot add -b <id> <label> <interface> <devnum>[:<part>] <file>
++ *                   -i <file> <interface2> <devnum2>[:<part>] <initrd>
++ *                   -s '<options>'
+  */
+ static int do_efi_boot_add(struct cmd_tbl *cmdtp, int flag,
+ 			   int argc, char *const argv[])
+@@ -823,55 +875,105 @@ static int do_efi_boot_add(struct cmd_tbl *cmdtp, int flag,
+ 	size_t label_len, label_len16;
+ 	u16 *label;
+ 	struct efi_device_path *device_path = NULL, *file_path = NULL;
++	struct efi_device_path *final_fp = NULL;
++	struct efi_device_path *initrd_dp = NULL;
+ 	struct efi_load_option lo;
+ 	void *data = NULL;
+ 	efi_uintn_t size;
++	efi_uintn_t fp_size = 0;
+ 	efi_status_t ret;
+ 	int r = CMD_RET_SUCCESS;
+ 
+-	if (argc < 6 || argc > 7)
+-		return CMD_RET_USAGE;
+-
+-	id = (int)simple_strtoul(argv[1], &endp, 16);
+-	if (*endp != '\0' || id > 0xffff)
+-		return CMD_RET_USAGE;
+-
+-	sprintf(var_name, "Boot%04X", id);
+-	p = var_name16;
+-	utf8_utf16_strncpy(&p, var_name, 9);
+-
+ 	guid = efi_global_variable_guid;
+ 
+ 	/* attributes */
+ 	lo.attributes = LOAD_OPTION_ACTIVE; /* always ACTIVE */
++	lo.optional_data = NULL;
++	lo.label = NULL;
+ 
+-	/* label */
+-	label_len = strlen(argv[2]);
+-	label_len16 = utf8_utf16_strnlen(argv[2], label_len);
+-	label = malloc((label_len16 + 1) * sizeof(u16));
+-	if (!label)
+-		return CMD_RET_FAILURE;
+-	lo.label = label; /* label will be changed below */
+-	utf8_utf16_strncpy(&label, argv[2], label_len);
++	argc--;
++	argv++; /* 'add' */
++	for (; argc > 0; argc--, argv++) {
++		if (!strcmp(argv[0], "-b")) {
++			if (argc <  5 || lo.label) {
++				r = CMD_RET_USAGE;
++				goto out;
++			}
++			id = (int)simple_strtoul(argv[1], &endp, 16);
++			if (*endp != '\0' || id > 0xffff)
++				return CMD_RET_USAGE;
++
++			sprintf(var_name, "Boot%04X", id);
++			p = var_name16;
++			utf8_utf16_strncpy(&p, var_name, 9);
++
++			/* label */
++			label_len = strlen(argv[2]);
++			label_len16 = utf8_utf16_strnlen(argv[2], label_len);
++			label = malloc((label_len16 + 1) * sizeof(u16));
++			if (!label)
++				return CMD_RET_FAILURE;
++			lo.label = label; /* label will be changed below */
++			utf8_utf16_strncpy(&label, argv[2], label_len);
++
++			/* file path */
++			ret = efi_dp_from_name(argv[3], argv[4], argv[5],
++					       &device_path, &file_path);
++			if (ret != EFI_SUCCESS) {
++				printf("Cannot create device path for \"%s %s\"\n",
++				       argv[3], argv[4]);
++				r = CMD_RET_FAILURE;
++				goto out;
++			}
++			fp_size += efi_dp_size(file_path) +
++				sizeof(struct efi_device_path);
++			argc -= 5;
++			argv += 5;
++		} else if (!strcmp(argv[0], "-i")) {
++			if (argc < 3 || initrd_dp) {
++				r = CMD_RET_USAGE;
++				goto out;
++			}
+ 
+-	/* file path */
+-	ret = efi_dp_from_name(argv[3], argv[4], argv[5], &device_path,
+-			       &file_path);
+-	if (ret != EFI_SUCCESS) {
+-		printf("Cannot create device path for \"%s %s\"\n",
+-		       argv[3], argv[4]);
++			initrd_dp = create_initrd_dp(argv[1], argv[2], argv[3]);
++			if (!initrd_dp) {
++				printf("Cannot add an initrd\n");
++				r = CMD_RET_FAILURE;
++				goto out;
++			}
++			argc -= 3;
++			argv += 3;
++			fp_size += efi_dp_size(initrd_dp) +
++				sizeof(struct efi_device_path);
++		} else if (!strcmp(argv[0], "-s")) {
++			if (argc < 1 || lo.optional_data) {
++				r = CMD_RET_USAGE;
++				goto out;
++			}
++			lo.optional_data = (const u8 *)argv[1];
++			argc -= 1;
++			argv += 1;
++		} else {
++			r = CMD_RET_USAGE;
++			goto out;
++		}
++	}
++
++	if (!file_path) {
++		printf("Missing binary\n");
++		r = CMD_RET_USAGE;
++		goto out;
++	}
++
++	final_fp = efi_dp_concat(file_path, initrd_dp);
++	if (!final_fp) {
++		printf("Cannot create final device path\n");
+ 		r = CMD_RET_FAILURE;
+ 		goto out;
+ 	}
+-	lo.file_path = file_path;
+-	lo.file_path_length = efi_dp_size(file_path)
+-				+ sizeof(struct efi_device_path); /* for END */
+ 
+-	/* optional data */
+-	if (argc == 6)
+-		lo.optional_data = NULL;
+-	else
+-		lo.optional_data = (const u8 *)argv[6];
++	lo.file_path = final_fp;
++	lo.file_path_length = fp_size;
+ 
+ 	size = efi_serialize_load_option(&lo, (u8 **)&data);
+ 	if (!size) {
+@@ -888,8 +990,11 @@ static int do_efi_boot_add(struct cmd_tbl *cmdtp, int flag,
+ 		printf("Cannot set %ls\n", var_name16);
+ 		r = CMD_RET_FAILURE;
+ 	}
++
+ out:
+ 	free(data);
++	efi_free_pool(final_fp);
++	efi_free_pool(initrd_dp);
+ 	efi_free_pool(device_path);
+ 	efi_free_pool(file_path);
+ 	free(lo.label);
+@@ -955,11 +1060,14 @@ static int do_efi_boot_rm(struct cmd_tbl *cmdtp, int flag,
+  */
+ static void show_efi_boot_opt_data(u16 *varname16, void *data, size_t *size)
+ {
++	struct efi_device_path *initrd_path = NULL;
+ 	struct efi_load_option lo;
+ 	char *label, *p;
+ 	size_t label_len16, label_len;
+ 	u16 *dp_str;
+ 	efi_status_t ret;
++	efi_uintn_t initrd_dp_size;
++	const efi_guid_t lf2_initrd_guid = EFI_INITRD_MEDIA_GUID;
+ 
+ 	ret = efi_deserialize_load_option(&lo, data, size);
+ 	if (ret != EFI_SUCCESS) {
+@@ -990,6 +1098,14 @@ static void show_efi_boot_opt_data(u16 *varname16, void *data, size_t *size)
+ 	printf("  file_path: %ls\n", dp_str);
+ 	efi_free_pool(dp_str);
+ 
++	initrd_path = efi_dp_from_lo(&lo, &initrd_dp_size, lf2_initrd_guid);
++	if (initrd_path) {
++		dp_str = efi_dp_str(initrd_path);
++		printf("  initrd_path: %ls\n", dp_str);
++		efi_free_pool(dp_str);
++		efi_free_pool(initrd_path);
++	}
++
+ 	printf("  data:\n");
+ 	print_hex_dump("    ", DUMP_PREFIX_OFFSET, 16, 1,
+ 		       lo.optional_data, *size, true);
+@@ -1559,7 +1675,10 @@ static int do_efidebug(struct cmd_tbl *cmdtp, int flag,
+ static char efidebug_help_text[] =
+ 	"  - UEFI Shell-like interface to configure UEFI environment\n"
+ 	"\n"
+-	"efidebug boot add <bootid> <label> <interface> <devnum>[:<part>] <file path> [<load options>]\n"
++	"efidebug boot add "
++	"-b <bootid> <label> <interface> <devnum>[:<part>] <file path> "
++	"-i <interface> <devnum>[:<part>] <initrd file path> "
++	"-s '<optional data>'\n"
+ 	"  - set UEFI BootXXXX variable\n"
+ 	"    <load options> will be passed to UEFI application\n"
+ 	"efidebug boot rm <bootid#1> [<bootid#2> [<bootid#3> [...]]]\n"
+@@ -1603,7 +1722,7 @@ static char efidebug_help_text[] =
+ #endif
+ 
+ U_BOOT_CMD(
+-	efidebug, 10, 0, do_efidebug,
++	efidebug, CONFIG_SYS_MAXARGS, 0, do_efidebug,
+ 	"Configure UEFI environment",
+ 	efidebug_help_text
+ );
+diff --git a/doc/board/emulation/qemu_capsule_update.rst b/doc/board/emulation/qemu_capsule_update.rst
+index 9fec75f8f1c..33ce4bcd32e 100644
+--- a/doc/board/emulation/qemu_capsule_update.rst
++++ b/doc/board/emulation/qemu_capsule_update.rst
+@@ -60,7 +60,7 @@ to be pointing to the EFI System Partition which contains the capsule
+ file. The BootNext, BootXXXX and OsIndications variables can be set
+ using the following commands::
+ 
+-    => efidebug boot add 0 Boot0000 virtio 0:1 <capsule_file_name>
++    => efidebug boot add -b 0 Boot0000 virtio 0:1 <capsule_file_name>
+     => efidebug boot next 0
+     => setenv -e -nv -bs -rt -v OsIndications =0x04
+     => saveenv
+@@ -198,7 +198,7 @@ command line::
+     3. Set the following environment and UEFI boot variables
+ 
+         => setenv -e -nv -bs -rt -v OsIndications =0x04
+-        => efidebug boot add 0 Boot0000 virtio 0:1 <capsule_file_name>
++        => efidebug boot add -b 0 Boot0000 virtio 0:1 <capsule_file_name>
+         => efidebug boot next 0
+         => saveenv
+ 
+diff --git a/doc/uefi/uefi.rst b/doc/uefi/uefi.rst
+index 5a67737c157..b3494c22e07 100644
+--- a/doc/uefi/uefi.rst
++++ b/doc/uefi/uefi.rst
+@@ -178,7 +178,7 @@ Now in U-Boot install the keys on your board::
+ 
+ Set up boot parameters on your board::
+ 
+-    efidebug boot add 1 HELLO mmc 0:1 /helloworld.efi.signed ""
++    efidebug boot add -b 1 HELLO mmc 0:1 /helloworld.efi.signed ""
+ 
+ Now your board can run the signed image via the boot manager (see below).
+ You can also try this sequence by running Pytest, test_efi_secboot,
+diff --git a/test/py/tests/test_efi_capsule/test_capsule_firmware.py b/test/py/tests/test_efi_capsule/test_capsule_firmware.py
+index f006fa95d65..e8b0a157545 100644
+--- a/test/py/tests/test_efi_capsule/test_capsule_firmware.py
++++ b/test/py/tests/test_efi_capsule/test_capsule_firmware.py
+@@ -39,7 +39,7 @@ class TestEfiCapsuleFirmwareFit(object):
+         with u_boot_console.log.section('Test Case 1-a, before reboot'):
+             output = u_boot_console.run_command_list([
+                 'host bind 0 %s' % disk_img,
+-                'efidebug boot add 1 TEST host 0:1 /helloworld.efi ""',
++                'efidebug boot add -b 1 TEST host 0:1 /helloworld.efi ""',
+                 'efidebug boot order 1',
+                 'env set -e OsIndications',
+                 'env set dfu_alt_info "sf 0:0=u-boot-bin raw 0x100000 0x50000;u-boot-env raw 0x150000 0x200000"',
+@@ -114,7 +114,7 @@ class TestEfiCapsuleFirmwareFit(object):
+         with u_boot_console.log.section('Test Case 2-a, before reboot'):
+             output = u_boot_console.run_command_list([
+                 'host bind 0 %s' % disk_img,
+-                'efidebug boot add 1 TEST host 0:1 /helloworld.efi ""',
++                'efidebug boot add -b 1 TEST host 0:1 /helloworld.efi ""',
+                 'efidebug boot order 1',
+                 'env set -e -nv -bs -rt OsIndications =0x0000000000000004',
+                 'env set dfu_alt_info "sf 0:0=u-boot-bin raw 0x100000 0x50000;u-boot-env raw 0x150000 0x200000"',
+@@ -188,7 +188,7 @@ class TestEfiCapsuleFirmwareFit(object):
+         with u_boot_console.log.section('Test Case 3-a, before reboot'):
+             output = u_boot_console.run_command_list([
+                 'host bind 0 %s' % disk_img,
+-                'efidebug boot add 1 TEST host 0:1 /helloworld.efi ""',
++                'efidebug boot add -b 1 TEST host 0:1 /helloworld.efi ""',
+                 'efidebug boot order 1',
+                 'env set -e -nv -bs -rt OsIndications =0x0000000000000004',
+                 'env set dfu_alt_info "sf 0:0=u-boot-bin raw 0x100000 0x50000;u-boot-env raw 0x150000 0x200000"',
+diff --git a/test/py/tests/test_efi_secboot/test_signed.py b/test/py/tests/test_efi_secboot/test_signed.py
+index 863685e215b..75f5ea77230 100644
+--- a/test/py/tests/test_efi_secboot/test_signed.py
++++ b/test/py/tests/test_efi_secboot/test_signed.py
+@@ -28,7 +28,7 @@ class TestEfiSignedImage(object):
+             # Test Case 1a, run signed image if no PK
+             output = u_boot_console.run_command_list([
+                 'host bind 0 %s' % disk_img,
+-                'efidebug boot add 1 HELLO1 host 0:1 /helloworld.efi.signed ""',
++                'efidebug boot add -b 1 HELLO1 host 0:1 /helloworld.efi.signed ""',
+                 'efidebug boot next 1',
+                 'bootefi bootmgr'])
+             assert 'Hello, world!' in ''.join(output)
+@@ -36,7 +36,7 @@ class TestEfiSignedImage(object):
+         with u_boot_console.log.section('Test Case 1b'):
+             # Test Case 1b, run unsigned image if no PK
+             output = u_boot_console.run_command_list([
+-                'efidebug boot add 2 HELLO2 host 0:1 /helloworld.efi ""',
++                'efidebug boot add -b 2 HELLO2 host 0:1 /helloworld.efi ""',
+                 'efidebug boot next 2',
+                 'bootefi bootmgr'])
+             assert 'Hello, world!' in ''.join(output)
+@@ -58,13 +58,13 @@ class TestEfiSignedImage(object):
+                 'setenv -e -nv -bs -rt -at -i 4000000:$filesize PK'])
+             assert 'Failed to set EFI variable' not in ''.join(output)
+             output = u_boot_console.run_command_list([
+-                'efidebug boot add 1 HELLO1 host 0:1 /helloworld.efi.signed ""',
++                'efidebug boot add -b 1 HELLO1 host 0:1 /helloworld.efi.signed ""',
+                 'efidebug boot next 1',
+                 'efidebug test bootmgr'])
+             assert('\'HELLO1\' failed' in ''.join(output))
+             assert('efi_start_image() returned: 26' in ''.join(output))
+             output = u_boot_console.run_command_list([
+-                'efidebug boot add 2 HELLO2 host 0:1 /helloworld.efi ""',
++                'efidebug boot add -b 2 HELLO2 host 0:1 /helloworld.efi ""',
+                 'efidebug boot next 2',
+                 'efidebug test bootmgr'])
+             assert '\'HELLO2\' failed' in ''.join(output)
+@@ -104,7 +104,7 @@ class TestEfiSignedImage(object):
+                 'setenv -e -nv -bs -rt -at -i 4000000:$filesize PK'])
+             assert 'Failed to set EFI variable' not in ''.join(output)
+             output = u_boot_console.run_command_list([
+-                'efidebug boot add 1 HELLO host 0:1 /helloworld.efi.signed ""',
++                'efidebug boot add -b 1 HELLO host 0:1 /helloworld.efi.signed ""',
+                 'efidebug boot next 1',
+                 'efidebug test bootmgr'])
+             assert '\'HELLO\' failed' in ''.join(output)
+@@ -142,7 +142,7 @@ class TestEfiSignedImage(object):
+                 'setenv -e -nv -bs -rt -at -i 4000000:$filesize PK'])
+             assert 'Failed to set EFI variable' not in ''.join(output)
+             output = u_boot_console.run_command_list([
+-                'efidebug boot add 1 HELLO host 0:1 /helloworld.efi.signed ""',
++                'efidebug boot add -b 1 HELLO host 0:1 /helloworld.efi.signed ""',
+                 'efidebug boot next 1',
+                 'efidebug test bootmgr'])
+             assert '\'HELLO\' failed' in ''.join(output)
+@@ -169,7 +169,7 @@ class TestEfiSignedImage(object):
+                 'setenv -e -nv -bs -rt -at -i 4000000:$filesize PK'])
+             assert 'Failed to set EFI variable' not in ''.join(output)
+             output = u_boot_console.run_command_list([
+-                'efidebug boot add 1 HELLO host 0:1 /helloworld.efi.signed_2sigs ""',
++                'efidebug boot add -b 1 HELLO host 0:1 /helloworld.efi.signed_2sigs ""',
+                 'efidebug boot next 1',
+                 'efidebug test bootmgr'])
+             assert 'Hello, world!' in ''.join(output)
+@@ -227,7 +227,7 @@ class TestEfiSignedImage(object):
+                 'setenv -e -nv -bs -rt -at -i 4000000:$filesize PK'])
+             assert 'Failed to set EFI variable' not in ''.join(output)
+             output = u_boot_console.run_command_list([
+-                'efidebug boot add 1 HELLO host 0:1 /helloworld.efi.signed ""',
++                'efidebug boot add -b 1 HELLO host 0:1 /helloworld.efi.signed ""',
+                 'efidebug boot next 1',
+                 'bootefi bootmgr'])
+             assert 'Hello, world!' in ''.join(output)
+diff --git a/test/py/tests/test_efi_secboot/test_signed_intca.py b/test/py/tests/test_efi_secboot/test_signed_intca.py
+index 70d6be00e8a..0849572a514 100644
+--- a/test/py/tests/test_efi_secboot/test_signed_intca.py
++++ b/test/py/tests/test_efi_secboot/test_signed_intca.py
+@@ -39,7 +39,7 @@ class TestEfiSignedImageIntca(object):
+             assert 'Failed to set EFI variable' not in ''.join(output)
+ 
+             output = u_boot_console.run_command_list([
+-                'efidebug boot add 1 HELLO_a host 0:1 /helloworld.efi.signed_a ""',
++                'efidebug boot add -b 1 HELLO_a host 0:1 /helloworld.efi.signed_a ""',
+                 'efidebug boot next 1',
+                 'efidebug test bootmgr'])
+             assert '\'HELLO_a\' failed' in ''.join(output)
+@@ -48,7 +48,7 @@ class TestEfiSignedImageIntca(object):
+         with u_boot_console.log.section('Test Case 1b'):
+             # Test Case 1b, signed and authenticated by root CA
+             output = u_boot_console.run_command_list([
+-                'efidebug boot add 2 HELLO_ab host 0:1 /helloworld.efi.signed_ab ""',
++                'efidebug boot add -b 2 HELLO_ab host 0:1 /helloworld.efi.signed_ab ""',
+                 'efidebug boot next 2',
+                 'bootefi bootmgr'])
+             assert 'Hello, world!' in ''.join(output)
+@@ -70,7 +70,7 @@ class TestEfiSignedImageIntca(object):
+             assert 'Failed to set EFI variable' not in ''.join(output)
+ 
+             output = u_boot_console.run_command_list([
+-                'efidebug boot add 1 HELLO_abc host 0:1 /helloworld.efi.signed_abc ""',
++                'efidebug boot add -b 1 HELLO_abc host 0:1 /helloworld.efi.signed_abc ""',
+                 'efidebug boot next 1',
+                 'efidebug test bootmgr'])
+             assert '\'HELLO_abc\' failed' in ''.join(output)
+@@ -116,7 +116,7 @@ class TestEfiSignedImageIntca(object):
+             assert 'Failed to set EFI variable' not in ''.join(output)
+ 
+             output = u_boot_console.run_command_list([
+-                'efidebug boot add 1 HELLO_abc host 0:1 /helloworld.efi.signed_abc ""',
++                'efidebug boot add -b 1 HELLO_abc host 0:1 /helloworld.efi.signed_abc ""',
+                 'efidebug boot next 1',
+                 'efidebug test bootmgr'])
+             assert 'Hello, world!' in ''.join(output)
+diff --git a/test/py/tests/test_efi_secboot/test_unsigned.py b/test/py/tests/test_efi_secboot/test_unsigned.py
+index 56f56e19eb8..8e026f7566a 100644
+--- a/test/py/tests/test_efi_secboot/test_unsigned.py
++++ b/test/py/tests/test_efi_secboot/test_unsigned.py
+@@ -35,7 +35,7 @@ class TestEfiUnsignedImage(object):
+             assert 'Failed to set EFI variable' not in ''.join(output)
+ 
+             output = u_boot_console.run_command_list([
+-                'efidebug boot add 1 HELLO host 0:1 /helloworld.efi ""',
++                'efidebug boot add -b 1 HELLO host 0:1 /helloworld.efi ""',
+                 'efidebug boot next 1',
+                 'bootefi bootmgr'])
+             assert '\'HELLO\' failed' in ''.join(output)
+@@ -64,7 +64,7 @@ class TestEfiUnsignedImage(object):
+             assert 'Failed to set EFI variable' not in ''.join(output)
+ 
+             output = u_boot_console.run_command_list([
+-                'efidebug boot add 1 HELLO host 0:1 /helloworld.efi ""',
++                'efidebug boot add -b 1 HELLO host 0:1 /helloworld.efi ""',
+                 'efidebug boot next 1',
+                 'bootefi bootmgr'])
+             assert 'Hello, world!' in ''.join(output)
+@@ -88,7 +88,7 @@ class TestEfiUnsignedImage(object):
+             assert 'Failed to set EFI variable' not in ''.join(output)
+ 
+             output = u_boot_console.run_command_list([
+-                'efidebug boot add 1 HELLO host 0:1 /helloworld.efi ""',
++                'efidebug boot add -b 1 HELLO host 0:1 /helloworld.efi ""',
+                 'efidebug boot next 1',
+                 'bootefi bootmgr'])
+             assert '\'HELLO\' failed' in ''.join(output)
+@@ -106,7 +106,7 @@ class TestEfiUnsignedImage(object):
+             assert 'Failed to set EFI variable' not in ''.join(output)
+ 
+             output = u_boot_console.run_command_list([
+-                'efidebug boot add 1 HELLO host 0:1 /helloworld.efi ""',
++                'efidebug boot add -b 1 HELLO host 0:1 /helloworld.efi ""',
+                 'efidebug boot next 1',
+                 'bootefi bootmgr'])
+             assert '\'HELLO\' failed' in ''.join(output)
+-- 
+2.34.1
+

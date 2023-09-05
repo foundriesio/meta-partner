@@ -1,0 +1,62 @@
+From 0e66df4b25a1fafb15a57d67979424cafc2ed316 Mon Sep 17 00:00:00 2001
+From: Sughosh Ganu <sughosh.ganu@linaro.org>
+Date: Mon, 12 Apr 2021 20:35:23 +0530
+Subject: [PATCH 206/322] [FIO fromtree] efi_loader: capsule: Remove the check
+ for capsule_authentication_enabled environment variable
+
+The current capsule authentication code checks if the environment
+variable capsule_authentication_enabled is set, for authenticating the
+capsule. This is in addition to the check for the config symbol
+CONFIG_EFI_CAPSULE_AUTHENTICATE. Remove the check for the environment
+variable. The capsule will now be authenticated if the config symbol
+is set.
+
+Signed-off-by: Sughosh Ganu <sughosh.ganu@linaro.org>
+Reviwed-by: Heinrich Schuchardt <xypron.glpk@gmx.de>
+(cherry picked from commit 6a2e26b95f046a2973a95119910cbe2554c92b46)
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+---
+ board/emulation/common/qemu_capsule.c | 6 ------
+ lib/efi_loader/efi_firmware.c         | 5 ++---
+ 2 files changed, 2 insertions(+), 9 deletions(-)
+
+diff --git a/board/emulation/common/qemu_capsule.c b/board/emulation/common/qemu_capsule.c
+index 5cb461d52bc..6b8a87022a4 100644
+--- a/board/emulation/common/qemu_capsule.c
++++ b/board/emulation/common/qemu_capsule.c
+@@ -41,9 +41,3 @@ int efi_get_public_key_data(void **pkey, efi_uintn_t *pkey_len)
+ 
+ 	return 0;
+ }
+-
+-bool efi_capsule_auth_enabled(void)
+-{
+-	return env_get("capsule_authentication_enabled") != NULL ?
+-		true : false;
+-}
+diff --git a/lib/efi_loader/efi_firmware.c b/lib/efi_loader/efi_firmware.c
+index 7a3cca27936..a1b88dbfc28 100644
+--- a/lib/efi_loader/efi_firmware.c
++++ b/lib/efi_loader/efi_firmware.c
+@@ -190,7 +190,7 @@ static efi_status_t efi_get_dfu_info(
+ 				IMAGE_ATTRIBUTE_IMAGE_UPDATABLE;
+ 
+ 		/* Check if the capsule authentication is enabled */
+-		if (env_get("capsule_authentication_enabled"))
++		if (IS_ENABLED(CONFIG_EFI_CAPSULE_AUTHENTICATE))
+ 			image_info[0].attributes_setting |=
+ 				IMAGE_ATTRIBUTE_AUTHENTICATION_REQUIRED;
+ 
+@@ -421,8 +421,7 @@ efi_status_t EFIAPI efi_firmware_raw_set_image(
+ 		return EFI_EXIT(EFI_INVALID_PARAMETER);
+ 
+ 	/* Authenticate the capsule if authentication enabled */
+-	if (IS_ENABLED(CONFIG_EFI_CAPSULE_AUTHENTICATE) &&
+-	    env_get("capsule_authentication_enabled")) {
++	if (IS_ENABLED(CONFIG_EFI_CAPSULE_AUTHENTICATE)) {
+ 		capsule_payload = NULL;
+ 		capsule_payload_size = 0;
+ 		status = efi_capsule_authenticate(image, image_size,
+-- 
+2.34.1
+

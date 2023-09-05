@@ -1,0 +1,62 @@
+From 76c770ee4ee174b96d8f1a403780065a7a856c06 Mon Sep 17 00:00:00 2001
+From: Michael Scott <mike@foundries.io>
+Date: Mon, 19 Apr 2021 12:21:06 -0700
+Subject: [PATCH 137/322] [FIO extras] hash: dont use CRC16 functions if
+ SIGNATURE_STRICT
+
+This patch removes the crc16 functions for hashing if
+SIGNATURE_STRICT is enabled.
+
+This accomplishes 2 things:
+1. Disable a weaker hashing methods to avoid potential threat
+   vectors.
+2. Removing this code allows the linker to save binary size.
+
+Signed-off-by: Michael Scott <mike@foundries.io>
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+---
+ common/hash.c | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
+
+diff --git a/common/hash.c b/common/hash.c
+index 69f515f75f2..683a9771625 100644
+--- a/common/hash.c
++++ b/common/hash.c
+@@ -153,7 +153,8 @@ static int hash_finish_sha512(struct hash_algo *algo, void *ctx, void
+ }
+ #endif
+ 
+-
++#if (defined(CONFIG_SPL_BUILD) && !defined(CONFIG_SPL_FIT_SIGNATURE_STRICT)) || \
++    (!defined(CONFIG_SPL_BUILD) && !defined(CONFIG_FIT_SIGNATURE_STRICT))
+ static int hash_init_crc16_ccitt(struct hash_algo *algo, void **ctxp)
+ {
+ 	uint16_t *ctx = malloc(sizeof(uint16_t));
+@@ -180,6 +181,7 @@ static int hash_finish_crc16_ccitt(struct hash_algo *algo, void *ctx,
+ 	free(ctx);
+ 	return 0;
+ }
++#endif
+ 
+ static int hash_init_crc32(struct hash_algo *algo, void **ctxp)
+ {
+@@ -273,6 +275,8 @@ static struct hash_algo hash_algo[] = {
+ 		.hash_finish	= hash_finish_sha512,
+ 	},
+ #endif
++#if (defined(CONFIG_SPL_BUILD) && !defined(CONFIG_SPL_FIT_SIGNATURE_STRICT)) || \
++    (!defined(CONFIG_SPL_BUILD) && !defined(CONFIG_FIT_SIGNATURE_STRICT))
+ 	{
+ 		.name		= "crc16-ccitt",
+ 		.digest_size	= 2,
+@@ -282,6 +286,7 @@ static struct hash_algo hash_algo[] = {
+ 		.hash_update	= hash_update_crc16_ccitt,
+ 		.hash_finish	= hash_finish_crc16_ccitt,
+ 	},
++#endif
+ 	{
+ 		.name		= "crc32",
+ 		.digest_size	= 4,
+-- 
+2.34.1
+

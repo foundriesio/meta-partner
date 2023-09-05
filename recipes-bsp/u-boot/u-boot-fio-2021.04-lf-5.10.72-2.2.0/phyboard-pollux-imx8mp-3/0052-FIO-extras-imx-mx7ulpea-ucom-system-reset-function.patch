@@ -1,0 +1,53 @@
+From 3e18bb0aa6c3a42d5fa7ed54eef2c9fd4c0f533d Mon Sep 17 00:00:00 2001
+From: Ricardo Salveti <ricardo@foundries.io>
+Date: Mon, 31 Aug 2020 19:51:37 -0300
+Subject: [PATCH 052/322] [FIO extras] imx: mx7ulpea-ucom: system reset
+ function
+
+This function is required by the imx_m4 fpg driver when the system is
+running in dual boot; in this mode, the m4 needs to be reset after a
+firmware upgrade.
+
+PTC10 corresponds to GPIOC(@0x400F_0000) (TRM 40.1.4, pg 1706)
+
+Signed-off-by: Jorge Ramirez-Ortiz <jorge@foundries.io>
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+---
+ board/ea/mx7ulp_com/mx7ulp_com.c | 13 +++++++++++++
+ 1 file changed, 13 insertions(+)
+
+diff --git a/board/ea/mx7ulp_com/mx7ulp_com.c b/board/ea/mx7ulp_com/mx7ulp_com.c
+index 7fce75ade9d..f5533d5262d 100644
+--- a/board/ea/mx7ulp_com/mx7ulp_com.c
++++ b/board/ea/mx7ulp_com/mx7ulp_com.c
+@@ -11,6 +11,7 @@
+ #include <asm/arch/mx7ulp-pins.h>
+ #include <asm/arch/iomux.h>
+ #include <asm/gpio.h>
++#include <linux/delay.h>
+ 
+ DECLARE_GLOBAL_DATA_PTR;
+ 
+@@ -45,6 +46,18 @@ int board_early_init_f(void)
+ 	return 0;
+ }
+ 
++/* will reset the M4 and the A7 */
++void board_m4_restart(void)
++{
++	unsigned reset = IMX_GPIO_NR(3, 10); /* PTC10 */
++
++	printf("ea board: system reset\n");
++	gpio_request(reset, "system_reset");
++	gpio_direction_output(reset, 0);
++	udelay(100);
++	gpio_set_value(reset, 1);
++}
++
+ int board_init(void)
+ {
+ 	/* address of boot parameters */
+-- 
+2.34.1
+

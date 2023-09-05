@@ -1,0 +1,41 @@
+From 12eac68487b6e077b42d76610033967fb099bf60 Mon Sep 17 00:00:00 2001
+From: Michael Scott <mike@foundries.io>
+Date: Tue, 23 Feb 2021 14:22:27 -0800
+Subject: [PATCH 093/322] [FIO internal] imx: mx7ulp: Decouple mmc_get_env_dev
+ with CONFIG_ENV_IS_IN_MMC
+
+Commit f2615026cad7 ("MLK-19250 imx: uuu: Decouple mmc_get_env_dev with
+CONFIG_ENV_IS_IN_MMC") made mmc_get_env_dev available for UUU fastboot
+without the need for CONFIG_ENV_IS_IN_MMC.
+
+However, 7ulp was missed for that patch. Let's make the same
+modification for 7ulp.
+
+Signed-off-by: Michael Scott <mike@foundries.io>
+---
+ arch/arm/mach-imx/mx7ulp/soc.c | 2 --
+ 1 file changed, 2 deletions(-)
+
+diff --git a/arch/arm/mach-imx/mx7ulp/soc.c b/arch/arm/mach-imx/mx7ulp/soc.c
+index 7ace4782e3c..aa148910547 100644
+--- a/arch/arm/mach-imx/mx7ulp/soc.c
++++ b/arch/arm/mach-imx/mx7ulp/soc.c
+@@ -438,7 +438,6 @@ void arch_preboot_os(void)
+ 	scg_disable_pll_pfd(SCG_APLL_PFD3_CLK);
+ }
+ 
+-#ifdef CONFIG_ENV_IS_IN_MMC
+ __weak int board_mmc_get_env_dev(int devno)
+ {
+ 	return devno;
+@@ -458,7 +457,6 @@ int mmc_get_env_dev(void)
+ 
+ 	return board_mmc_get_env_dev(devno);
+ }
+-#endif
+ 
+ enum boot_device get_boot_device(void)
+ {
+-- 
+2.34.1
+

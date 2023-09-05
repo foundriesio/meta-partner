@@ -1,0 +1,36 @@
+From 8748d30a7b6e94c60f771f10f612726342b1acb0 Mon Sep 17 00:00:00 2001
+From: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+Date: Wed, 15 Sep 2021 18:12:51 +0300
+Subject: [PATCH 005/322] [FIO internal] mx6: fix redefining
+ CONFIG_SUPPORT_EMMC_BOOT
+
+CONFIG_SUPPORT_EMMC_BOOT defines in defconfig. No need to redefine
+it in a common mx6 header file. Remove redefinition fixing compile-time
+warnings [1].
+
+[1]
+include/configs/mx6_common.h:63: warning: "CONFIG_SUPPORT_EMMC_BOOT" redefined
+   63 | #define CONFIG_SUPPORT_EMMC_BOOT
+
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+---
+ include/configs/mx6_common.h | 3 ---
+ 1 file changed, 3 deletions(-)
+
+diff --git a/include/configs/mx6_common.h b/include/configs/mx6_common.h
+index 339f2d99aee..bb515f2af0b 100644
+--- a/include/configs/mx6_common.h
++++ b/include/configs/mx6_common.h
+@@ -59,9 +59,6 @@
+ /* NET PHY */
+ #define PHY_ANEG_TIMEOUT 20000
+ 
+-/* MMC */
+-#define CONFIG_SUPPORT_EMMC_BOOT
+-
+ #ifdef CONFIG_SPL_BUILD
+ #define CONFIG_SPL_DRIVERS_MISC_SUPPORT
+ #endif
+-- 
+2.34.1
+

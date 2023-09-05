@@ -1,0 +1,30 @@
+From e58ab36e6d21e8d8a6f7df12141f23c87bb9af4e Mon Sep 17 00:00:00 2001
+From: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+Date: Tue, 12 Oct 2021 21:34:55 +0300
+Subject: [PATCH 264/322] [FIO toup-squash] mx7ulp_com: don't use bd_t typedef
+
+bd_t is not used in u-boot 2021.04. Use struct bd_info instead, it
+fixes the building error.
+
+Fixes: b2487e9438 ("[FIO toup] mx7ulp_com: sync changes from the EA BSP tree")
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+---
+ board/ea/mx7ulp_com/mx7ulp_com.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/board/ea/mx7ulp_com/mx7ulp_com.c b/board/ea/mx7ulp_com/mx7ulp_com.c
+index 5471984c9c1..81fd8f54262 100644
+--- a/board/ea/mx7ulp_com/mx7ulp_com.c
++++ b/board/ea/mx7ulp_com/mx7ulp_com.c
+@@ -165,7 +165,7 @@ int board_init(void)
+ }
+ 
+ #if IS_ENABLED(CONFIG_OF_BOARD_SETUP)
+-int ft_board_setup(void *blob, bd_t *bd)
++int ft_board_setup(void *blob, struct bd_info *bd)
+ {
+ 	const char *path;
+ 	int rc, nodeoff;
+-- 
+2.34.1
+

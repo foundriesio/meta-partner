@@ -1,0 +1,72 @@
+From 49700d201ebea787324e988d73c905700274adb6 Mon Sep 17 00:00:00 2001
+From: Ricardo Salveti <ricardo@foundries.io>
+Date: Wed, 19 Aug 2020 18:14:34 -0300
+Subject: [PATCH 020/322] [FIO toup] arm: spl: flush and disable cache before
+ jumping to OPTEE
+
+Make sure to flush, disable caches and interrupts before jumpint to OPTEE.
+This fixes the SDP->SPL->OPTEE boot flow on iMX6Q and it is a safe assumption.
+
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+---
+ arch/arm/lib/spl.c | 11 +++++++++++
+ common/spl/spl.c   |  3 +--
+ include/spl.h      |  9 +++++++++
+ 3 files changed, 21 insertions(+), 2 deletions(-)
+
+diff --git a/arch/arm/lib/spl.c b/arch/arm/lib/spl.c
+index b2b54f28fc4..2dc84f07ef3 100644
+--- a/arch/arm/lib/spl.c
++++ b/arch/arm/lib/spl.c
+@@ -77,3 +77,14 @@ void __noreturn jump_to_image_linux(struct spl_image_info *spl_image)
+ }
+ #endif	/* CONFIG_ARM64 */
+ #endif
++
++#if CONFIG_IS_ENABLED(OPTEE)
++void __noreturn jump_to_image_optee(struct spl_image_info *spl_image)
++{
++	/* flush and turn off caches before jumping to OPTEE */
++	cleanup_before_linux();
++
++	spl_optee_entry(NULL, NULL, spl_image->fdt_addr,
++			(void *)spl_image->entry_point);
++}
++#endif
+diff --git a/common/spl/spl.c b/common/spl/spl.c
+index e3d84082f44..b1196501a7e 100644
+--- a/common/spl/spl.c
++++ b/common/spl/spl.c
+@@ -706,8 +706,7 @@ void board_init_r(gd_t *dummy1, ulong dummy2)
+ #if CONFIG_IS_ENABLED(OPTEE)
+ 	case IH_OS_TEE:
+ 		debug("Jumping to U-Boot via OP-TEE\n");
+-		spl_optee_entry(NULL, NULL, spl_image.fdt_addr,
+-				(void *)spl_image.entry_point);
++		jump_to_image_optee(&spl_image);
+ 		break;
+ #endif
+ #if CONFIG_IS_ENABLED(OPENSBI)
+diff --git a/include/spl.h b/include/spl.h
+index 18a80a31210..cf9e5eaab1e 100644
+--- a/include/spl.h
++++ b/include/spl.h
+@@ -404,6 +404,15 @@ int spl_board_boot_device(u32 boot_device);
+  */
+ void __noreturn jump_to_image_linux(struct spl_image_info *spl_image);
+ 
++/**
++ * jump_to_image_linux() - Jump to OP-TEE OS from SPL
++ *
++ * This jumps into OP-TEE OS using the information in @spl_image.
++ *
++ * @spl_image: Image description to set up
++ */
++void __noreturn jump_to_image_optee(struct spl_image_info *spl_image);
++
+ /**
+  * spl_start_uboot() - Check if SPL should start the kernel or U-Boot
+  *
+-- 
+2.34.1
+

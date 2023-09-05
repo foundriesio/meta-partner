@@ -1,0 +1,43 @@
+From cf846614c0354bf2d4389c49e1a1f13398e1cca0 Mon Sep 17 00:00:00 2001
+From: AKASHI Takahiro <takahiro.akashi@linaro.org>
+Date: Sat, 3 Jul 2021 15:43:17 +0900
+Subject: [PATCH 241/322] [FIO fromtree] env: efi: fix a wrong address
+ dereference
+
+Probably, a pointer to a variable in an inner block should not
+be exposed to an outer block.
+
+Fixes: c70f44817d46 ("efi_loader: simplify 'printenv -e'")
+Signed-off-by: AKASHI Takahiro <takahiro.akashi@linaro.org>
+[trini: Don't make guid const now]
+Signed-off-by: Tom Rini <trini@konsulko.com>
+(cherry picked from commit f1eb346e336fee7c14ed289dc854da4556c29a44)
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+---
+ cmd/nvedit_efi.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/cmd/nvedit_efi.c b/cmd/nvedit_efi.c
+index 094c0e80987..d5e93827e45 100644
+--- a/cmd/nvedit_efi.c
++++ b/cmd/nvedit_efi.c
+@@ -241,6 +241,7 @@ int do_env_print_efi(struct cmd_tbl *cmdtp, int flag, int argc,
+ 		     char *const argv[])
+ {
+ 	const efi_guid_t *guid_p = NULL;
++	efi_guid_t guid;
+ 	bool verbose = true;
+ 	efi_status_t ret;
+ 
+@@ -254,8 +255,6 @@ int do_env_print_efi(struct cmd_tbl *cmdtp, int flag, int argc,
+ 
+ 	for (argc--, argv++; argc > 0 && argv[0][0] == '-'; argc--, argv++) {
+ 		if (!strcmp(argv[0], "-guid")) {
+-			efi_guid_t guid;
+-
+ 			if (argc == 1)
+ 				return CMD_RET_USAGE;
+ 			argc--;
+-- 
+2.34.1
+

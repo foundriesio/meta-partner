@@ -1,0 +1,35 @@
+From 31c04960af32179f0d8de72fcccd551eb0d270c1 Mon Sep 17 00:00:00 2001
+From: Heinrich Schuchardt <xypron.glpk@gmx.de>
+Date: Sun, 11 Apr 2021 06:53:04 +0200
+Subject: [PATCH 198/322] [FIO fromtree] efi_loader: memory leak in
+ efi_capsule_scan_dir()
+
+If realloc() fails, we should free the old buffer.
+
+Fixes: c74cd8bd08d1: ("efi_loader: capsule: add capsule_on_disk support")
+Signed-off-by: Heinrich Schuchardt <xypron.glpk@gmx.de>
+(cherry picked from commit e8287b0fb2be8acf8d0412be3b4174768fef348c)
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+---
+ lib/efi_loader/efi_capsule.c | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/lib/efi_loader/efi_capsule.c b/lib/efi_loader/efi_capsule.c
+index 9df9c35084c..691eda5e0d1 100644
+--- a/lib/efi_loader/efi_capsule.c
++++ b/lib/efi_loader/efi_capsule.c
+@@ -756,8 +756,11 @@ static efi_status_t efi_capsule_scan_dir(u16 ***files, unsigned int *num)
+ 		tmp_size = dirent_size;
+ 		ret = EFI_CALL((*dirh->read)(dirh, &tmp_size, dirent));
+ 		if (ret == EFI_BUFFER_TOO_SMALL) {
++			struct efi_file_info *old_dirent = dirent;
++
+ 			dirent = realloc(dirent, tmp_size);
+ 			if (!dirent) {
++				dirent = old_dirent;
+ 				ret = EFI_OUT_OF_RESOURCES;
+ 				goto err;
+ 			}
+-- 
+2.34.1
+

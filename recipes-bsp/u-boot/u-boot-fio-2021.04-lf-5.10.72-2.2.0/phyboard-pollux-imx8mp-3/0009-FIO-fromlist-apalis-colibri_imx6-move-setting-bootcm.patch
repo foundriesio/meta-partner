@@ -1,0 +1,78 @@
+From 5c9b17681664a0f9defa265145179e44f4ae1587 Mon Sep 17 00:00:00 2001
+From: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+Date: Thu, 16 Sep 2021 13:52:32 +0300
+Subject: [PATCH 009/322] [FIO fromlist] apalis/colibri_imx6: move setting
+ bootcmd to defconfig
+
+Move setting the default boot command to the
+apalis/colibri_imx6_defconfig. It allows replacing the command
+without code modification.
+
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+Reviewed-by: Peng Fan <peng.fan@nxp.com>
+Reviewed-by: Igor Opaniuk <igor.opaniuk@foundries.io>
+Acked-by: Marcel Ziswiler <marcel.ziswiler@toradex.com>
+---
+ configs/apalis_imx6_defconfig  | 1 +
+ configs/colibri_imx6_defconfig | 1 +
+ include/configs/apalis_imx6.h  | 4 ----
+ include/configs/colibri_imx6.h | 4 ----
+ 4 files changed, 2 insertions(+), 8 deletions(-)
+
+diff --git a/configs/apalis_imx6_defconfig b/configs/apalis_imx6_defconfig
+index 1c791ab7484..aa5626904a9 100644
+--- a/configs/apalis_imx6_defconfig
++++ b/configs/apalis_imx6_defconfig
+@@ -23,6 +23,7 @@ CONFIG_DISTRO_DEFAULTS=y
+ CONFIG_FIT=y
+ CONFIG_SYS_EXTRA_OPTIONS="IMX_CONFIG=arch/arm/mach-imx/spl_sd.cfg"
+ CONFIG_BOOTDELAY=1
++CONFIG_BOOTCOMMAND="run distro_bootcmd; usb start; setenv stdout serial,vidconsole; setenv stdin serial,usbkbd"
+ # CONFIG_DISPLAY_BOARDINFO is not set
+ CONFIG_DISPLAY_BOARDINFO_LATE=y
+ CONFIG_BOARD_EARLY_INIT_F=y
+diff --git a/configs/colibri_imx6_defconfig b/configs/colibri_imx6_defconfig
+index 9e03ac09db6..a0d6a195768 100644
+--- a/configs/colibri_imx6_defconfig
++++ b/configs/colibri_imx6_defconfig
+@@ -22,6 +22,7 @@ CONFIG_DISTRO_DEFAULTS=y
+ CONFIG_FIT=y
+ CONFIG_SYS_EXTRA_OPTIONS="IMX_CONFIG=arch/arm/mach-imx/spl_sd.cfg"
+ CONFIG_BOOTDELAY=1
++CONFIG_BOOTCOMMAND="run distro_bootcmd; usb start; setenv stdout serial,vidconsole; setenv stdin serial,usbkbd"
+ # CONFIG_DISPLAY_BOARDINFO is not set
+ CONFIG_DISPLAY_BOARDINFO_LATE=y
+ CONFIG_BOARD_EARLY_INIT_F=y
+diff --git a/include/configs/apalis_imx6.h b/include/configs/apalis_imx6.h
+index 726e1aa2df6..a8c676a75a6 100644
+--- a/include/configs/apalis_imx6.h
++++ b/include/configs/apalis_imx6.h
+@@ -130,10 +130,6 @@
+ #endif
+ #define CONFIG_EXTRA_ENV_SETTINGS \
+ 	BOOTENV \
+-	"bootcmd=run distro_bootcmd ; " \
+-		"usb start ; " \
+-		"setenv stdout serial,vidconsole; " \
+-		"setenv stdin serial,usbkbd\0" \
+ 	"boot_file=zImage\0" \
+ 	"console=ttymxc0\0" \
+ 	"defargs=enable_wait_mode=off vmalloc=400M\0" \
+diff --git a/include/configs/colibri_imx6.h b/include/configs/colibri_imx6.h
+index c014d6b2d5f..9cafe1c801e 100644
+--- a/include/configs/colibri_imx6.h
++++ b/include/configs/colibri_imx6.h
+@@ -116,10 +116,6 @@
+ #define FDT_FILE "imx6dl-colibri-eval-v3.dtb"
+ #define CONFIG_EXTRA_ENV_SETTINGS \
+ 	BOOTENV \
+-	"bootcmd=run distro_bootcmd; " \
+-		"usb start ; " \
+-		"setenv stdout serial,vidconsole; " \
+-		"setenv stdin serial,usbkbd\0" \
+ 	"boot_file=zImage\0" \
+ 	"console=ttymxc0\0" \
+ 	"defargs=enable_wait_mode=off galcore.contiguousSize=50331648\0" \
+-- 
+2.34.1
+

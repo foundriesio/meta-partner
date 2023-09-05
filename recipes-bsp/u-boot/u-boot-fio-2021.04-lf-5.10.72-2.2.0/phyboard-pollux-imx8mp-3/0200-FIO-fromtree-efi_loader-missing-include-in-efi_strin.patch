@@ -1,0 +1,31 @@
+From 16ed210904c3a0dece9b22bb552dc6302cec8dd7 Mon Sep 17 00:00:00 2001
+From: Heinrich Schuchardt <xypron.glpk@gmx.de>
+Date: Wed, 21 Apr 2021 12:39:15 +0200
+Subject: [PATCH 200/322] [FIO fromtree] efi_loader: missing include in
+ efi_string.c
+
+To avoid diverging function definitions we need to include efi_loader.h.
+
+Fixes: fe179d7fb5c1 ("efi_loader: Add size checks to efi_create_indexed_name()")
+Signed-off-by: Heinrich Schuchardt <xypron.glpk@gmx.de>
+(cherry picked from commit a07ee3c198df216b3111c1dc8f79410e3b0bcc4b)
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+---
+ lib/efi_loader/efi_string.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/lib/efi_loader/efi_string.c b/lib/efi_loader/efi_string.c
+index 96272422886..a3b8edf5a80 100644
+--- a/lib/efi_loader/efi_string.c
++++ b/lib/efi_loader/efi_string.c
+@@ -7,6 +7,7 @@
+ 
+ #include <common.h>
+ #include <charset.h>
++#include <efi_loader.h>
+ 
+ /**
+  * efi_create_indexed_name - create a string name with an index
+-- 
+2.34.1
+

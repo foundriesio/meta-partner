@@ -1,0 +1,42 @@
+From 78b6ca8fc328b122e4a178fa84752a31ded63235 Mon Sep 17 00:00:00 2001
+From: Ilias Apalodimas <ilias.apalodimas@linaro.org>
+Date: Tue, 11 May 2021 14:40:58 +0300
+Subject: [PATCH 210/322] [FIO fromtree] efi_loader: Fix Kconfig for EFI_TCG2
+ protocol
+
+EFI_TCG2 depends not only on TPMv2 but also on the underlying algorithms.
+So select the missing SHA1, SHA256, SHA384 and SHA512 we currently support
+
+Reported-by: Michal Simek <michal.simek@xilinx.com>
+Signed-off-by: Ilias Apalodimas <ilias.apalodimas@linaro.org>
+
+Add 'default y'.
+Reviewed-by: Heinrich Schuchardt <xypron.glpk@gmx.de>
+
+(cherry picked from commit 48ee084602f90ad37e87ee7e356bf3938b584070)
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+---
+ lib/efi_loader/Kconfig | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/lib/efi_loader/Kconfig b/lib/efi_loader/Kconfig
+index 0b99d7c7749..c259abe0333 100644
+--- a/lib/efi_loader/Kconfig
++++ b/lib/efi_loader/Kconfig
+@@ -300,7 +300,13 @@ config EFI_RNG_PROTOCOL
+ 
+ config EFI_TCG2_PROTOCOL
+ 	bool "EFI_TCG2_PROTOCOL support"
++	default y
+ 	depends on TPM_V2
++	select SHA1
++	select SHA256
++	select SHA512_ALGO
++	select SHA384
++	select SHA512
+ 	help
+ 	  Provide a EFI_TCG2_PROTOCOL implementation using the TPM hardware
+ 	  of the platform.
+-- 
+2.34.1
+

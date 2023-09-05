@@ -1,0 +1,95 @@
+From 4d337c81b447ac4025d4fc71b673e49ded032d34 Mon Sep 17 00:00:00 2001
+From: Ilias Apalodimas <ilias.apalodimas@linaro.org>
+Date: Tue, 22 Jun 2021 17:38:52 +0300
+Subject: [PATCH 236/322] [FIO fromtree] efi_loader: Force a single FMP
+ instance per hardware store
+
+Chapter 23 of the EFI spec (rev 2.9) says:
+"A specific updatable hardware firmware store must be represented by
+exactly one FMP instance".
+This is not the case for us, since both of our FMP protocols can be
+installed at the same time because they are controlled by a single
+'dfu_alt_info' env variable.
+So make the config options depend on each other and allow the user to
+install one of them at any given time.  If we fix the meta-data provided
+by the 'dfu_alt_info' in the future,  to hint about the capsule type
+(fit or raw) we can revise this and enable both FMPs to be installed, as
+long as they target different firmware hardware stores
+
+Note that we are not using a Kconfig 'choice' on purpose, since we
+want to allow both of those to be installed and tested in sandbox
+
+Signed-off-by: Ilias Apalodimas <ilias.apalodimas@linaro.org>
+Reviewed-by: Heinrich Schuchardt <xypron.glpk@gmx.de>
+(cherry picked from commit b891ff18f8999c89d00e1a963a4bc07afe3ae061)
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+---
+ lib/efi_loader/Kconfig | 45 +++++++++++++++++++++---------------------
+ 1 file changed, 22 insertions(+), 23 deletions(-)
+
+diff --git a/lib/efi_loader/Kconfig b/lib/efi_loader/Kconfig
+index 6242caceb7f..684adfb6237 100644
+--- a/lib/efi_loader/Kconfig
++++ b/lib/efi_loader/Kconfig
+@@ -161,6 +161,28 @@ config EFI_CAPSULE_FIRMWARE_MANAGEMENT
+ 	  Select this option if you want to enable capsule-based
+ 	  firmware update using Firmware Management Protocol.
+ 
++config EFI_CAPSULE_FIRMWARE_FIT
++	bool "FMP driver for FIT images"
++	depends on FIT
++	depends on EFI_CAPSULE_FIRMWARE_MANAGEMENT
++	select UPDATE_FIT
++	select DFU
++	select EFI_CAPSULE_FIRMWARE
++	help
++	  Select this option if you want to enable firmware management protocol
++	  driver for FIT image
++
++config EFI_CAPSULE_FIRMWARE_RAW
++	bool "FMP driver for raw images"
++	depends on EFI_CAPSULE_FIRMWARE_MANAGEMENT
++	depends on SANDBOX || (!SANDBOX && !EFI_CAPSULE_FIRMWARE_FIT)
++	select DFU_WRITE_ALT
++	select DFU
++	select EFI_CAPSULE_FIRMWARE
++	help
++	  Select this option if you want to enable firmware management protocol
++	  driver for raw image
++
+ config EFI_CAPSULE_AUTHENTICATE
+ 	bool "Update Capsule authentication"
+ 	depends on EFI_CAPSULE_FIRMWARE
+@@ -181,29 +203,6 @@ config EFI_CAPSULE_AUTHENTICATE
+ 	  Select this option if you want to enable capsule
+ 	  authentication
+ 
+-config EFI_CAPSULE_FIRMWARE_FIT
+-	bool "FMP driver for FIT image"
+-	depends on EFI_CAPSULE_FIRMWARE_MANAGEMENT
+-	depends on FIT
+-	select UPDATE_FIT
+-	select DFU
+-	select EFI_CAPSULE_FIRMWARE
+-	default n
+-	help
+-	  Select this option if you want to enable firmware management protocol
+-	  driver for FIT image
+-
+-config EFI_CAPSULE_FIRMWARE_RAW
+-	bool "FMP driver for raw image"
+-	depends on EFI_CAPSULE_FIRMWARE_MANAGEMENT
+-	select DFU
+-	select DFU_WRITE_ALT
+-	select EFI_CAPSULE_FIRMWARE
+-	default n
+-	help
+-	  Select this option if you want to enable firmware management protocol
+-	  driver for raw image
+-
+ config EFI_DEVICE_PATH_TO_TEXT
+ 	bool "Device path to text protocol"
+ 	default y
+-- 
+2.34.1
+

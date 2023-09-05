@@ -1,0 +1,114 @@
+From c2967f790d7e9c208e7e93ae08f2e7e6acd74ec1 Mon Sep 17 00:00:00 2001
+From: Vanessa Maegima <vanessa.maegima@foundries.io>
+Date: Thu, 8 Apr 2021 17:25:47 -0300
+Subject: [PATCH 125/322] [FIO internal] imx8mm_evk: Add PMIC support for old
+ board revisions
+
+New iMX8MM EVK board version replaces PMIC BD71847 with PCA9450.
+
+NXP adds a new defconfig for the old board version (imx8mm_evk_qca_wifi)
+in e2205496e2 but it is interesting for FoundriesFactory to have both
+board versions supported in the same configuration, so add this support.
+
+Based on u-boot-toradex commit: 62be2d4b6fab4328176990b58737e553901465fd
+
+Signed-off-by: Vanessa Maegima <vanessa.maegima@foundries.io>
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+---
+ board/freescale/imx8mm_evk/spl.c | 31 +++++++++++++++++++------------
+ include/configs/imx8mm_evk.h     |  3 ---
+ 2 files changed, 19 insertions(+), 15 deletions(-)
+
+diff --git a/board/freescale/imx8mm_evk/spl.c b/board/freescale/imx8mm_evk/spl.c
+index 4ca63ff1ba0..726bb0dee55 100644
+--- a/board/freescale/imx8mm_evk/spl.c
++++ b/board/freescale/imx8mm_evk/spl.c
+@@ -21,11 +21,8 @@
+ #include <asm/arch/ddr.h>
+ 
+ #include <power/pmic.h>
+-#ifdef CONFIG_POWER_PCA9450
+ #include <power/pca9450.h>
+-#else
+ #include <power/bd71837.h>
+-#endif
+ #include <asm/mach-imx/gpio.h>
+ #include <asm/mach-imx/mxc_i2c.h>
+ #include <fsl_esdhc_imx.h>
+@@ -192,12 +189,23 @@ int board_mmc_getcd(struct mmc *mmc)
+ 
+ #ifdef CONFIG_POWER
+ #define I2C_PMIC	0
+-#ifdef CONFIG_POWER_PCA9450
++
+ int power_init_board(void)
+ {
+ 	struct pmic *p;
+ 	int ret;
+ 
++#ifdef CONFIG_POWER_PCA9450
++#ifdef CONFIG_POWER_BD71837
++	uint8_t is_bd71837 = 0;
++	ret = i2c_set_bus_num(I2C_PMIC);
++	if (!ret)
++		ret = i2c_read(0x4b, BD718XX_REV, 1, &is_bd71837, 1);
++	/* BD718XX_REV, High Nibble is major version, fix 1010 */
++	is_bd71837 = !ret && ((is_bd71837 & 0xf0) == 0xa0);
++	if (!is_bd71837) {
++#endif
++
+ 	ret = power_pca9450_init(I2C_PMIC);
+ 	if (ret)
+ 		printf("power init failed");
+@@ -226,13 +234,13 @@ int power_init_board(void)
+ 	pmic_reg_write(p, PCA9450_RESET_CTRL, 0xA1);
+ 
+ 	return 0;
+-}
+-#else
+-int power_init_board(void)
+-{
+-	struct pmic *p;
+-	int ret;
+ 
++#ifdef CONFIG_POWER_BD71837
++	}
++#endif
++#endif
++
++#ifdef CONFIG_POWER_BD71837
+ 	ret = power_bd71837_init(I2C_PMIC);
+ 	if (ret)
+ 		printf("power init failed");
+@@ -260,11 +268,10 @@ int power_init_board(void)
+ 
+ 	/* lock the PMIC regs */
+ 	pmic_reg_write(p, BD718XX_REGLOCK, 0x11);
+-
++#endif
+ 	return 0;
+ }
+ #endif
+-#endif
+ 
+ void spl_board_init(void)
+ {
+diff --git a/include/configs/imx8mm_evk.h b/include/configs/imx8mm_evk.h
+index 214288f96de..0e916f2f431 100644
+--- a/include/configs/imx8mm_evk.h
++++ b/include/configs/imx8mm_evk.h
+@@ -43,11 +43,8 @@
+ 
+ #define CONFIG_POWER
+ #define CONFIG_POWER_I2C
+-#if defined(CONFIG_IMX8M_LPDDR4) && defined(CONFIG_TARGET_IMX8MM_EVK)
+ #define CONFIG_POWER_PCA9450
+-#else
+ #define CONFIG_POWER_BD71837
+-#endif
+ #undef CONFIG_SPL_DM_I2C
+ 
+ #define CONFIG_SYS_I2C
+-- 
+2.34.1
+

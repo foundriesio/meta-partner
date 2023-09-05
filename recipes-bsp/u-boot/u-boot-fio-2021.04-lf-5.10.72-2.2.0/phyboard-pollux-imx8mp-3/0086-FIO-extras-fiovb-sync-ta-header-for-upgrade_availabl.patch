@@ -1,0 +1,75 @@
+From e849605034d88f1df23e72153a636cfc3d8d3909 Mon Sep 17 00:00:00 2001
+From: Ricardo Salveti <ricardo@foundries.io>
+Date: Fri, 5 Feb 2021 22:11:25 -0300
+Subject: [PATCH 086/322] [FIO extras] fiovb: sync ta header for
+ upgrade_available support
+
+Sync ta_fiovb.h from OP-TEE to support getting/setting the
+upgrade_available variable.
+
+Also bump fiovb_name to 30 in order for fiovb to be able to set an env
+var for upgrade_available.
+
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+---
+ cmd/fiovb.c                  | 8 ++++----
+ include/tee/optee_ta_fiovb.h | 3 ++-
+ 2 files changed, 6 insertions(+), 5 deletions(-)
+
+diff --git a/cmd/fiovb.c b/cmd/fiovb.c
+index 42b03ebe049..2149e539095 100644
+--- a/cmd/fiovb.c
++++ b/cmd/fiovb.c
+@@ -42,7 +42,7 @@ int do_fiovb_read_pvalue(cmd_tbl_t *cmdtp, int flag, int argc,
+ 	size_t bytes_read;
+ 	void *buffer;
+ 	char *endp;
+-	char fiovb_name[20] = { 0 }; /* fiovb.name */
++	char fiovb_name[30] = { 0 }; /* fiovb.name */
+ 	char fiovb_val[32] = { 0 };
+ 
+ 	if (!fiovb_ops) {
+@@ -86,7 +86,7 @@ int do_fiovb_write_pvalue(cmd_tbl_t *cmdtp, int flag, int argc,
+ {
+ 	const char *name;
+ 	const char *value;
+-	char fiovb_name[20] = { 0 }; /* fiovb.name */
++	char fiovb_name[30] = { 0 }; /* fiovb.name */
+ 
+ 	if (!fiovb_ops) {
+ 		printf("Foundries.IO Verified Boot is not initialized, run 'fiovb init' first\n");
+@@ -117,7 +117,7 @@ int do_fiovb_delete_pvalue(cmd_tbl_t *cmdtp, int flag, int argc,
+ 			   char * const argv[])
+ {
+ 	const char *name;
+-	char fiovb_name[20] = { 0 }; /* fiovb.name */
++	char fiovb_name[30] = { 0 }; /* fiovb.name */
+ 
+ 	if (!fiovb_ops) {
+ 		printf("Foundries.IO Verified Boot is not initialized, run 'fiovb init' first\n");
+@@ -170,7 +170,7 @@ static int do_fiovb(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
+ U_BOOT_CMD(
+ 	fiovb, 29, 0, do_fiovb,
+ 	"Provides commands for testing Foundries.IO verified boot functionality"
+-	" - supported value names: m4hash, bootcount and rollback",
++	" - supported value names: m4hash, bootcount, upgrade_available and rollback",
+ 	"init <dev> - initialize fiovb for <dev>\n"
+ 	"read_pvalue <name> <bytes> - read a persistent value <name>\n"
+ 	"write_pvalue <name> <value> - write a persistent value <name>\n"
+diff --git a/include/tee/optee_ta_fiovb.h b/include/tee/optee_ta_fiovb.h
+index beb945b0703..8d39e8dd091 100644
+--- a/include/tee/optee_ta_fiovb.h
++++ b/include/tee/optee_ta_fiovb.h
+@@ -8,7 +8,8 @@
+ #define TA_FIOVB_UUID {0x22250a54, 0x0bf1, 0x48fe, \
+ 		      { 0x80, 0x02, 0x7b, 0x20, 0xf1, 0xc9, 0xc9, 0xb1 } }
+ 
+-#define PERSIST_VALUE_LIST {"bootcount", "rollback", "m4hash", "m4size"}
++#define PERSIST_VALUE_LIST {"bootcount", "upgrade_available", "rollback", \
++			    "m4hash", "m4size"}
+ 
+ /*
+  * Reads a persistent value corresponding to the given name.
+-- 
+2.34.1
+

@@ -1,0 +1,47 @@
+From a84452e3980b2ac71124bc2d1d9fff4745911ca7 Mon Sep 17 00:00:00 2001
+From: Michael Scott <mike@foundries.io>
+Date: Fri, 3 Sep 2021 13:10:26 -0700
+Subject: [PATCH 272/322] [FIO toup] ARM: imx8m: support IMX8MP in
+ imx8m_usb_power_domain
+
+PGC registers differ between imx8m and imx8mp parts.  Let's add
+support for IMX8MP registers to enable USB power domain in SPL.
+
+Signed-off-by: Michael Scott <mike@foundries.io>
+(cherry-picked from commit 0bb88ebb7144232eb69e5c52f5a481da9d6fd8d5)
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+---
+ arch/arm/mach-imx/imx8m/soc.c | 10 +++++++++-
+ 1 file changed, 9 insertions(+), 1 deletion(-)
+
+diff --git a/arch/arm/mach-imx/imx8m/soc.c b/arch/arm/mach-imx/imx8m/soc.c
+index 7a322cf30f4..9cbbd727dce 100644
+--- a/arch/arm/mach-imx/imx8m/soc.c
++++ b/arch/arm/mach-imx/imx8m/soc.c
+@@ -1463,6 +1463,14 @@ static uint32_t gpc_pu_m_core_offset[11] = {
+ 	0xec0, 0xf00, 0xf40,
+ };
+ 
++#if defined(CONFIG_IMX8MP)
++#define PU_PGC_UP_TRG			0xD8
++#define PU_PGC_DN_TRG			0xE4
++#else
++#define PU_PGC_UP_TRG			0xF8
++#define PU_PGC_DN_TRG			0x104
++#endif
++
+ #define PGC_PCR				0
+ 
+ void imx_gpc_set_m_core_pgc(unsigned int offset, bool pdn)
+@@ -1485,7 +1493,7 @@ void imx8m_usb_power_domain(uint32_t domain_id, bool on)
+ 
+ 	imx_gpc_set_m_core_pgc(gpc_pu_m_core_offset[domain_id], true);
+ 
+-	reg = GPC_BASE_ADDR + (on ? 0xf8 : 0x104);
++	reg = GPC_BASE_ADDR + (on ? PU_PGC_UP_TRG : PU_PGC_DN_TRG);
+ 	val = 1 << (domain_id > 3 ? (domain_id + 3) : domain_id);
+ 	writel(val, reg);
+ 	while (readl(reg) & val)
+-- 
+2.34.1
+

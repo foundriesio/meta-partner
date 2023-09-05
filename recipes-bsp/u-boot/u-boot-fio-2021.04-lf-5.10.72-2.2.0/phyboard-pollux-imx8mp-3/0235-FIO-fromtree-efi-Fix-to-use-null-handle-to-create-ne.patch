@@ -1,0 +1,60 @@
+From af087e41612bf8d2c48ada7333b3577ad6973e80 Mon Sep 17 00:00:00 2001
+From: Masami Hiramatsu <masami.hiramatsu@linaro.org>
+Date: Tue, 22 Jun 2021 17:38:51 +0300
+Subject: [PATCH 235/322] [FIO fromtree] efi: Fix to use null handle to create
+ new handle for efi_fmp_raw
+
+When running the efidebug capsule disk-update command, the efi_fmp_raw
+protocol installation fails with 2 (EFI_INVALID_PARAMETER) as below.
+This is because the code passes efi_root instead of the handle local var.
+
+=> efidebug capsule disk-update
+EFI: Call: efi_install_multiple_protocol_interfaces( &handle, &efi_guid_firmware_management_protocol, &efi_fmp_fit, NULL)
+  EFI: Entry efi_install_multiple_protocol_interfaces(00000000fbaf5988)
+    EFI: Call: efi_install_protocol_interface( handle, protocol, EFI_NATIVE_INTERFACE, protocol_interface)
+      EFI: Entry efi_install_protocol_interface(00000000fbaf5988, 86c77a67-0b97-4633-a187-49104d0685c7, 0, 00000000fbfa6ee8)
+        EFI: new handle 00000000fbb37520
+      EFI: Exit: efi_install_protocol_interface: 0
+    EFI: 0 returned by efi_install_protocol_interface( handle, protocol, EFI_NATIVE_INTERFACE, protocol_interface)
+  EFI: Exit: efi_install_multiple_protocol_interfaces: 0
+EFI: 0 returned by efi_install_multiple_protocol_interfaces( &handle, &efi_guid_firmware_management_protocol, &efi_fmp_fit, NULL)
+EFI: Call: efi_install_multiple_protocol_interfaces( &efi_root, &efi_guid_firmware_management_protocol, &efi_fmp_raw, NULL)
+  EFI: Entry efi_install_multiple_protocol_interfaces(00000000fbfec648)
+    EFI: Call: efi_install_protocol_interface( handle, protocol, EFI_NATIVE_INTERFACE, protocol_interface)
+      EFI: Entry efi_install_protocol_interface(00000000fbfec648, 86c77a67-0b97-4633-a187-49104d0685c7, 0, 00000000fbfa6f18)
+        EFI: handle 00000000fbaf8520
+      EFI: Exit: efi_install_protocol_interface: 2
+    EFI: 2 returned by efi_install_protocol_interface( handle, protocol, EFI_NATIVE_INTERFACE, protocol_interface)
+  EFI: Exit: efi_install_multiple_protocol_interfaces: 2
+EFI: 2 returned by efi_install_multiple_protocol_interfaces( &efi_root, &efi_guid_firmware_management_protocol, &efi_fmp_raw, NULL)
+Command failed, result=1
+
+To fix this issue, pass the handle local var which is set NULL right
+before installing efi_fmp_raw as same as the installing efi_fmp_fit.
+(In both cases, the local reference to the handle will be just discarded)
+
+Signed-off-by: Masami Hiramatsu <masami.hiramatsu@linaro.org>
+Signed-off-by: Ilias Apalodimas <ilias.apalodimas@linaro.org>
+Reviewed-by: Heinrich Schuchardt <xypron.glpk@gmx.de>
+(cherry picked from commit 3ef772230db077a7122de11d93cfc4ff570fb4a7)
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+---
+ lib/efi_loader/efi_capsule.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/lib/efi_loader/efi_capsule.c b/lib/efi_loader/efi_capsule.c
+index 60309d4a07d..cc6ed453ed2 100644
+--- a/lib/efi_loader/efi_capsule.c
++++ b/lib/efi_loader/efi_capsule.c
+@@ -940,7 +940,7 @@ efi_status_t __weak arch_efi_load_capsule_drivers(void)
+ 	if (IS_ENABLED(CONFIG_EFI_CAPSULE_FIRMWARE_RAW)) {
+ 		handle = NULL;
+ 		ret = EFI_CALL(efi_install_multiple_protocol_interfaces(
+-				&efi_root,
++				&handle,
+ 				&efi_guid_firmware_management_protocol,
+ 				&efi_fmp_raw, NULL));
+ 	}
+-- 
+2.34.1
+

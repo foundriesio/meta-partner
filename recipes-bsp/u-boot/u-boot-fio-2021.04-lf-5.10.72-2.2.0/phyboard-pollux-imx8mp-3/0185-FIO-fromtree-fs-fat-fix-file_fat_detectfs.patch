@@ -1,0 +1,75 @@
+From 622becb34297cbf19b574966f2131ec7dcb10269 Mon Sep 17 00:00:00 2001
+From: Heinrich Schuchardt <xypron.glpk@gmx.de>
+Date: Mon, 25 Jan 2021 12:53:14 +0100
+Subject: [PATCH 185/322] [FIO fromtree] fs: fat: fix file_fat_detectfs()
+
+Up to now file_fat_detectfs() did not detect some interface types like
+EFI, HOST, VIRTIO.
+
+Avoid duplicate code by calling blk_get_if_type_name().
+
+The interface type now will be shown in lower case to match all other use
+cases.
+
+Signed-off-by: Heinrich Schuchardt <xypron.glpk@gmx.de>
+Reviewed-by: Simon Glass <sjg@chromium.org>
+(cherry picked from commit 02079eb38b1dd87bf5ae00216f513a2fb831e4d5)
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+---
+ fs/fat/fat.c | 38 ++++----------------------------------
+ 1 file changed, 4 insertions(+), 34 deletions(-)
+
+diff --git a/fs/fat/fat.c b/fs/fat/fat.c
+index ccba268f610..c561d82b351 100644
+--- a/fs/fat/fat.c
++++ b/fs/fat/fat.c
+@@ -1147,42 +1147,12 @@ int file_fat_detectfs(void)
+ 		return 1;
+ 	}
+ 
+-#if defined(CONFIG_IDE) || \
+-    defined(CONFIG_SATA) || \
+-    defined(CONFIG_SCSI) || \
+-    defined(CONFIG_CMD_USB) || \
+-    defined(CONFIG_MMC)
+-	printf("Interface:  ");
+-	switch (cur_dev->if_type) {
+-	case IF_TYPE_IDE:
+-		printf("IDE");
+-		break;
+-	case IF_TYPE_SATA:
+-		printf("SATA");
+-		break;
+-	case IF_TYPE_SCSI:
+-		printf("SCSI");
+-		break;
+-	case IF_TYPE_ATAPI:
+-		printf("ATAPI");
+-		break;
+-	case IF_TYPE_USB:
+-		printf("USB");
+-		break;
+-	case IF_TYPE_DOC:
+-		printf("DOC");
+-		break;
+-	case IF_TYPE_MMC:
+-		printf("MMC");
+-		break;
+-	default:
+-		printf("Unknown");
++	if (IS_ENABLED(CONFIG_HAVE_BLOCK_DEVICE)) {
++		printf("Interface:  %s\n", blk_get_if_type_name(cur_dev->if_type));
++		printf("  Device %d: ", cur_dev->devnum);
++		dev_print(cur_dev);
+ 	}
+ 
+-	printf("\n  Device %d: ", cur_dev->devnum);
+-	dev_print(cur_dev);
+-#endif
+-
+ 	if (read_bootsectandvi(&bs, &volinfo, &fatsize)) {
+ 		printf("\nNo valid FAT fs found\n");
+ 		return 1;
+-- 
+2.34.1
+

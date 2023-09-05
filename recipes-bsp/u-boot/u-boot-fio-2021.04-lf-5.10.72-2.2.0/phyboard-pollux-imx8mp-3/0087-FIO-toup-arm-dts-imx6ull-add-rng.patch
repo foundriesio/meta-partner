@@ -1,0 +1,36 @@
+From 09c5ab03aef3e8fc3f77ea57621d04ebbc7359e8 Mon Sep 17 00:00:00 2001
+From: Ricardo Salveti <ricardo@foundries.io>
+Date: Tue, 23 Feb 2021 15:47:20 -0300
+Subject: [PATCH 087/322] [FIO toup] arm: dts: imx6ull: add rng
+
+Add node for the RNGB block, as done by commit 92afd5786d9 on kernel
+upstream (5.9).
+
+Upstreaming work is needed to sync the dtsi from latest kernel.
+
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+---
+ arch/arm/dts/imx6ull.dtsi | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+diff --git a/arch/arm/dts/imx6ull.dtsi b/arch/arm/dts/imx6ull.dtsi
+index b900060bab4..8c884909873 100644
+--- a/arch/arm/dts/imx6ull.dtsi
++++ b/arch/arm/dts/imx6ull.dtsi
+@@ -67,6 +67,13 @@
+ 				clock-names = "dcp";
+ 			};
+ 
++			rngb: rng@2284000 {
++				compatible = "fsl,imx6ull-rngb", "fsl,imx25-rngb";
++				reg = <0x02284000 0x4000>;
++				interrupts = <GIC_SPI 6 IRQ_TYPE_LEVEL_HIGH>;
++				clocks = <&clks IMX6UL_CLK_DUMMY>;
++			};
++
+ 			iomuxc_snvs: iomuxc-snvs@2290000 {
+ 				compatible = "fsl,imx6ull-iomuxc-snvs";
+ 				reg = <0x02290000 0x4000>;
+-- 
+2.34.1
+

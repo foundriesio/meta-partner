@@ -1,0 +1,57 @@
+From 7b64ccd44baa419ddef81333cad649a9f0051715 Mon Sep 17 00:00:00 2001
+From: Ilias Apalodimas <ilias.apalodimas@linaro.org>
+Date: Thu, 22 Apr 2021 14:32:14 +0300
+Subject: [PATCH 201/322] [FIO fromtree] efi_loader: simplify
+ tcg2_create_digest()
+
+Bumping the digest list count, for all supported algorithms,  can be
+calculated outside of the individual switch statements.  So let's do that
+for every loop iteration instead and simplify the code a bit.
+
+Signed-off-by: Ilias Apalodimas <ilias.apalodimas@linaro.org>
+Reviewed-by: Heinrich Schuchardt <xypron.glpk@gmx.de>
+(cherry picked from commit 6fe8b4a39d0ddb6cf6de35ab3e1b522ec0824575)
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+---
+ lib/efi_loader/efi_tcg2.c | 5 +----
+ 1 file changed, 1 insertion(+), 4 deletions(-)
+
+diff --git a/lib/efi_loader/efi_tcg2.c b/lib/efi_loader/efi_tcg2.c
+index d5eca68769b..94e8f22bbb6 100644
+--- a/lib/efi_loader/efi_tcg2.c
++++ b/lib/efi_loader/efi_tcg2.c
+@@ -535,30 +535,27 @@ static efi_status_t tcg2_create_digest(const u8 *input, u32 length,
+ 			sha1_starts(&ctx);
+ 			sha1_update(&ctx, input, length);
+ 			sha1_finish(&ctx, final);
+-			digest_list->count++;
+ 			break;
+ 		case TPM2_ALG_SHA256:
+ 			sha256_starts(&ctx_256);
+ 			sha256_update(&ctx_256, input, length);
+ 			sha256_finish(&ctx_256, final);
+-			digest_list->count++;
+ 			break;
+ 		case TPM2_ALG_SHA384:
+ 			sha384_starts(&ctx_512);
+ 			sha384_update(&ctx_512, input, length);
+ 			sha384_finish(&ctx_512, final);
+-			digest_list->count++;
+ 			break;
+ 		case TPM2_ALG_SHA512:
+ 			sha512_starts(&ctx_512);
+ 			sha512_update(&ctx_512, input, length);
+ 			sha512_finish(&ctx_512, final);
+-			digest_list->count++;
+ 			break;
+ 		default:
+ 			EFI_PRINT("Unsupported algorithm %x\n", hash_alg);
+ 			return EFI_INVALID_PARAMETER;
+ 		}
++		digest_list->count++;
+ 		digest_list->digests[i].hash_alg = hash_alg;
+ 		memcpy(&digest_list->digests[i].digest, final, (u32)alg_to_len(hash_alg));
+ 	}
+-- 
+2.34.1
+

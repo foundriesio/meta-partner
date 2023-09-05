@@ -1,0 +1,41 @@
+From a2d462643967c14ce034aed2ec4f008797595e3d Mon Sep 17 00:00:00 2001
+From: Heinrich Schuchardt <xypron.glpk@gmx.de>
+Date: Wed, 12 May 2021 17:37:20 +0200
+Subject: [PATCH 205/322] [FIO fromtree] efi_loader: build warning in
+ efi_tcg2_hash_log_extend_event
+
+Building 32bit boards with the TCG2 protocol enabled leads to a build
+warning due to a missing conversion.
+
+    lib/efi_loader/efi_tcg2.c:774:27:
+    error: cast to pointer from integer of different size
+    [-Werror=int-to-pointer-cast]
+    774 |  ret = tcg2_create_digest((u8 *)data_to_hash, data_to_hash_len,
+        |                           ^
+
+Signed-off-by: Heinrich Schuchardt <xypron.glpk@gmx.de>
+Reviewed-by: Ilias Apalodimas <ilias.apalodimas@linaro.org>
+(cherry picked from commit 700f68c35484c9de1c2e5e30dfc4c7a63b991a92)
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+---
+ lib/efi_loader/efi_tcg2.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/lib/efi_loader/efi_tcg2.c b/lib/efi_loader/efi_tcg2.c
+index 94e8f22bbb6..06e97b0b270 100644
+--- a/lib/efi_loader/efi_tcg2.c
++++ b/lib/efi_loader/efi_tcg2.c
+@@ -771,8 +771,8 @@ efi_tcg2_hash_log_extend_event(struct efi_tcg2_protocol *this, u64 flags,
+ 	pcr_index = efi_tcg_event->header.pcr_index;
+ 	event_type = efi_tcg_event->header.event_type;
+ 
+-	ret = tcg2_create_digest((u8 *)data_to_hash, data_to_hash_len,
+-				 &digest_list);
++	ret = tcg2_create_digest((u8 *)(uintptr_t)data_to_hash,
++				 data_to_hash_len, &digest_list);
+ 	if (ret != EFI_SUCCESS)
+ 		goto out;
+ 
+-- 
+2.34.1
+
