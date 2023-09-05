@@ -7,6 +7,9 @@ BBMASK += " \
     /meta-phytec/recipes-bsp/u-boot/libubootenv_%.bbappend \
 "
 
+# REVERTME: Workaround for BBMASK reassignment in meta-phytec
+include bbmask-fix.inc
+
 # meta-clang:kirkstone: clang is not ready to be used for linux kernel:
 # commit 299a5fd ("linux-yocto: Use binutils provided strip")
 # We have to remove using clang tools objcopy and strip for all LmP linux
