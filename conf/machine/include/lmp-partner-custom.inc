@@ -93,6 +93,25 @@ LMP_BOOT_FIRMWARE_FILES:append:sota:phyboard-lyra-am62xx-3 = " boot.itb"
 PREFERRED_PROVIDER_virtual/kernel:sota:phyboard-lyra-am62xx-3 = "linux-lmp-ti"
 OSTREE_KERNEL_ARGS:phyboard-lyra-am62xx-3 ?= "console=ttyS2,115200n8 ${OSTREE_KERNEL_ARGS_COMMON}"
 
+# Phytec phyBOARD-Pollux i.MX 8MPlus
+MACHINE_FEATURES:append:phyboard-pollux-imx8mp-3 = " optee"
+SOTA_CLIENT_FEATURES:append:phyboard-pollux-imx8mp-3 = " ubootenv"
+PREFERRED_PROVIDER_u-boot-fw-utils:phyboard-pollux-imx8mp-3 = "libubootenv"
+PREFERRED_RPROVIDER_u-boot-fw-utils:phyboard-pollux-imx8mp-3 = "libubootenv"
+PREFERRED_PROVIDER_virtual/bootloader:phyboard-pollux-imx8mp-3 ?= "u-boot-fio"
+UBOOT_MACHINE:phyboard-pollux-imx8mp-3 = "phycore-imx8mp_defconfig"
+BOOTSCR_LOAD_ADDR:phyboard-pollux-imx8mp-3 = "0x44800000"
+IMX_BOOT_SOC_TARGET:phyboard-pollux-imx8mp-3 = "iMX8MP"
+IMX_BOOT_SEEK:phyboard-pollux-imx8mp-3 = "32"
+IMAGE_BOOT_FILES:sota:phyboard-pollux-imx8mp-3 = "boot.itb"
+PREFERRED_PROVIDER_u-boot-default-script:sota:phyboard-pollux-imx8mp-3 = "u-boot-ostree-scr-fit"
+OPTEEMACHINE:phyboard-pollux-imx8mp-3 = "imx-mx8mpevk"
+PREFERRED_PROVIDER_virtual/kernel:phyboard-pollux-imx8mp-3 = "linux-lmp-phytec-imx"
+KERNEL_DEVICETREE:phyboard-pollux-imx8mp-3 = "freescale/imx8mp-phyboard-pollux-rdk.dtb"
+KMACHINE:phyboard-pollux-imx8mp-3 = "phyboard-pollux-imx8mp-3"
+WKS_FILES:sota:phyboard-pollux-imx8mp-3 = "sdimage-imx8-spl-sota.wks.in"
+OSTREE_KERNEL_ARGS:phyboard-pollux-imx8mp-3 ?= "console=tty1 console=ttymxc0,115200 earlycon=ec_imx6q,0x30860000,115200 rootfstype=ext4"
+
 # Fix do_deploy error
 # Adjust lines from: meta-phytec/conf/machine/include/phyk3.inc
 do_image_wic[mcdepends] = "${@bb.utils.contains('MACHINE', 'phyboard-lyra-am62xx', 'mc::lmp-k3r5:ti-sci-fw:do_deploy', '', d)}"
