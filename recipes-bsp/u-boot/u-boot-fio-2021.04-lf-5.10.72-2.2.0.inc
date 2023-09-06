@@ -6,7 +6,7 @@ FILESEXTRAPATHS:prepend := "${THISDIR}/u-boot-fio-2021.04-lf-5.10.72-2.2.0:"
 #  [FIO toup] imx8: ahab: refactor do_ahab_close command
 #  [FIO fromimx] LF-4375 usb: imx: Fix USB charger detector issue
 
-SRC_URI:append = " \
+SRC_URI:append:phyboard-pollux-imx8mp-3 = " \
     file://0001-FIO-toimx-imx7d-allow-overriding-reset_cpu.patch \
     file://0002-FIO-fromtree-mmc-board-code-add-a-weak-common-implem.patch \
     file://0003-FIO-temphack-colibri_imx7_emmc-fix-linking-mxsfb-dri.patch \
