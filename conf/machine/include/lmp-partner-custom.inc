@@ -18,6 +18,8 @@ include bbmask-fix.inc
 # do_assemble_fitimage.520200: 841: arm-lmp-linux-gnueabi-llvm-objcopy: not found
 OBJCOPY:pn-linux-lmp-ti:toolchain-clang = "${HOST_PREFIX}objcopy"
 STRIP:pn-linux-lmp-ti:toolchain-clang = "${HOST_PREFIX}strip"
+OBJCOPY:pn-linux-lmp-phytec-imx:toolchain-clang = "${HOST_PREFIX}objcopy"
+STRIP:pn-linux-lmp-phytec-imx:toolchain-clang = "${HOST_PREFIX}strip"
 
 # Phytec phyBOARD-Lyra TI AM62x (Rev1 GP)
 SSTATE_ALLOW_OVERLAP_FILES_K3R5:phyboard-lyra-am62xx-1-k3r5 = ""
