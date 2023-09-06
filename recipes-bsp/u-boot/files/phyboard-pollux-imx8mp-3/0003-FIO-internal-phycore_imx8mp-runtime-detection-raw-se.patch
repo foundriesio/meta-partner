@@ -1,0 +1,38 @@
+From b299decfc504755bea7320de0e01e8851f15d682 Mon Sep 17 00:00:00 2001
+From: Vanessa Maegima <vanessa.maegima@foundries.io>
+Date: Tue, 5 Sep 2023 17:33:22 -0300
+Subject: [PATCH 3/5] [FIO internal] phycore_imx8mp: runtime detection raw
+ sector offsets
+
+Add runtime detection for the next boot image (U-Boot proper FIT) SD/MMC
+sector offset.
+
+Signed-off-by: Vanessa Maegima <vanessa.maegima@foundries.io>
+---
+ include/configs/phycore_imx8mp.h | 9 +++++++++
+ 1 file changed, 9 insertions(+)
+
+diff --git a/include/configs/phycore_imx8mp.h b/include/configs/phycore_imx8mp.h
+index 9f5e66fe632..00e977983d8 100644
+--- a/include/configs/phycore_imx8mp.h
++++ b/include/configs/phycore_imx8mp.h
+@@ -19,7 +19,16 @@
+ #define CONFIG_SPL_MAX_SIZE		(152 * SZ_1K)
+ #define CONFIG_SYS_MONITOR_LEN		SZ_512K
+ #define CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_USE_SECTOR
++/*
++ * CONFIG_SECONDARY_BOOT_SECTOR_OFFSET was intended to be used as a compile time setting.
++ * If CONFIG_SECONDARY_BOOT_RUNTIME_DETECTION is defined, then only use the base offset of 0x300 here.
++ * CONFIG_SECONDARY_BOOT_SECTOR_OFFSET will be added dynamically if needed.
++ */
++#ifdef CONFIG_SECONDARY_BOOT_RUNTIME_DETECTION
+ #define CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_SECTOR	0x300
++#else
++#define CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_SECTOR        (0x300 + CONFIG_SECONDARY_BOOT_SECTOR_OFFSET)
++#endif /* CONFIG_SECONDARY_BOOT_RUNTIME_DETECTION */
+ #define CONFIG_SYS_UBOOT_BASE \
+ 		(QSPI0_AMBA_BASE + CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_SECTOR * 512)
+ 
+-- 
+2.34.1
+

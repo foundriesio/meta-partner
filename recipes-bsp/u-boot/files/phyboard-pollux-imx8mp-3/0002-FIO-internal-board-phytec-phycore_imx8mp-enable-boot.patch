@@ -1,0 +1,45 @@
+From b172657f70dc032119a1ce28e34204761476298f Mon Sep 17 00:00:00 2001
+From: Vanessa Maegima <vanessa.maegima@foundries.io>
+Date: Tue, 5 Sep 2023 17:31:17 -0300
+Subject: [PATCH 2/5] [FIO internal] board: phytec: phycore_imx8mp: enable boot
+ device list
+
+This is needed to enable the board to go into SDP mode.
+
+Signed-off-by: Vanessa Maegima <vanessa.maegima@foundries.io>
+---
+ board/phytec/phycore_imx8mp/spl.c | 17 +++++++++++++++++
+ 1 file changed, 17 insertions(+)
+
+diff --git a/board/phytec/phycore_imx8mp/spl.c b/board/phytec/phycore_imx8mp/spl.c
+index 610eba11ce2..67ee0486683 100644
+--- a/board/phytec/phycore_imx8mp/spl.c
++++ b/board/phytec/phycore_imx8mp/spl.c
+@@ -30,7 +30,24 @@ DECLARE_GLOBAL_DATA_PTR;
+ 
+ int spl_board_boot_device(enum boot_device boot_dev_spl)
+ {
++#ifdef CONFIG_SPL_BOOTROM_SUPPORT
+ 	return BOOT_DEVICE_BOOTROM;
++#else
++	switch (boot_dev_spl) {
++	case SD1_BOOT:
++	case MMC1_BOOT:
++	case SD2_BOOT:
++	case MMC2_BOOT:
++		return BOOT_DEVICE_MMC1;
++	case SD3_BOOT:
++	case MMC3_BOOT:
++		return BOOT_DEVICE_MMC2;
++	case USB_BOOT:
++		return BOOT_DEVICE_BOARD;
++	default:
++		return BOOT_DEVICE_NONE;
++	}
++#endif
+ }
+ 
+ void spl_dram_init(void)
+-- 
+2.34.1
+

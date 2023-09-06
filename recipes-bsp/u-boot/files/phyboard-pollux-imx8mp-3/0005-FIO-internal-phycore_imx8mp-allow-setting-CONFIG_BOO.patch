@@ -1,0 +1,34 @@
+From 09e01ba8831f9d02b669044753bee28e6527d0ab Mon Sep 17 00:00:00 2001
+From: Vanessa Maegima <vanessa.maegima@foundries.io>
+Date: Tue, 5 Sep 2023 17:36:47 -0300
+Subject: [PATCH 5/5] [FIO internal] phycore_imx8mp: allow setting
+ CONFIG_BOOTCOMMAND in defconfig
+
+Signed-off-by: Vanessa Maegima <vanessa.maegima@foundries.io>
+---
+ include/configs/phycore_imx8mp.h | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/include/configs/phycore_imx8mp.h b/include/configs/phycore_imx8mp.h
+index 4b237c5526c..fb1d5830cf8 100644
+--- a/include/configs/phycore_imx8mp.h
++++ b/include/configs/phycore_imx8mp.h
+@@ -167,6 +167,7 @@
+ #define BOOTCOMMAND_APPEND ""
+ #endif
+ 
++#ifndef CONFIG_BOOTCOMMAND
+ #define CONFIG_BOOTCOMMAND \
+ 	"mmc dev ${mmcdev}; if mmc rescan; then " \
+ 		"env exists dofitboot || setenv dofitboot 0;" \
+@@ -180,6 +181,7 @@
+ 		"fi; " \
+ 	"fi; " \
+ 	BOOTCOMMAND_APPEND
++#endif
+ 
+ #ifdef CONFIG_ENV_WRITEABLE_LIST
+ /* Set environment flag validation to a list of env vars that must be writable */
+-- 
+2.34.1
+

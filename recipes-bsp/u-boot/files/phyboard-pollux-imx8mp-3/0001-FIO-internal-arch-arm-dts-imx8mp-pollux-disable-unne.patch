@@ -1,0 +1,51 @@
+From f28b88518b2e30e42d161e0ff0ca9d95b66cfbff Mon Sep 17 00:00:00 2001
+From: Vanessa Maegima <vanessa.maegima@foundries.io>
+Date: Tue, 5 Sep 2023 17:28:38 -0300
+Subject: [PATCH 1/5] [FIO internal] arch: arm: dts: imx8mp-pollux: disable
+ unneeded SPL nodes
+
+Disable unnecessary nodes enabled in SPL device tree to reduce SPL
+size.
+
+Signed-off-by: Vanessa Maegima <vanessa.maegima@foundries.io>
+---
+ .../dts/imx8mp-phyboard-pollux-rdk-u-boot.dtsi   | 16 ----------------
+ 1 file changed, 16 deletions(-)
+
+diff --git a/arch/arm/dts/imx8mp-phyboard-pollux-rdk-u-boot.dtsi b/arch/arm/dts/imx8mp-phyboard-pollux-rdk-u-boot.dtsi
+index 3b334632b4e..dda0260831c 100644
+--- a/arch/arm/dts/imx8mp-phyboard-pollux-rdk-u-boot.dtsi
++++ b/arch/arm/dts/imx8mp-phyboard-pollux-rdk-u-boot.dtsi
+@@ -52,14 +52,6 @@
+ 	u-boot,dm-spl;
+ };
+ 
+-&pinctrl_fec {
+-	u-boot,dm-pre-reloc;
+-};
+-
+-&pinctrl_flexspi0 {
+-	u-boot,dm-pre-reloc;
+-};
+-
+ &pinctrl_i2c1 {
+ 	u-boot,dm-pre-reloc;
+ 	u-boot,dm-spl;
+@@ -99,14 +91,6 @@
+ 	u-boot,dm-spl;
+ };
+ 
+-&fec {
+-	u-boot,dm-pre-reloc;
+-};
+-
+-&flexspi {
+-	u-boot,dm-pre-reloc;
+-};
+-
+ &gpio1 {
+ 	u-boot,dm-spl;
+ };
+-- 
+2.34.1
+
