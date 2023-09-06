@@ -1,0 +1,7 @@
+define KMACHINE phyboard-pollux-imx8mp-3
+define KARCH aarch64
+define KTYPE standard
+
+include ktypes/standard/standard.scc
+
+include phyboard-pollux-imx8mp-3.scc
