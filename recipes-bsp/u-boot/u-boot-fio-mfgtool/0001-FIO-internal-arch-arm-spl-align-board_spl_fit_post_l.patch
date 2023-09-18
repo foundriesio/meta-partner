@@ -1,0 +1,38 @@
+From 50c52f6545814ac9893ce66a63a7d90c9bfb7251 Mon Sep 17 00:00:00 2001
+From: Vanessa Maegima <vanessa.maegima@foundries.io>
+Date: Mon, 18 Sep 2023 09:37:12 -0300
+Subject: [PATCH] [FIO internal] arch: arm: spl: align board_spl_fit_post_load
+ function with FIO
+
+This fixes build error when enabling IMX_HAB for u-boot-fio-mfgtool.
+
+Signed-off-by: Vanessa Maegima <vanessa.maegima@foundries.io>
+---
+ arch/arm/mach-imx/spl.c | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
+
+diff --git a/arch/arm/mach-imx/spl.c b/arch/arm/mach-imx/spl.c
+index d552cabe076..0fdb09e749f 100644
+--- a/arch/arm/mach-imx/spl.c
++++ b/arch/arm/mach-imx/spl.c
+@@ -426,8 +426,7 @@ exit:
+ 
+ void board_spl_fit_post_load(const void *fit, struct spl_image_info *spl_image)
+ {
+-#if defined(CONFIG_IMX_HAB) && !defined(CONFIG_SPL_FIT_SIGNATURE)
+-	if (!(spl_image->flags & SPL_FIT_BYPASS_POST_LOAD)) {
++	if (CONFIG_IS_ENABLED(IMX_HAB) && !(spl_image->flags & SPL_FIT_BYPASS_POST_LOAD)) {
+ 		u32 offset = ALIGN(fdt_totalsize(fit), 0x1000);
+ 
+ 		if (imx_hab_authenticate_image((uintptr_t)fit,
+@@ -436,7 +435,6 @@ void board_spl_fit_post_load(const void *fit, struct spl_image_info *spl_image)
+ 			panic("spl: ERROR:  image authentication unsuccessful\n");
+ 		}
+ 	}
+-#endif
+ #if defined(CONFIG_IMX8MP) || defined(CONFIG_IMX8MN)
+ #define MCU_RDC_MAGIC "mcu_rdc"
+ 	if (!(spl_image->flags & SPL_FIT_BYPASS_POST_LOAD)) {
+-- 
+2.34.1
+
