@@ -111,6 +111,8 @@ KERNEL_DEVICETREE:phyboard-pollux-imx8mp-3 = "freescale/imx8mp-phyboard-pollux-r
 KMACHINE:phyboard-pollux-imx8mp-3 = "phyboard-pollux-imx8mp-3"
 WKS_FILES:sota:phyboard-pollux-imx8mp-3 = "sdimage-imx8-spl-sota.wks.in"
 OSTREE_KERNEL_ARGS:phyboard-pollux-imx8mp-3 ?= "console=tty1 console=ttymxc0,115200 earlycon=ec_imx6q,0x30860000,115200 rootfstype=ext4"
+# Phytec phyBOARD-Pollux i.MX 8MPlus with secure boot support
+SOTA_CLIENT_FEATURES:remove:phyboard-pollux-imx8mp-3-sec = "ubootenv"
 
 # Fix do_deploy error
 # Adjust lines from: meta-phytec/conf/machine/include/phyk3.inc
