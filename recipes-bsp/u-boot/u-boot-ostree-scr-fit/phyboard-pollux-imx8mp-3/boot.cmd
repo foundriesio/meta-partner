@@ -7,6 +7,7 @@ setenv devtype mmc
 setenv devnum 2
 setenv bootpart 1
 setenv rootpart 2
+mmc dev ${devnum}
 
 # Boot image files
 setenv fdt_file_final freescale_${fdtfile}
