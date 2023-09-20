@@ -15,4 +15,5 @@ SRC_URI:append:phyboard-pollux-imx8mp-3 = " \
     file://0003-FIO-internal-phycore_imx8mp-runtime-detection-raw-se.patch \
     file://0004-FIO-internal-phycore_imx8mp-fix-SPL-stack-size-and-B.patch \
     file://0005-FIO-internal-phycore_imx8mp-allow-setting-CONFIG_BOO.patch \
+    file://0001-FIO-internal-arch-arm-dts-imx8mp-phyboard-pollux-ena.patch \
 "

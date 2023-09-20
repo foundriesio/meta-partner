@@ -1,0 +1,32 @@
+From 991ba654c9bb6483de1f6f9a9485333d99cd3f73 Mon Sep 17 00:00:00 2001
+From: Vanessa Maegima <vanessa.maegima@foundries.io>
+Date: Tue, 19 Sep 2023 15:37:35 -0300
+Subject: [PATCH] [FIO internal] arch: arm: dts: imx8mp-phyboard-pollux: enable
+ optee node
+
+Signed-off-by: Vanessa Maegima <vanessa.maegima@foundries.io>
+---
+ arch/arm/dts/imx8mp-phyboard-pollux-rdk-u-boot.dtsi | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+diff --git a/arch/arm/dts/imx8mp-phyboard-pollux-rdk-u-boot.dtsi b/arch/arm/dts/imx8mp-phyboard-pollux-rdk-u-boot.dtsi
+index dda0260831c..dd9803f37ff 100644
+--- a/arch/arm/dts/imx8mp-phyboard-pollux-rdk-u-boot.dtsi
++++ b/arch/arm/dts/imx8mp-phyboard-pollux-rdk-u-boot.dtsi
+@@ -10,6 +10,13 @@
+ 		wdt = <&wdog1>;
+ 		u-boot,dm-spl;
+ 	};
++
++	firmware {
++		optee {
++			compatible = "linaro,optee-tz";
++			method = "smc";
++		};
++	};
+ };
+ 
+ &{/soc@0} {
+-- 
+2.34.1
+
