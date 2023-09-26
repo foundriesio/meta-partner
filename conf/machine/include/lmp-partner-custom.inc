@@ -3,7 +3,9 @@
 # Mask missing / broken recipes
 BBMASK += " \
     /meta-toradex-bsp-common/recipes-bsp/u-boot/libubootenv_%.bbappend \
+    /meta-toradex-nxp/recipes-kernel/linux-firmware/linux-firmware_%.bbappend \
 "
+
 
 # non-clangable settings
 OBJCOPY:pn-linux-toradex-mainline:toolchain-clang = "${HOST_PREFIX}objcopy"
