@@ -1,0 +1,46 @@
+From 60e43b71ecbd20367d7dd54d0ed92bf2b58b87e3 Mon Sep 17 00:00:00 2001
+From: Michael Scott <mike@foundries.io>
+Date: Mon, 2 Oct 2023 16:51:46 -0700
+Subject: [PATCH 2/2] arm: dts: k3-am62-phycore: enable usb0 for DFU
+
+Signed-off-by: Michael Scott <mike@foundries.io>
+---
+ arch/arm/dts/k3-am625-phycore-som-u-boot.dtsi | 9 +++++++++
+ arch/arm/dts/k3-am625-phycore-som.dts         | 1 +
+ 2 files changed, 10 insertions(+)
+
+diff --git a/arch/arm/dts/k3-am625-phycore-som-u-boot.dtsi b/arch/arm/dts/k3-am625-phycore-som-u-boot.dtsi
+index 9df76ece896..2ece7b098ff 100644
+--- a/arch/arm/dts/k3-am625-phycore-som-u-boot.dtsi
++++ b/arch/arm/dts/k3-am625-phycore-som-u-boot.dtsi
+@@ -124,6 +124,15 @@
+ 	u-boot,dm-spl;
+ };
+ 
++&usbss0 {
++	u-boot,dm-spl;
++};
++
++&usb0 {
++	dr_mode = "peripheral";
++	u-boot,dm-spl;
++};
++
+ &cpsw3g {
+ 	reg = <0x0 0x8000000 0x0 0x200000>,
+ 	      <0x0 0x43000200 0x0 0x8>;
+diff --git a/arch/arm/dts/k3-am625-phycore-som.dts b/arch/arm/dts/k3-am625-phycore-som.dts
+index 235648582b5..4d3770afaef 100644
+--- a/arch/arm/dts/k3-am625-phycore-som.dts
++++ b/arch/arm/dts/k3-am625-phycore-som.dts
+@@ -19,6 +19,7 @@
+ 		serial2 = &main_uart0;
+ 		mmc0 = &sdhci0;
+ 		mmc1 = &sdhci1;
++		usb0 = &usb0;
+ 		spi0 = &ospi0;
+ 	};
+ 
+-- 
+2.42.0
+
