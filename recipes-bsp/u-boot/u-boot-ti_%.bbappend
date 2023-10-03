@@ -24,4 +24,6 @@ SRC_URI:append:phyboard-lyra-am62xx-3 = " \
     file://lmp.cfg \
 "
 
+SRC_URI:append:lmp-mfgtool:k3r5 = " file://dfu.cfg"
+
 PACKAGECONFIG[optee] = "TEE=${STAGING_DIR_HOST}${nonarch_base_libdir}/firmware/tee-pager_v2.bin.signed,,optee-os-fio"
