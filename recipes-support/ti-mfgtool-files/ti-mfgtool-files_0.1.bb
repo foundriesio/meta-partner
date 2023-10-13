@@ -5,6 +5,10 @@ LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/BSD-3-Clause;md5=550794465ba0ec
 
 inherit deploy nopackages
 
+# Use installer initramfs
+INITRAMFS_IMAGE ?= "initramfs-ostree-lmp-recovery"
+DEPENDS = "${INITRAMFS_IMAGE}"
+
 S = "${WORKDIR}"
 
 PACKAGE_ARCH = "${MACHINE_ARCH}"
