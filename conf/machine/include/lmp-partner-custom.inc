@@ -27,6 +27,7 @@ TOOLCHAIN:pn-bl2 = "gcc"
 TOOLCHAIN:pn-bl2-prebuilt = "gcc"
 TOOLCHAIN:pn-mtk-mdpd = "gcc"
 TOOLCHAIN:pn-optee-examples = "gcc"
+TOOLCHAIN:pn-mtk-bluetooth = "gcc"
 
 # Set for libmali builds
 DISTRO_CODENAME = "kirkstone"
