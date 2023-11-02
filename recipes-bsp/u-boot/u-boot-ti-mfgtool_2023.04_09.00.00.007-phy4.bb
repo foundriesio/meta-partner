@@ -2,7 +2,7 @@ SUMMARY = "Produces a Manufacturing Tool compatible U-Boot"
 DESCRIPTION = "U-Boot recipe that produces a Manufacturing Tool compatible \
 binary to be used in updater environment"
 
-require dynamic-layers/meta-ti-bsp/recipes-bsp/u-boot/u-boot-ti_2021.01_08.06.00.007-phy3.bb
+require dynamic-layers/meta-ti-bsp/recipes-bsp/u-boot/u-boot-ti_v2023.04_09.00.00.007-phy4.bb
 
 FILESEXTRAPATHS:prepend := "${THISDIR}/u-boot-ti:"
 
