@@ -9,19 +9,14 @@ SRC_URI:append = " \
     file://0002-arm-dts-k3-am62-phycore-enable-usb0-for-DFU.patch \
 "
 
+SRC_URI:append:phyboard-lyra = " \
+    file://fw_env.config \
+    file://lmp.cfg \
+"
+
+# fix prototype DTB used
 SRC_URI:append:phyboard-lyra-am62xx-1 = " \
-    file://fw_env.config \
-    file://lmp.cfg \
-"
-
-SRC_URI:append:phyboard-lyra-am62xx-2 = " \
-    file://fw_env.config \
-    file://lmp.cfg \
-"
-
-SRC_URI:append:phyboard-lyra-am62xx-3 = " \
-    file://fw_env.config \
-    file://lmp.cfg \
+    file://dtb.cfg \
 "
 
 SRC_URI:append:lmp-mfgtool:k3r5 = " file://dfu.cfg"
