@@ -42,3 +42,12 @@ BBMASK += " \
     /meta-lmp-bsp/recipes-kernel/linux/linux-lmp-ti-staging_git.bb \
     /meta-lmp-bsp/recipes-bsp/alsa/alsa-state-stm32mp1.bbappend \
 "
+
+# i350-pumpkin: drop onsemi firmware due to LICENSE parsing issue
+# match with the addition in meta-mediatek-bsp/conf/machine/i350-pumpkin.conf
+MACHINE_EXTRA_RRECOMMENDS:remove:i350-pumpkin = " \
+    onsemi-firmware-ap1302-ar0330 \
+    onsemi-firmware-ap1302-ar0144 \
+    onsemi-firmware-ap1302-ar0144-dual \
+    onsemi-firmware-ap1302-ar0430 \
+"
