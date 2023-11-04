@@ -1,10 +1,11 @@
 FILESEXTRAPATHS:prepend := "${THISDIR}/${PN}:"
 
-include recipes-kernel/linux/kmeta-linux-lmp-5.10.y.inc
+require recipes-kernel/linux/kernel-rdepends.inc
+include recipes-kernel/linux/kmeta-linux-lmp-6.1.y.inc
 
-LINUX_VERSION ?= "5.10.168"
-KBRANCH = "v5.10.168-phy"
-SRCREV_machine = "81adb4b8910319515414fad820563c0a86af5460"
+LINUX_VERSION ?= "6.1.33"
+KBRANCH = "v6.1.33-phy"
+SRCREV_machine = "70a70c0785aa12265b90c3c70e501cb05e611903"
 SRCREV_meta = "${KERNEL_META_COMMIT}"
 
 LIC_FILES_CHKSUM = "file://COPYING;md5=6bc538ed5bd9a7fc9398086aedcd7e46"
@@ -16,21 +17,32 @@ SRC_URI = "git://github.com/phytec/linux-phytec-ti.git;protocol=https;branch=${K
 
 # Jailhouse patches and config
 SRC_URI_JAILHOUSE = " \
-    file://0001-arm64-dts-am654-base-board-Reserve-memory-for-jailho.patch \
-    file://0002-arm64-dts-k3-am654-base-board-jailhouse-Disable-mcu_.patch \
-    file://0003-mm-Re-export-ioremap_page_range.patch \
-    file://0004-mm-vmalloc-Export-__get_vm_area_caller.patch \
-    file://0005-arm-arm64-export-__hyp_stub_vectors.patch \
-    file://0006-uio-Enable-read-only-mappings.patch \
-    file://0007-ivshmem-Add-header-file.patch \
-    file://0008-uio-Add-driver-for-inter-VM-shared-memory-device.patch \
-    file://0009-ivshmem-net-virtual-network-device-for-Jailhouse.patch \
-    file://0010-arm64-dts-disable-peripherals-for-am654x-root-cell.patch \
-    file://0011-arm64-dts-expanded-k3-am654-memory-region-for-jailho.patch \
-    file://0012-arm64-dts-disable-pcie0_rc-node-in-k3-am654-jailhous.patch \
-    file://0013-arm64-dts-am625-base-board-Reserve-memory-for-jailho.patch \
-    file://0014-arm64-dts-add-reserved_memory-label-for-CMA-regions-.patch \
+    file://0001-uio-Enable-read-only-mappings.patch \
+    file://0002-ivshmem-Add-header-file.patch \
+    file://0003-uio-Add-driver-for-inter-VM-shared-memory-device.patch \
+    file://0004-jailhouse-Add-simple-debug-console-via-the-hyperviso.patch \
+    file://0005-Revert-arm-Remove-the-ability-to-set-HYP-vectors-out.patch \
+    file://0006-arm-Export-__boot_cpu_mode-for-use-in-Jailhouse-driv.patch \
+    file://0007-mm-Re-export-ioremap_page_range.patch \
+    file://0008-Revert-mm-don-t-allow-executable-ioremap-mappings.patch \
+    file://0009-mm-vmalloc-Export-__get_vm_area_caller.patch \
+    file://0010-arm-arm64-export-__hyp_stub_vectors.patch \
+    file://0011-x86-Export-lapic_timer_period.patch \
+    file://0012-ivshmem-net-virtual-network-device-for-Jailhouse.patch \
+    file://0013-arm64-dts-add-reserved_memory-label-for-CMA-regions-.patch \
+    file://0014-arm64-dts-am625-base-board-Reserve-memory-for-jailho.patch \
+    file://0015-arm64-dts-Makefile-Update-makefile-to-build-overlay.patch \
 "
+
+KMETA = "kernel-meta"
+
+include recipes-kernel/linux/linux-lmp.inc
+
+# Special configuration for remoteproc/rpmsg IPC modules
+module_conf_rpmsg_client_sample = "blacklist rpmsg_client_sample"
+module_conf_ti_k3_r5_remoteproc = "softdep ti_k3_r5_remoteproc pre: virtio_rpmsg_bus"
+module_conf_ti_k3_dsp_remoteproc = "softdep ti_k3_dsp_remoteproc pre: virtio_rpmsg_bus"
+KERNEL_MODULE_PROBECONF += "rpmsg_client_sample ti_k3_r5_remoteproc ti_k3_dsp_remoteproc"
 
 SRC_URI:append:phyboard-lyra-am62xx-1 = " \
     file://phyboard-lyra-am62xx-1-standard.scc \
@@ -47,13 +59,3 @@ SRC_URI:append:phyboard-lyra-am62xx-3 = " \
     file://phytec-ti.cfg \
     file://phytec-disable-rti-wdt.cfg \
 "
-
-# Special configuration for remoteproc/rpmsg IPC modules
-module_conf_rpmsg_client_sample = "blacklist rpmsg_client_sample"
-module_conf_ti_k3_r5_remoteproc = "softdep ti_k3_r5_remoteproc pre: virtio_rpmsg_bus"
-module_conf_ti_k3_dsp_remoteproc = "softdep ti_k3_dsp_remoteproc pre: virtio_rpmsg_bus"
-KERNEL_MODULE_PROBECONF += "rpmsg_client_sample ti_k3_r5_remoteproc ti_k3_dsp_remoteproc"
-
-KMETA = "kernel-meta"
-
-include recipes-kernel/linux/linux-lmp.inc
