@@ -41,7 +41,7 @@ do_deploy[depends] += "virtual/bootloader:do_deploy"
 
 addtask deploy after do_compile before do_build
 
-# Depend on ti-sci-fw do_deploy for tiboot3.bin, that is provided by the lmp-k3r5 variant
+# Depend on k3r5 u-boot do_deploy for tiboot3.bin, that is provided by the lmp-k3r5 variant
 TI_BOOT_FW_DEPLOY ?= ""
-TI_BOOT_FW_DEPLOY:lmp-mfgtool:k3 = "mc::lmp-k3r5:ti-sci-fw:do_deploy"
+TI_BOOT_FW_DEPLOY:lmp-mfgtool:k3 = "mc::lmp-k3r5:virtual/bootloader:do_deploy"
 do_deploy[mcdepends] += "${TI_BOOT_FW_DEPLOY}"
