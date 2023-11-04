@@ -1,0 +1,29 @@
+From d87834264dfeb72e8a5e090984428cbe2b5dc5d1 Mon Sep 17 00:00:00 2001
+From: Michael Scott <mike@foundries.io>
+Date: Fri, 3 Nov 2023 15:55:15 -0700
+Subject: [PATCH] arm: dts: am625-phyboard-lyra-rdk: enable usb0 for SPL DFU
+
+Signed-off-by: Michael Scott <mike@foundries.io>
+---
+ arch/arm/dts/k3-am625-phyboard-lyra-rdk-u-boot.dtsi | 8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+diff --git a/arch/arm/dts/k3-am625-phyboard-lyra-rdk-u-boot.dtsi b/arch/arm/dts/k3-am625-phyboard-lyra-rdk-u-boot.dtsi
+index ae02d26a5e4..42a7f90af89 100644
+--- a/arch/arm/dts/k3-am625-phyboard-lyra-rdk-u-boot.dtsi
++++ b/arch/arm/dts/k3-am625-phyboard-lyra-rdk-u-boot.dtsi
+@@ -230,3 +230,11 @@
+ &wkup_uart0 {
+ 	bootph-pre-ram;
+ };
++
++&usbss0 {
++	bootph-pre-ram;
++};
++
++&usb0 {
++	bootph-pre-ram;
++};
+-- 
+2.42.0
+

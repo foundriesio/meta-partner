@@ -1,0 +1,25 @@
+From ee5ffefb3762ce1432a48226864c2ec2dea86fe5 Mon Sep 17 00:00:00 2001
+From: Michael Scott <mike@foundries.io>
+Date: Thu, 2 Nov 2023 20:54:03 -0700
+Subject: [PATCH] phycore_am62x: add DFU env settings
+
+Signed-off-by: Michael Scott <mike@foundries.io>
+---
+ board/phytec/phycore_am62x/phycore_am62x.env | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/board/phytec/phycore_am62x/phycore_am62x.env b/board/phytec/phycore_am62x/phycore_am62x.env
+index 81f6e783ac4..898b37c7100 100644
+--- a/board/phytec/phycore_am62x/phycore_am62x.env
++++ b/board/phytec/phycore_am62x/phycore_am62x.env
+@@ -1,4 +1,7 @@
+ #include <environment/ti/ti_armv7_common.env>
++#ifdef CONFIG_DFU_RAM
++#include <environment/ti/k3_dfu.env>
++#endif
+ 
+ name_kern=Image
+ console=ttyS2,115200n8
+-- 
+2.42.0
+
