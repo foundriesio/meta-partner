@@ -1,12 +1,13 @@
 FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 
-UBOOT_REPO = "git://git.phytec.de/u-boot-imx.git"
-SRCREV = "1bd482665d236089202c3ef4a8721064a540e769"
-SRCBRANCH = "v2021.04_2.2.0-phy"
+UBOOT_REPO:phyboard-pollux-imx8mp-3 = "git://git.phytec.de/u-boot-imx.git"
+SRCREV:phyboard-pollux-imx8mp-3 = "1bd482665d236089202c3ef4a8721064a540e769"
+SRCBRANCH:phyboard-pollux-imx8mp-3 = "v2021.04_2.2.0-phy"
 # base NXP/IMX u-boot release
 UBOOT_IMX_VER = "2021.04-lf-5.10.72-2.2.0"
-LIC_FILES_CHKSUM = "file://Licenses/gpl-2.0.txt;md5=b234ee4d69f5fce4486a80fdaf4a4263"
+LIC_FILES_CHKSUM:phyboard-pollux-imx8mp-3 = "file://Licenses/gpl-2.0.txt;md5=b234ee4d69f5fce4486a80fdaf4a4263"
 
+# NOTE: include file uses SRC_URI:append:phyboard-pollux-imx8mp-3
 require u-boot-fio-${UBOOT_IMX_VER}.inc
 
 SRC_URI:append:phyboard-pollux-imx8mp-3 = " \
