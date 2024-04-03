@@ -1,0 +1,26 @@
+Use standard sbindir and libdir folders for root.
+
+Both are already given by autotools based on the config flags used by the
+build system. This fixes a package error when usrmerge is used in Yocto.
+
+Upstream-Status: Pending
+
+diff --git a/Makefile.am b/Makefile.am
+index bac7403..9726cbe 100644
+--- a/Makefile.am
++++ b/Makefile.am
+@@ -1,5 +1,5 @@
+-root_sbindir       = "/sbin"
+-root_libdir        = "/lib"
++root_sbindir       = @sbindir@
++root_libdir        = @libdir@
+ root_etcdir        = "/etc"
+ root_sbin_PROGRAMS = property-vault
+ 
+@@ -30,4 +30,4 @@ getprop_LDADD = libpropertyvault.la
+ if USE_SYSTEMD
+ property_vault_systemddir   = $(root_libdir)/systemd/system
+ property_vault_systemd_DATA = property-vault.service
+-endif
+\ No newline at end of file
++endif
