@@ -1,0 +1,57 @@
+Simplify init
+
+Revert changes done for automatically starting wpa supplicant and dhcpcd
+as those are components managed by the distro.
+
+Upstream-Status: Pending
+
+diff --git a/wlan_qcm6490/wlan b/wlan_qcm6490/wlan
+index de586c0..c32a07a 100644
+--- a/wlan_qcm6490/wlan
++++ b/wlan_qcm6490/wlan
+@@ -60,45 +60,10 @@ do_ctrl_cld_ll () {
+             echo "WLAN bring-up failed!" > $DUMP_TO_KMSG
+             exit 1
+         fi
+-
+-	wpa_supplicant -Dnl80211 -iwlan0 -ddd -c /etc/wpa_supplicant.conf -f /tmp/wpa_supplicant-log.txt &
+-
+-	dhcpcd wlan0
+-
+-        cnt=0
+-        while ! [ -d /var/run/wpa_supplicant ]
+-        do
+-            echo "waiting for /var/run/wpa_supplicant to mount"
+-            sleep 1
+-            cnt=`expr $cnt + 1`
+-            if [ $cnt -ge 10 ]
+-            then
+-                break;
+-            fi
+-        done
+-
+-       if [ -d /var/run/wpa_supplicant ]
+-       then
+-            echo "Setting permission for wpa_supplicant folders" > $DUMP_TO_KMSG
+-            chmod 755 /var/run/wpa_supplicant
+-            if [ $? -ne 0 ]
+-            then
+-                echo "ERROR failed chmod of wpa_supplicant" > $DUMP_TO_KMSG
+-            fi
+-            chmod 777 /var/run/wpa_supplicant/wlan0
+-            if [ $? -ne 0 ]
+-            then
+-                echo "ERROR failed chmod of wpa_supplicant/wlan0" > $DUMP_TO_KMSG
+-            fi
+-        else
+-            echo "Error !! /var/run/wpa_supplicant not yet available" > $DUMP_TO_KMSG
+-        fi
+         ;;
+ 
+     stop)
+         echo "Stopping WLAN..." > $DUMP_TO_KMSG
+-	killall wpa_supplicant
+-	killall dhcpcd
+ 	rmmod $MODNAME
+         ;;
+ 
