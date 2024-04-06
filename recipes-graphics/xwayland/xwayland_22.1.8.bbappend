@@ -1,0 +1,1 @@
+OPENGL_PKGCONFIGS:qcom = "dri3"
