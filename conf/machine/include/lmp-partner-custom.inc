@@ -5,6 +5,10 @@ BBMASK += " \
     /meta-lmp/meta-lmp-base/recipes-security/optee/optee-os_%.bbappend \
     /meta-lmp/meta-lmp-bsp/recipes-bsp/alsa/alsa-state-stm32mp1.bbappend \
 "
+# Mask meta-qcom-hwe recipes which requires fixes
+BBMASK += " \
+    /meta-qcom-hwe/recipes-core/systemd/systemd-boot_254.4.bb \
+"
 
 # Recipes requiring GCC instead of Clang
 TOOLCHAIN:pn-iw = "gcc"
