@@ -13,3 +13,6 @@ TOOLCHAIN:pn-libselinux-python = "gcc"
 TOOLCHAIN:pn-gbm = "gcc"
 TOOLCHAIN:pn-weston = "gcc"
 TOOLCHAIN:pn-display-hal-linux = "gcc"
+
+# Distro Features
+DISTRO_FEATURES:append = " pulseaudio acl xattr selinux"
