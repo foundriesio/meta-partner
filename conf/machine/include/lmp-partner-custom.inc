@@ -23,3 +23,10 @@ TOOLCHAIN:pn-display-hal-linux = "gcc"
 
 # Distro Features
 DISTRO_FEATURES:append = " pulseaudio acl xattr selinux"
+
+# SELinux
+PREFERRED_PROVIDER_virtual/refpolicy = "refpolicy-mls"
+DISTRO_EXTRA_RDEPENDS:append = " ${@bb.utils.contains('DISTRO_FEATURES', 'selinux', 'packagegroup-selinux-minimal', '', d)}"
+DEFAULT_ENFORCING ?= "permissive"
+## Hack as the append from meta-selinux conflicts with lmp expectations (content under var)
+PACKAGECONFIG:remove:pn-systemd = "backlight"
