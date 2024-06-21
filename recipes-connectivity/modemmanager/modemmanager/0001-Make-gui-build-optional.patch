@@ -1,0 +1,53 @@
+From 4b8351aba2704c338faaefcb117ca6fd68692824 Mon Sep 17 00:00:00 2001
+From: Ricardo Salveti <ricardo@foundries.io>
+Date: Fri, 21 Jun 2024 16:08:36 -0300
+Subject: [PATCH] Make gui build optional
+
+gui support requires gtk3+, so make it optional via enable_gui.
+
+Upstream-status: Inappropriate [qcom downstream]
+
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+---
+ meson.build       | 7 ++++++-
+ meson_options.txt | 2 ++
+ 2 files changed, 8 insertions(+), 1 deletion(-)
+
+diff --git a/meson.build b/meson.build
+index c4001ee7..fcc1541b 100644
+--- a/meson.build
++++ b/meson.build
+@@ -96,6 +96,9 @@ cc_args = cc.get_supported_arguments([
+ enable_tests = get_option('tests')
+ config_h.set('WITH_TESTS', enable_tests)
+ 
++# gui support
++enable_gui = get_option('gui')
++
+ # strict flags to use in debug builds
+ if get_option('buildtype').contains('debug')
+   cc_args += cc.get_supported_arguments([
+@@ -407,7 +410,9 @@ endif
+ subdir('libmm-glib')
+ subdir('src')
+ subdir('cli')
+-subdir('gui')
++if enable_gui
++  subdir('gui')
++endif
+ subdir('mmcellularrefapp')
+ 
+ if enable_tests
+diff --git a/meson_options.txt b/meson_options.txt
+index 2fb96040..7ca740e8 100644
+--- a/meson_options.txt
++++ b/meson_options.txt
+@@ -102,3 +102,5 @@ option('gtk_doc', type: 'boolean', value: false, description: 'use gtk-doc to bu
+ option('bash_completion', type: 'boolean', value: true, description: 'install bash completion files')
+ 
+ option('fuzzer', type: 'boolean', value: false, description: 'build fuzzer tests')
++
++option('gui', type: 'boolean', value: false, description: 'enable gui applications')
+-- 
+2.34.1
+
