@@ -8,6 +8,7 @@ BBMASK += " \
 # Mask meta-qcom-hwe recipes which requires fixes
 BBMASK += " \
     /meta-qcom-hwe/recipes-core/systemd/systemd-boot_254.4.bb \
+    /meta-qcom-hwe/recipes-containers/docker/docker-ce_git.bbappend \
 "
 
 # Recipes requiring GCC instead of Clang
