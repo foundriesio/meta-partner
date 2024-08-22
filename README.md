@@ -6,8 +6,9 @@
 - [Definitions, Acronyms, and Abbreviations](#definitions-acronyms-and-abbreviations)
 - [Getting Started](#getting-started)
   - [Qualcomm® Robotics RB3G2 Development Kit](#qualcomm-robotics-rb3g2-development-kit)
-  - [Logging in](#logging-in)
+  - [Serial Console](#serial-console)
   - [Connect to WiFi](#connect-to-wifi)
+  - [SSH](#ssh)
   - [Register your device](#register-your-device)
 - [Developer Workflows](#developer-workflows)
   - [Git Repositories](git-repositories)
@@ -97,7 +98,8 @@ Once your factory has been created, it will build the source code for the RB3G2 
 Now configure the Qualcomm® Robotics RB3G2 Development Kit:
 
 1. Set up DIP_SW_0 positions 1 and 2 to ON. This enables serial output to the debug port.
-2. Connect the USB debug cable to the host.
+2. Connect the USB debug cable to the host. Baud rate is 115200.
+   - You can use your favorite UART client to access the console, such as minicom, putty etc.
 3. The serial connection is based on the FTDI chip:
    - `/dev/serial/by-id/usb-FTDI_FT230X_Basic_UART_<serial ID>-if00-port0`
 4. Plug in the USB-C cable from the host.
@@ -107,20 +109,11 @@ Now configure the Qualcomm® Robotics RB3G2 Development Kit:
 
 ---
 
-### Logging in
+### Serial Console
 
-After finishing, the device should boot the Linux microPlatform properly. Log in over ssh:
+After flashing, the device should boot the Linux microPlatform properly. Use your serial console to log in.
 
-```bash
-ssh fio@qcm6490.local
-```
-
-OR
-
-```bash
-ssh fio@<IP>
-```
-
+Username: `fio`
 Password: `fio`
 
 ---
@@ -134,6 +127,24 @@ nmcli device wifi connect “<AP Name>” password “<AP password>”
 ```
 
 The sudo password is `fio`.
+
+---
+
+### SSH
+
+Once connected to the network you can log in over ssh if desired:
+
+```bash
+ssh fio@qcm6490.local
+```
+
+OR
+
+```bash
+ssh fio@<IP>
+```
+
+Password: `fio`
 
 ---
 
