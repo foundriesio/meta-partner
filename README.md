@@ -2,50 +2,49 @@
 
 ## Table of Contents
 
-- Document Revision History
-- Definitions, Acronyms, and Abbreviations
-- Getting Started
-  - Qualcomm® Robotics RB3G2 Development Kit
-  - Logging in
-  - Connect to WiFi
-  - Register your device
-- Developer Workflows
-  - Git Repositories
-- Compose-Apps
-  - shellhttpd
-  - qimsdk-lmp
-  - gst-concurrent-videoplay-composition
-  - gst-ai-classification
-  - gst-ai-daisychain-detection-classification
-  - gst-ai-monodepth
-  - gst-ai-object-detection
-  - gst-ai-parallel-inference
-  - gst-ai-pose-detection
-  - gst-ai-segmentation
-  - gst-multi-camera-example
-  - Deploy
-- Fioctl
-  - View Targets
-  - View Devices
-  - Change Device Tag
-  - Change Device Application
-  - Deploy shellhttpd Application
-  - Deploy gst-concurrent-videoplay-composition Application
-  - Deploy gst-ai-classification Application
-  - Deploy gst-ai-daisychain-detection-classification Application
-  - Deploy gst-ai-monodepth Application
-  - Deploy gst-ai-object-detection Application
-  - Deploy gst-ai-parallel-inference Application
-  - Deploy gst-ai-pose-detection Application
-  - Deploy gst-ai-pose-detection Application
-  - Deploy gst-ai-segmentation Application
-  - Deploy gst-multi-camera-example Application
-  - Enable/Disable Wireguard VPN
-- FoundriesFactory Images
-  - LmP Factory Image
-- Wireguard VPN
-- Updating FoundriesFactory Images
-- Useful Links
+- [Document Revision History](#document-revision-history)
+- [Definitions, Acronyms, and Abbreviations](#definitions-acronyms-and-abbreviations)
+- [Getting Started](#getting-started)
+  - [Qualcomm® Robotics RB3G2 Development Kit](#qualcomm-robotics-rb3g2-development-kit)
+  - [Logging in](#logging-in)
+  - [Connect to WiFi](#connect-to-wifi)
+  - [Register your device](#register-your-device)
+- [Developer Workflows](#developer-workflows)
+  - [Git Repositories](git-repositories)
+- [Compose-Apps](#compose-apps)
+  - [shellhttpd](#shellhttpd)
+  - [qimsdk-lmp](#qimsdk-lmp)
+  - [gst-concurrent-videoplay-composition](#qimsdk-lmp)
+  - [gst-ai-classification](#gst-ai-classification)
+  - [gst-ai-daisychain-detection-classification](#gst-ai-daisychain-detection-classification)
+  - [gst-ai-monodepth](#gst-ai-monodepth)
+  - [gst-ai-object-detection](#gst-ai-object-detection)
+  - [gst-ai-parallel-inference](#gst-ai-parallel-inference)
+  - [gst-ai-pose-detection](#gst-ai-pose-detection)
+  - [gst-ai-segmentation](#gst-ai-segmentation)
+  - [gst-multi-camera-example](#gst-multi-camera-example)
+  - [Deploy](#deploy)
+- [Fioctl](#fioctl)
+  - [View Targets](#view-targets)
+  - [View Devices](#view-devices)
+  - [Change Device Tag](#view-devices)
+  - [Change Device Application](#change-device-application)
+  - [Deploy shellhttpd Application](#deploy-shellhttpd-application)
+  - [Deploy gst-concurrent-videoplay-composition Application](#deploy-gst-concurrent-videoplay-composition-application)
+  - [Deploy gst-ai-classification Application](#deploy-gst-ai-classification-application)
+  - [Deploy gst-ai-daisychain-detection-classification Application](#deploy-gst-ai-daisychain-detection-classification-application)
+  - [Deploy gst-ai-monodepth Application](#deploy-gst-ai-monodepth-application)
+  - [Deploy gst-ai-object-detection Application](#deploy-gst-ai-object-detection-application)
+  - [Deploy gst-ai-parallel-inference Application](#deploy-gst-ai-parallel-inference-application)
+  - [Deploy gst-ai-pose-detection Application](#deploy-gst-ai-pose-detection-application)
+  - [Deploy gst-ai-segmentation Application](#deploy-gst-ai-segmentation-application)
+  - [Deploy gst-multi-camera-example Application](#deploy-gst-multi-camera-example-application)
+  - [Enable/Disable Wireguard VPN](#enabledisable-wireguard-vpn)
+- [FoundriesFactory Images](#foundriesfactory-images)
+  - [LmP Factory Image](#lmp-factory-image)
+- [Wireguard VPN](#wireguard-vpn)
+- [Updating FoundriesFactory Images](#updating-foundriesfactory-images)
+- [Useful Links](#updating-foundriesfactory-images)
 
 ## Document Revision History
 
@@ -185,7 +184,7 @@ This compose-app does not require any hardware other than a network connection.
 
 ### qimsdk-lmp
 
-This is a development container for the gstreamer applications listed below. It provides the assemblies the binaries, models, and video files for the applications to consume. If you want to build your own gstreamer pipeline application, this would be the place to start.
+This is a development container for the gstreamer applications listed below. It provides the assembled binaries, models, and video files for the applications to consume. If you want to build your own gstreamer pipeline application, this would be the place to start.
 
 For more information, please see the project's [README](https://github.com/foundriesio/qimsdk-lmp/blob/main/README.md).
 
@@ -345,63 +344,63 @@ Fioctl is a command-line tool to manage your FoundriesFactory. To deploy applica
 
 ### Examples:
 
-- View Targets:
+### View Targets:
   ```bash
   ./fioctl targets list -f <factory>
   ```
-- View Devices:
+### View Devices:
   ```bash
   ./fioctl devices list -f <factory>
   ```
-- Change Device Tag:
+### Change Device Tag:
   ```bash
   ./fioctl devices -f <factory> config updates <device_name> --tags <tag_name>
   ```
-- Change Device Application:
+### Change Device Application:
   ```bash
   ./fioctl devices -f <factory> config updates <device_name> --apps <app_name1>,<app_name2>,<app_name3>
   ```
-- Deploy shellhttpd Application:
+### Deploy shellhttpd Application:
   ```bash
   ./fioctl devices -f <factory> config updates <device_name> --apps shellhttpd
   ```
-- Deploy gst-concurrent-videoplay-composition Application:
+### Deploy gst-concurrent-videoplay-composition Application:
   ```bash
   ./fioctl devices -f <factory> config updates <device_name> --apps gst-concurrent-videoplay-composition
   ```
-- Deploy gst-ai-classification Application:
+### Deploy gst-ai-classification Application:
   ```bash
   ./fioctl devices -f <factory> config updates <device_name> --apps gst-ai-classification
   ```
-- Deploy gst-ai-daisychain-detection-classification Application:
+### Deploy gst-ai-daisychain-detection-classification Application:
   ```bash
   ./fioctl devices -f <factory> config updates <device_name> --apps gst-ai-daisychain-detection-classification
   ```
-- Deploy gst-ai-monodepth Application:
+### Deploy gst-ai-monodepth Application:
   ```bash
   ./fioctl devices -f <factory> config updates <device_name> --apps gst-ai-monodepth
   ```
-- Deploy gst-ai-object-detection Application:
+### Deploy gst-ai-object-detection Application:
   ```bash
   ./fioctl devices -f <factory> config updates <device_name> --apps gst-ai-object-detection
   ```
-- Deploy gst-ai-parallel-inference Application:
+### Deploy gst-ai-parallel-inference Application:
   ```bash
   ./fioctl devices -f <factory> config updates <device_name> --apps gst-ai-object-detection
   ```
-- Deploy gst-ai-pose-detection Application:
+### Deploy gst-ai-pose-detection Application:
   ```bash
   ./fioctl devices -f <factory> config updates <device_name> --apps gst-ai-pose-detection
   ```
-- Deploy gst-ai-segmentation Application:
+### Deploy gst-ai-segmentation Application:
   ```bash
   ./fioctl devices -f <factory> config updates <device_name> --apps gst-ai-segmentation
   ```
-- Deploy gst-multi-camera-example Application:
+### Deploy gst-multi-camera-example Application:
   ```bash
   ./fioctl devices -f <factory> config updates <device_name> --apps gst-multi-camera-example
   ```
-- Enable/Disable Wireguard VPN:
+### Enable/Disable Wireguard VPN:
   ```bash
   ./fioctl devices -f <factory> config wireguard <device_name> enable/disable
   ```
