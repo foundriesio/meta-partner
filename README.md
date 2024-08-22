@@ -7,7 +7,8 @@
 - [Getting Started](#getting-started)
   - [Qualcomm® Robotics RB3G2 Development Kit](#qualcomm-robotics-rb3g2-development-kit)
   - [Serial Console](#serial-console)
-  - [Connect to WiFi](#connect-to-wifi)
+  - [Connect via WiFi](#connect-via-wifi)
+  - [Connect via Ethernet](#connect-via-ethernet)
   - [SSH](#ssh)
   - [Register your device](#register-your-device)
 - [Developer Workflows](#developer-workflows)
@@ -118,15 +119,50 @@ Password: `fio`
 
 ---
 
-### Connect to WiFi
+### Connect via WiFi
 
-To register your device with FoundriesFactory, connect it to the internet using NetworkManager CLI:
+Using the WiFi radio, connect it to the internet using NetworkManager CLI:
 
 ```
 nmcli device wifi connect “<AP Name>” password “<AP password>”
 ```
 
 The sudo password is `fio`.
+
+---
+### Connect via Ethernet
+
+In order to enabled Ethernet, you must provide firmware in the yocto recipe below. This is a one time operation, which will also enable USB type A ports to function.
+
+Register and log in to https://www.renesas.com, then download firmware from
+https://www.renesas.com/us/en/products/interface/usb-switches-hubs/upd720201-usb-30-host-controller.
+
+Once downloaded, copy USB3-201-202-FW-20131112.zip at recipes-firmware/firmware/renesas-upd720201
+and add the renesas-upd720201 package to your image.
+
+#### Add downloaded firmware zip to the correct layer location
+```bash
+git clone https://source.foundries.io/factories/<factory>/meta-subscriber-overrides.git
+cd meta-subscriber-overrides
+mkdir -p recipes-firmware/firmware/renesas-upd720201
+cp /tmp/USB3-201-202-FW-20131112.zip recipes-firmware/firmware/renesas-upd720201
+echo 'FILESEXTRAPATHS:prepend := "${THISDIR}/${PN}:"' > recipes-firmware/firmware/renesas-upd720201_20131112.bbappend
+echo 'SRC_URI += "file://USB3-201-202-FW-20131112.zip"' >> recipes-firmware/firmware/renesas-upd720201_20131112.bbappend
+```
+
+#### Add renesas-upd720201 to lmp-factory-image
+```bash
+echo 'CORE_IMAGE_BASE_INSTALL += "renesas-upd720201"' >> recipes-samples/images/lmp-factory-image.bb
+```
+
+#### Commit and push to create a new build
+```bash
+git add .
+git commit -s -m "renesas-upd720201: add firmware file"
+git push
+```
+
+After you push, the FoundriesFactory will build a new target. Once built, any registered device will update over the air.
 
 ---
 
