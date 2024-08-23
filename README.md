@@ -14,6 +14,7 @@
 - [Developer Workflows](#developer-workflows)
   - [Git Repositories](git-repositories)
 - [Compose-Apps](#compose-apps)
+  - [AIHub](#qualcomm-ai-hub)
   - [shellhttpd](#shellhttpd)
   - [qimsdk-lmp](#qimsdk-lmp)
   - [gst-concurrent-videoplay-composition](#qimsdk-lmp)
@@ -212,7 +213,18 @@ The built targets can be found here:
 Compose apps fill the gap for Factory devices in distributing applications.
 
 - To build your own compose applications, refer to `https://docs.foundries.io/latest/reference-manual/docker/compose-apps.html`
-- Your factory has some sample compose applications ready to deploy:
+- Your factory has some sample compose applications ready to deploy.
+
+### Qualcomm® AI Hub
+
+[Qualcomm® AI Hub](https://aihub.qualcomm.com/get-started) simplifies deploying AI models for vision, audio, and speech applications to edge devices. You can optimize, validate, and deploy your own AI models on hosted Qualcomm platform devices within minutes.
+
+The applications below which have a prefix of `gst-ai` use the models from [AIHub](https://aihub.qualcomm.com) and have been packaged into the `qimsdk-lmp` image in your Factory.
+
+- If you are curious how this process works, refer to `https://source.foundries.io/<factory>/containers.git/tree/qimsdk-lmp/Dockerfile`
+- Should you want to add or replace a model from [AIHub](https://aihub.qualcomm.com) you may modify the `qimsdk-lmp` Dockerfile and add a `RUN` command to download file into `/src/models/` inside the container.
+  - During runtime, the models will be placed in `/opt` and can be referenced in the compose command to instruct the application to use a specific model.
+  - Please review the `gst-ai-classification` `docker-compose.yml` in `https://source.foundries.io/<factory>/containers.git` as an example of how to run a different model.
 
 ### shellhttpd
 
