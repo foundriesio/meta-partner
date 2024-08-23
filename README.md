@@ -58,7 +58,7 @@
 
 | Variable        | Meaning                                                           |
 |-----------------|-------------------------------------------------------------------|
-| `<factory>`     | Your factory name                                                 |
+| `<factory>`     | Your Factory name                                                 |
 | `<device_name>` | Device name used when you registered the device                   |
 | `<app_name>`    | Docker-compose app available to run on the device                 |
 | `<tag_name>`    | The branch you want your device to follow                         |
@@ -66,30 +66,29 @@
 
 ## Getting Started
 
-To get started using the FoundriesFactory and the Linux microPlatform, please follow the steps below:
+To get started using the FoundriesFactory™ Platform and the Linux microPlatform, please follow the steps below:
 
 1. To start a new Factory, please visit https://app.foundries.io/ and sign up for an account.
 2. In the Platform drop down, select Qualcomm RB3 Gen 2 Development Kit.
-3. Give your factory a name, and click "Create Factory".
-4. The factory owners may invite additional users to their FoundriesFactory via email under the "Members" tab in the factory.
-    - Manage your factory users: https://app.foundries.io/factories/<factory>/members/
+3. Give your Factory a name, and click "Create Factory".
+4. The Factory owners may invite additional users to their FoundriesFactory Account via email under the "Members" tab of the Factory interface.
+    - Manage your Factory users: https://app.foundries.io/factories/<factory>/members/
 5. Fioctl CLI Installation: https://docs.foundries.io/latest/getting-started/install-fioctl/index.html
-6. Configure git using fioctl: https://docs.foundries.io/latest/getting-started/git-config/index.html
+6. Configure git using Fioctl: https://docs.foundries.io/latest/getting-started/git-config/index.html
 
 **Note**: On macOS, you may encounter authentication issues due to Git on OSX using the Keychain Access Utility. The solution is to remove Keychain Access entries from your git config file.
 
----
 
 ### Qualcomm® Robotics RB3G2 Development Kit
 
-Once your factory has been created, it will build the source code for the RB3G2 and produce a target. A target is a secure over-the-air update but also provides the build artifacts for initial provisioning.
+Once your Factory has been created, it will build the source code for the RB3G2 and produce a Target. A Target is a secure over-the-air update but also provides the build artifacts for initial provisioning.
 
 1. Download the image: https://app.foundries.io/factories/<factory>/targets/1/artifacts/qcm6490/lmp-factory-image-qcm6490.qcomflash.tar.gz
-2. Extract the tar.gz into a known location.
+2. Extract the `tar.gz` into a known location.
 3. Open a terminal and change the directory into `lmp-factory-image-qcm6490`.
 4. The compressed archive contains the flashing tool “qdl”.
    - Note: The tool from the build has the interpreter set incorrectly.
-5. Download and compile qdl tool for your platform:
+5. Download and compile qdl for your platform:
    - `git clone https://github.com/linux-msm/qdl`
    - Read the README and install build dependencies
    - `cd qdl`
@@ -108,7 +107,6 @@ Now configure the Qualcomm® Robotics RB3G2 Development Kit:
    - `./qdl --debug prog_firehose_ddr.elf rawprogram*.xml patch*.xml`
 6. Press and hold the F_DL button and connect the power cable.
 
----
 
 ### Serial Console
 
@@ -117,7 +115,6 @@ After flashing, the device should boot the Linux microPlatform properly. Use you
 Username: `fio`
 Password: `fio`
 
----
 
 ### Connect via WiFi
 
@@ -129,7 +126,6 @@ nmcli device wifi connect “<AP Name>” password “<AP password>”
 
 The sudo password is `fio`.
 
----
 ### Connect via Ethernet
 
 In order to enabled Ethernet, you must provide firmware in the yocto recipe below. This is a one time operation, which will also enable USB type A ports to function.
@@ -141,6 +137,7 @@ Once downloaded, copy USB3-201-202-FW-20131112.zip at recipes-firmware/firmware/
 and add the renesas-upd720201 package to your image.
 
 #### Add downloaded firmware zip to the correct layer location
+
 ```bash
 git clone https://source.foundries.io/factories/<factory>/meta-subscriber-overrides.git
 cd meta-subscriber-overrides
@@ -151,6 +148,7 @@ echo 'SRC_URI += "file://USB3-201-202-FW-20131112.zip"' >> recipes-firmware/firm
 ```
 
 #### Add renesas-upd720201 to lmp-factory-image
+
 ```bash
 echo 'CORE_IMAGE_BASE_INSTALL += "renesas-upd720201"' >> recipes-samples/images/lmp-factory-image.bb
 ```
@@ -164,7 +162,6 @@ git push
 
 After you push, the FoundriesFactory will build a new target. Once built, any registered device will update over the air.
 
----
 
 ### SSH
 
@@ -184,7 +181,7 @@ Password: `fio`
 
 ---
 
-### Register your device
+### Register Your Device
 
 Register your device with FoundriesFactory:
 `https://docs.foundries.io/latest/getting-started/register-device/index.html`
@@ -249,11 +246,11 @@ git mv gst-concurrent-videoplay-composition.disabled gst-concurrent-videoplay-co
 git commit -s -m “gst-concurrent-videoplay-composition” && git push
 ```
 
-This compose-app requires a display connected for it to function properly.
+This compose-app requires a connected display to function properly.
 
 ### gst-ai-classification
 
-The gst-ai-classification application enables you to recognize the subject in the image. The use cases use Qualcomm Neural Processing SDK runtime or TensorFlow Lite (TFLite) runtime. The compose file provides you will a few commands you can comment/uncomment to use different models for classification.
+The gst-ai-classification application enables subject recognition in the image. The use cases uses the Qualcomm Neural Processing SDK runtime or the TensorFlow Lite (TFLite) runtime. The compose file provides you will a few commands you can comment/uncomment to use different models for classification.
 
 For a more detailed description please see [Qualcomm Linux Sample Apps](https://docs.qualcomm.com/bundle/publicresource/topics/80-70014-50/gst-ai-classification.html?product=1601111740013072&facet=Qualcomm%20Intelligent%20Multimedia%20SDK).
 
@@ -265,7 +262,7 @@ git mv gst-ai-classification.disabled gst-ai-classification
 git commit -s -m “gst-ai-classification” && git push
 ```
 
-This compose-app requires a display connected, and the camera mezzanine for it to function properly.
+This compose-app requires a connected display and the camera mezzanine to function properly.
 
 ### gst-ai-daisychain-detection-classification
 
@@ -281,7 +278,7 @@ git mv gst-ai-daisychain-detection-classification.disabled gst-ai-daisychain-det
 git commit -s -m “gst-ai-daisychain-detection-classification” && git push
 ```
 
-This compose-app requires a display connected, and the camera mezzanine for it to function properly.
+This compose-app requires a connected display and the camera mezzanine to function properly.
 
 ### gst-ai-monodepth
 
@@ -297,7 +294,7 @@ git mv gst-ai-monodepth.disabled gst-ai-monodepth
 git commit -s -m “gst-ai-monodepth” && git push
 ```
 
-This compose-app requires a display connected, and the camera mezzanine for it to function properly.
+This compose-app requires a connected display and the camera mezzanine to function properly.
 
 ### gst-ai-object-detection
 
@@ -313,11 +310,11 @@ git mv gst-ai-object-detection.disabled gst-ai-object-detection
 git commit -s -m “gst-ai-object-detection” && git push
 ```
 
-This compose-app requires a display connected, and the camera mezzanine for it to function properly.
+This compose-app requires a connected display and the camera mezzanine to function properly.
 
 ### gst-ai-parallel-inference
 
-The gst-ai-parallel-inference application enables you to perform object detection, object classification, pose detection, and image segmentation on a live camera stream. The use cases use Qualcomm Neural Processing SDK runtime for object detection and image segmentation, and TFLite runtime for classification and pose detection.
+The gst-ai-parallel-inference application enables you to perform object detection, object classification, pose detection, and image segmentation on a live camera stream. The use cases uses the Qualcomm Neural Processing SDK runtime for object detection and image segmentation, and the TFLite runtime for classification and pose detection.
 
 For a more detailed description please see [Qualcomm Linux Sample Apps](https://docs.qualcomm.com/bundle/publicresource/topics/80-70014-50/gst-ai-parallel-inference.html?product=1601111740013072&facet=Qualcomm%20Intelligent%20Multimedia%20SDK).
 
@@ -329,11 +326,11 @@ git mv gst-ai-parallel-inference.disabled gst-ai-parallel-inference
 git commit -s -m “gst-ai-parallel-inference” && git push
 ```
 
-This compose-app requires a display connected, and the camera mezzanine for it to function properly.
+This compose-app requires a connected display and the camera mezzanine to function properly.
 
 ### gst-ai-pose-detection
 
-The gst-ai-pose-detection application enables you to detect the body pose of the subject in an image or video. The use cases use a video stream from a camera, leverage TFLite for pose detection, and display the results on the screen.
+The gst-ai-pose-detection application enables you to detect the body pose of the subject in an image or video. The use cases use a video stream from a camera, leverages TFLite for pose detection, and displays the results on the screen.
 
 For a more detailed description please see [Qualcomm Linux Sample Apps](https://docs.qualcomm.com/bundle/publicresource/topics/80-70014-50/gst-ai-pose-detection.html?product=1601111740013072&facet=Qualcomm%20Intelligent%20Multimedia%20SDK).
 
@@ -345,11 +342,12 @@ git mv gst-ai-pose-detection.disabled gst-ai-pose-detection
 git commit -s -m “gst-ai-pose-detection” && git push
 ```
 
-This compose-app requires a display connected, and the camera mezzanine for it to function properly.
+This compose-app requires a connected display and the camera mezzanine to function properly.
 
 ### gst-ai-segmentation
 
-The gst-ai-segmentation application enables you to divide an image into different and meaningful parts or segments and assign a label to each homogenous segment based on the similarity of the attributes. The application shows how to use Qualcomm Neural Processing SDK runtime and TFLite runtime for image segmentation.
+The gst-ai-segmentation application enables you to divide an image into meaningful parts or segments and assign a label to each homogenous segment based on similarity of the attributes.
+The application shows how to use both the Qualcomm Neural Processing SDK runtime and TFLite runtime for image segmentation.
 
 For a more detailed description please see [Qualcomm Linux Sample Apps](https://docs.qualcomm.com/bundle/publicresource/topics/80-70014-50/gst-ai-segmentation.html?product=1601111740013072&facet=Qualcomm%20Intelligent%20Multimedia%20SDK).
 
@@ -361,11 +359,11 @@ git mv gst-ai-segmentation.disabled gst-ai-segmentation
 git commit -s -m “gst-ai-segmentation” && git push
 ```
 
-This compose-app requires a display connected, and the camera mezzanine for it to function properly.
+This compose-app requires a connected display and the camera mezzanine to function properly.
 
 ### gst-multi-camera-example
 
-The gst-multi-camera-example application enables you to simultaneously stream from two camera sensors on the device. The application composes camera feeds side-by-side to display on a screen or encodes and stores the video streams to files. Typical use cases that need multiple camera inputs are dash camera or stereo camera, which can use this application as a reference and build a use case.
+The gst-multi-camera-example application enables you to simultaneously stream from two camera sensors on the device. It composes camera feeds side-by-side to display on a screen, or encodes and stores the video streams to file. Typical use cases that need multiple camera inputs are dash camera or stereo camera, which can use this application as a reference to build a use case.
 
 For a more detailed description please see [Qualcomm Linux Sample Apps](https://docs.qualcomm.com/bundle/publicresource/topics/80-70014-50/gst-multi-camera-stream-example.html?product=1601111740013072&facet=Qualcomm%20Intelligent%20Multimedia%20SDK).
 
@@ -377,17 +375,16 @@ git mv gst-multi-camera-example.disabled gst-multi-camera-example
 git commit -s -m “gst-multi-camera-example” && git push
 ```
 
-This compose-app requires a display connected, and the camera mezzanine for it to function properly.
+This compose-app requires a connected display and the camera mezzanine to function properly.
 
 ### Deploy
 
 After you push, the FoundriesFactory will build a new target. Once it is built, you may deploy as described below.
 
----
 
 ## Fioctl
 
-Fioctl is a command-line tool to manage your FoundriesFactory. To deploy applications listed below, you must have enabled them first as described above. The polling time on devices by default is five minutes, once you have issued your deployment command, please wait up to five minutes to see the change reflected.
+Fioctl is a command-line tool to manage your Factory. To deploy applications listed below, you must have enabled them first as described above. The polling time on devices by default is five minutes, once you have issued your deployment command, please wait up to five minutes to see the change reflected.
 
 ### Examples:
 
@@ -472,7 +469,7 @@ Registered devices can form a VPN to allow remote access even behind firewalls:
 
 ## Updating FoundriesFactory Images
 
-To update your factory, follow these steps:
+To update your Factory, follow these steps:
 `https://docs.foundries.io/latest/reference-manual/linux/linux-update.html`
 
 ---
