@@ -121,7 +121,7 @@ Password: `fio`
 Using the WiFi radio, connect it to the internet using NetworkManager CLI:
 
 ```
-nmcli device wifi connect “<AP Name>” password “<AP password>”
+sudo nmcli device wifi connect “<AP Name>” password “<AP password>”
 ```
 
 The sudo password is `fio`.
