@@ -391,7 +391,7 @@ This compose-app requires a connected display and the camera mezzanine to functi
 
 ### Deploy
 
-After you push, the FoundriesFactory will build a new target. Once it is built, you may deploy as described below.
+After you push, the FoundriesFactory will build a new target. Afterwards, deploy as described below.
 
 
 ## Fioctl
@@ -400,63 +400,78 @@ Fioctl is a command-line tool to manage your Factory. To deploy applications lis
 
 ### Examples:
 
-### View Targets:
+#### View Targets:
+
   ```bash
   ./fioctl targets list -f <factory>
   ```
-### View Devices:
+#### View Devices:
+
   ```bash
   ./fioctl devices list -f <factory>
   ```
-### Change Device Tag:
+#### Change Device Tag:
+
   ```bash
   ./fioctl devices -f <factory> config updates <device_name> --tags <tag_name>
   ```
-### Change Device Application:
+#### Change Device Application:
+
   ```bash
   ./fioctl devices -f <factory> config updates <device_name> --apps <app_name1>,<app_name2>,<app_name3>
   ```
-### Deploy shellhttpd Application:
+#### Deploy shellhttpd Application:
+
   ```bash
   ./fioctl devices -f <factory> config updates <device_name> --apps shellhttpd
   ```
-### Deploy gst-concurrent-videoplay-composition Application:
+#### Deploy gst-concurrent-videoplay-composition Application:
+
   ```bash
   ./fioctl devices -f <factory> config updates <device_name> --apps gst-concurrent-videoplay-composition
   ```
-### Deploy gst-ai-classification Application:
+#### Deploy gst-ai-classification Application:
+
   ```bash
   ./fioctl devices -f <factory> config updates <device_name> --apps gst-ai-classification
   ```
-### Deploy gst-ai-daisychain-detection-classification Application:
+#### Deploy gst-ai-daisychain-detection-classification Application:
+
   ```bash
   ./fioctl devices -f <factory> config updates <device_name> --apps gst-ai-daisychain-detection-classification
   ```
-### Deploy gst-ai-monodepth Application:
+#### Deploy gst-ai-monodepth Application:
+
   ```bash
   ./fioctl devices -f <factory> config updates <device_name> --apps gst-ai-monodepth
   ```
-### Deploy gst-ai-object-detection Application:
+#### Deploy gst-ai-object-detection Application:
+
   ```bash
   ./fioctl devices -f <factory> config updates <device_name> --apps gst-ai-object-detection
   ```
-### Deploy gst-ai-parallel-inference Application:
+#### Deploy gst-ai-parallel-inference Application:
+
   ```bash
   ./fioctl devices -f <factory> config updates <device_name> --apps gst-ai-object-detection
   ```
-### Deploy gst-ai-pose-detection Application:
+#### Deploy gst-ai-pose-detection Application:
+
   ```bash
   ./fioctl devices -f <factory> config updates <device_name> --apps gst-ai-pose-detection
   ```
-### Deploy gst-ai-segmentation Application:
+#### Deploy gst-ai-segmentation Application:
+
   ```bash
   ./fioctl devices -f <factory> config updates <device_name> --apps gst-ai-segmentation
   ```
-### Deploy gst-multi-camera-example Application:
+#### Deploy gst-multi-camera-example Application:
+
   ```bash
   ./fioctl devices -f <factory> config updates <device_name> --apps gst-multi-camera-example
   ```
-### Enable/Disable Wireguard VPN:
+#### Enable/Disable Wireguard VPN:
+
   ```bash
   ./fioctl devices -f <factory> config wireguard <device_name> enable/disable
   ```
