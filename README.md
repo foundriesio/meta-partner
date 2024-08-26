@@ -8,7 +8,7 @@
   - [Qualcomm® Robotics RB3G2 Development Kit](#qualcomm-robotics-rb3g2-development-kit)
   - [Serial Console](#serial-console)
   - [Connect via WiFi](#connect-via-wifi)
-  - [Connect via Ethernet](#connect-via-ethernet)
+  - [Enabling Ethernet and USB](#enabling-ethernet-and-usb)
   - [SSH](#ssh)
   - [Register your device](#register-your-device)
 - [Developer Workflows](#developer-workflows)
@@ -127,9 +127,9 @@ sudo nmcli device wifi connect “<AP Name>” password “<AP password>”
 
 The sudo password is `fio`.
 
-### Connect via Ethernet
+### Enabling Ethernet and USB
 
-In order to enabled Ethernet, you must provide firmware in the yocto recipe below. This is a one time operation, which will also enable USB type A ports to function.
+In order to enable Ethernet, you must provide firmware in the Yocto recipe below. This is a one time operation, which will also enable USB type A ports to function
 
 Register and log in to https://www.renesas.com, then download firmware from
 https://www.renesas.com/us/en/products/interface/usb-switches-hubs/upd720201-usb-30-host-controller.
