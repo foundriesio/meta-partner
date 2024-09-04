@@ -73,7 +73,7 @@ To get started using the FoundriesFactory™ Platform and the Linux microPlatfor
 2. In the Platform drop down, select Qualcomm RB3 Gen 2 Development Kit.
 3. Give your Factory a name, and click "Create Factory".
 4. The Factory owners may invite additional users to their FoundriesFactory Account via email under the "Members" tab of the Factory interface.
-    - Manage your Factory users: https://app.foundries.io/factories/<factory>/members/
+    - Manage your Factory users: ```https://app.foundries.io/factories/<factory>/members/```
 5. Fioctl CLI Installation: https://docs.foundries.io/latest/getting-started/install-fioctl/index.html
 6. Configure git using Fioctl: https://docs.foundries.io/latest/getting-started/git-config/index.html
 
@@ -84,7 +84,7 @@ To get started using the FoundriesFactory™ Platform and the Linux microPlatfor
 
 Once your Factory has been created, it will build the source code for the RB3G2 and produce a Target. A Target is a secure over-the-air update but also provides the build artifacts for initial provisioning.
 
-1. Download the image: https://app.foundries.io/factories/<factory>/targets/1/artifacts/qcm6490/lmp-factory-image-qcm6490.qcomflash.tar.gz
+1. Download the image: ```https://app.foundries.io/factories/<factory>/targets/1/artifacts/qcm6490/lmp-factory-image-qcm6490.qcomflash.tar.gz```
 2. Extract the `tar.gz` into a known location.
 3. Open a terminal and change the directory into `lmp-factory-image-qcm6490`.
 4. The compressed archive contains the flashing tool “qdl”.
