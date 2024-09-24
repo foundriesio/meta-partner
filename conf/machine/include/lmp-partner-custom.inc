@@ -4,6 +4,7 @@
 BBMASK += " \
     /meta-toradex-bsp-common/recipes-bsp/u-boot/libubootenv_%.bbappend \
     /meta-toradex-nxp/recipes-kernel/linux-firmware/linux-firmware_%.bbappend \
+    /meta-toradex-nxp/recipes-kernel/linux/linux-imx-headers_5%.bbappend \
 "
 
 
