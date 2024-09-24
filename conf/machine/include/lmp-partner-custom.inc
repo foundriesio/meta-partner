@@ -5,6 +5,7 @@ BBMASK += " \
     /meta-toradex-bsp-common/recipes-bsp/u-boot/libubootenv_%.bbappend \
     /meta-toradex-nxp/recipes-kernel/linux-firmware/linux-firmware_%.bbappend \
     /meta-toradex-nxp/recipes-kernel/linux/linux-imx-headers_5%.bbappend \
+    /meta-toradex-nxp/recipes-multimedia/gstreamer/gstreamer1.0-plugins-base_1.20.0.imx.bbappend \
 "
 
 
