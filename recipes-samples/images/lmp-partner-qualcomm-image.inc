@@ -8,9 +8,9 @@ CORE_IMAGE_BASE_INSTALL:append:qcom = " \
     packagegroup-qcom-data \
     wlan-conf \
     cld80211-lib \
-    common-tools \
-    ath6kl-utils \
-    ftm \
+    qcom-wlan-tools \
+    qcom-ath6kl-utils \
+    qcom-ftm \
     kernel-module-wlan-platform \
     kernel-module-qcacld-wlan \
     packagegroup-qcom-securemsm \
@@ -37,7 +37,7 @@ CORE_IMAGE_BASE_INSTALL_WAYLAND:qcom = " \
     packagegroup-qcom-qim-product \
 "
 CORE_IMAGE_BASE_INSTALL_WAYLAND:append:qcm6490 = " \
-    camera-server \
+    qcom-camera-server \
 "
 
 # Add default LmP user in additional groups

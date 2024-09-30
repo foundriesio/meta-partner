@@ -40,7 +40,7 @@ IMAGE_CMD:combined-dtb = "oe_mkdtbfs combined-dtb ${EXTRA_IMAGECMD}"
 
 IMAGE_CMD:qcomflash = "create_qcomflash_pkg"
 do_image_qcomflash[depends] += "python3-native:do_populate_sysroot qdl-native:do_populate_sysroot \
-                                virtual/bootbins:do_deploy gen-partition-bins:do_deploy virtual/kernel:do_deploy"
+                                virtual/bootbins:do_deploy qcom-gen-partition-bins:do_deploy virtual/kernel:do_deploy"
 IMAGE_TYPEDEP:qcomflash += "combined-dtb ${@bb.utils.contains('DISTRO_FEATURES', 'sota', 'ota-ext4 ota-esp', '', d)}"
 
 # TODO: adapt to generic images (not sota)
