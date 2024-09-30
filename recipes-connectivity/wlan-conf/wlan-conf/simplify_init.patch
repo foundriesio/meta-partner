@@ -5,18 +5,16 @@ as those are components managed by the distro.
 
 Upstream-Status: Pending
 
-diff --git a/wlan_qcm6490/wlan b/wlan_qcm6490/wlan
-index de586c0..c32a07a 100644
---- a/wlan_qcm6490/wlan
-+++ b/wlan_qcm6490/wlan
-@@ -60,45 +60,10 @@ do_ctrl_cld_ll () {
-             echo "WLAN bring-up failed!" > $DUMP_TO_KMSG
+Index: mdm-init/wlan_qcm6490/wlan
+===================================================================
+--- mdm-init.orig/wlan_qcm6490/wlan
++++ mdm-init/wlan_qcm6490/wlan
+@@ -77,42 +77,10 @@ do_ctrl_cld_ll () {
              exit 1
          fi
+ 
+-	wpa_supplicant -Dnl80211 -iwlan0 -ddd -c /etc/wpa_supplicant.conf -t -f /tmp/wpa_supplicant-log.txt &
 -
--	wpa_supplicant -Dnl80211 -iwlan0 -ddd -c /etc/wpa_supplicant.conf -f /tmp/wpa_supplicant-log.txt &
--
--	dhcpcd wlan0
 -
 -        cnt=0
 -        while ! [ -d /var/run/wpa_supplicant ]
@@ -51,7 +49,6 @@ index de586c0..c32a07a 100644
      stop)
          echo "Stopping WLAN..." > $DUMP_TO_KMSG
 -	killall wpa_supplicant
--	killall dhcpcd
- 	rmmod $MODNAME
-         ;;
- 
+         if [ "$MODNAME" = "wlan" ]; then
+             rmmod $MODNAME
+         fi
