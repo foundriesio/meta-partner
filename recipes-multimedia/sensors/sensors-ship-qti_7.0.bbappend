@@ -12,7 +12,6 @@ fix_install_sota() {
         # qprebuilt class moves all files from S on install
         mkdir -p ${D}${nonarch_libdir}/tmpfiles.d
         mv ${D}/tmpfiles.conf ${D}${nonarch_libdir}/tmpfiles.d/${PN}.conf
-        (cd ${D}${localstatedir}; rmdir -v --parents cache/sensors/registry/registry)
     fi
 }
 do_install[postfuncs] += "fix_install_sota"
