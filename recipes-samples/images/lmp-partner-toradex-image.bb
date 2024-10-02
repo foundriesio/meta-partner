@@ -1,1 +1,1 @@
-recipes-samples/images/lmp-factory-image.bb
+lmp-factory-image.bb
