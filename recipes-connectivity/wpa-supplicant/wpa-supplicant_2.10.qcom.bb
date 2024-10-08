@@ -6,7 +6,7 @@ SECTION = "network"
 LICENSE = "BSD-3-Clause"
 LIC_FILES_CHKSUM = "file://COPYING;md5=5ebcb90236d1ad640558c3d3cd3035df \
                     file://README;beginline=1;endline=56;md5=e3d2f6c2948991e37c1ca4960de84747 \
-                    file://wpa_supplicant/wpa_supplicant.c;beginline=1;endline=12;md5=76306a95306fee9a976b0ac1be70f705"
+                    file://wpa_supplicant/wpa_supplicant.c;beginline=1;endline=12;md5=f5ccd57ea91e04800edb88267bf8eae4"
 DEPENDS = "dbus libnl"
 RRECOMMENDS:${PN} = "wpa-supplicant-passphrase wpa-supplicant-cli"
 
@@ -26,13 +26,7 @@ SRC_URI = "git://w1.fi/hostap.git;protocol=git;branch=main \
            file://wpa_supplicant.conf-sane \
            file://99_wpa_supplicant \
            "
-# Backports used by the QCLINUX release
-SRC_URI += " \
-           file://0001-More-consistent-sta-pointer-checks-in-handle_assoc.patch \
-           file://0002-TDLS-Avoid-unnecessary-copying-of-the-Link-Identifie.patch \
-           file://0003-nl80211-Fix-potential-NULL-pointer-dereference-in-se.patch \
-           "
-SRCREV = "8d8205f737e822121658ac5f2f5a318cd4a3335e"
+SRCREV = "9716bf1160beb677e965d9e6475d6c9e162e8374"
 
 CVE_PRODUCT = "wpa_supplicant"
 
