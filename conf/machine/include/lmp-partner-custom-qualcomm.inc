@@ -9,8 +9,10 @@ BBMASK += " \
     /meta-qcom-hwe/recipes-core/systemd/systemd-boot_254.4.bb \
     /meta-qcom-hwe/recipes-connectivity/wpa-supplicant/wpa-supplicant_git.bb \
     /meta-qcom-hwe/recipes-containers/docker/docker-ce_git.bbappend \
+    /meta-qcom-hwe/dynamic-layers/virtualization-layer/recipes-containers/docker/docker-moby_git.bbappend \
     /meta-qcom-hwe/recipes-containers/kubernetes/kubernetes_git.bbappend \
     /meta-qcom-hwe/recipes-extended/logrotate/logrotate_%.bbappend \
+    /meta-qcom-hwe/recipes-connectivity/openssh/openssh_%.bbappend \
     /meta-qcom-hwe/recipes-graphics/wayland/weston_10.0.2.bbappend \
 "
 
