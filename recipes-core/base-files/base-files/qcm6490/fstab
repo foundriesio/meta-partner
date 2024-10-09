@@ -5,4 +5,4 @@ tmpfs                /run                 tmpfs      mode=0755,nodev,nosuid,stri
 tmpfs                /var/volatile        tmpfs      defaults              0  0
 
 # boot partition
-/dev/sda6            /boot                vfat       noatime,sync          0  2
+PARTLABEL=efi        /boot                vfat       noatime,sync          0  2
