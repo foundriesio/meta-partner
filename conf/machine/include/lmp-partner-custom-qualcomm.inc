@@ -13,7 +13,6 @@ BBMASK += " \
     /meta-qcom-hwe/recipes-containers/kubernetes/kubernetes_git.bbappend \
     /meta-qcom-hwe/recipes-extended/logrotate/logrotate_%.bbappend \
     /meta-qcom-hwe/recipes-connectivity/openssh/openssh_%.bbappend \
-    /meta-qcom-hwe/recipes-graphics/wayland/weston_10.0.2.bbappend \
 "
 
 # Use GCC by default, way too many different failures with clang

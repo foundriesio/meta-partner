@@ -1,29 +1,28 @@
-FILESEXTRAPATHS:prepend := "${THISDIR}/${PN}:"
-
-LIC_FILES_CHKSUM:qcom = "file://COPYING;md5=d79ee9e66bb0f95d3386a7acae780b70 \
-                         file://libweston/compositor.c;endline=27;md5=b22751d2c88735d2dcb492b1c5a47242 \
+# Replicate settings from oe-core in order to align the available pkgconfig options
+PACKAGECONFIG:qcom = "${@bb.utils.contains('DISTRO_FEATURES', 'wayland', 'kms wayland egl clients', '', d)} \
+                      ${@bb.utils.contains('DISTRO_FEATURES', 'x11 wayland', 'xwayland', '', d)} \
+                      ${@bb.utils.filter('DISTRO_FEATURES', 'systemd x11', d)} \
+                      ${@bb.utils.contains_any('DISTRO_FEATURES', 'wayland x11', '', 'headless', d)} \
+                      ${@oe.utils.conditional('VIRTUAL-RUNTIME_init_manager', 'sysvinit', 'launcher-libseat', '', d)} \
+                      image-jpeg \
+                      screenshare \
+                      shell-desktop \
+                      shell-fullscreen \
+                      shell-ivi \
 "
-SRC_URI:remove:qcom = "https://gitlab.freedesktop.org/wayland/weston/-/releases/${PV}/downloads/${BPN}-${PV}.tar.xz"
-SRC_URI:prepend:qcom = "git://git.codelinaro.org/clo/le/wayland/weston.git;protocol=https;branch=${SRCBRANCH} "
-SRCREV:qcom = "e00a1983d58f1e7fc3263a510c1133450c56573f"
-SRCBRANCH:qcom = "display.qclinux.1.0.r1-rel"
-S:qcom ="${WORKDIR}/git"
 
-DEPENDS:append:qcom = " property-vault gbm display-hal-linux"
-
-EXTRA_OEMESON:append:qcom = " -Ddeprecated-wl-shell=true -Dbackend-default=auto -Dbackend-rdp=false"
-
-PACKAGECONFIG:remove:qcom = "kms"
-PACKAGECONFIG:append:qcom = " sdm disablepowerkey"
+PACKAGECONFIG:remove:qcm6490 = "kms"
 
 # Override (extra dependencies)
 PACKAGECONFIG[xwayland] = "-Dxwayland=true,-Dxwayland=false,libxcursor xwayland"
-# Weston on SDM
-PACKAGECONFIG[sdm] = "-Dbackend-sdm=true,-Dbackend-sdm=false"
-# Weston with disabling display power key
-PACKAGECONFIG[disablepowerkey] = "-Ddisable-power-key=true,-Ddisable-power-key=false"
 
-LDFLAGS:append:qcom = " -ldrmutils -ldisplaydebug -lglib-2.0"
-CXXFLAGS:append:qcom = " -I${STAGING_INCDIR}/sdm"
+# Replace with value from oe-core as weston-init is used instead
+RRECOMMENDS:${PN} = "weston-init liberation-fonts"
 
-PACKAGE_ARCH:qcom = "${MACHINE_ARCH}"
+# weston.ini should be provided by the standard weston-init recipe
+do_install:append:qcm6490() {
+    rm -rfv ${D}${sysconfdir}
+}
+
+# Replace with value from oe-core
+FILES:${PN}:qcom = "${bindir}/weston ${bindir}/weston-terminal ${bindir}/weston-info ${bindir}/weston-launch ${bindir}/wcap-decode ${libexecdir} ${libdir}/${BPN}/*.so* ${datadir}"
