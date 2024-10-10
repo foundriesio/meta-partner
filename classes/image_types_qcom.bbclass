@@ -12,7 +12,7 @@ IMAGE_QCOMFLASH_FS_TYPE ??= "ext4"
 IMAGE_QCOMFLASH_ROOTFS ?= "${IMGDEPLOYDIR}/${IMAGE_LINK_NAME}.${IMAGE_QCOMFLASH_FS_TYPE}"
 
 IMAGE_CMD:qcomflash = "create_qcomflash_pkg"
-do_image_qcomflash[depends] += "python3-native:do_populate_sysroot qdl-native:do_populate_sysroot \
+do_image_qcomflash[depends] += "python3-native:do_populate_sysroot \
                                 virtual/bootbins:do_deploy qcom-gen-partition-bins:do_deploy \
                                 virtual/kernel:do_deploy dtb-qcom-image:do_image_complete"
 IMAGE_TYPEDEP:qcomflash += "${@bb.utils.contains('DISTRO_FEATURES', 'sota', 'ota-ext4 ota-esp', '', d)}"
@@ -89,9 +89,6 @@ create_qcomflash_pkg() {
     for patchfile in ${DEPLOY_DIR_IMAGE}/patch*.xml; do
         install -m 0644 $patchfile .
     done
-
-    # Install qdl
-    install -m 0755 ${STAGING_BINDIR_NATIVE}/qdl .
 
     # Create tarball
     rm -f ${IMGDEPLOYDIR}/${IMAGE_NAME}.qcomflash.tar.gz
