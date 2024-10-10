@@ -1,4 +1,4 @@
-From b5c5938579823a20ebda3631aee073c53f3c9ef8 Mon Sep 17 00:00:00 2001
+From 39c0d15daf86d4eb7e676369b44acd6f82621253 Mon Sep 17 00:00:00 2001
 From: Ricardo Salveti <ricardo@foundries.io>
 Date: Thu, 25 Jul 2024 19:58:22 -0300
 Subject: [PATCH] cam-server-base.service: create sockets with group rw
@@ -14,11 +14,11 @@ Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
  1 file changed, 2 insertions(+), 1 deletion(-)
 
 diff --git a/qmmf-server/service/cam-server-base.service b/qmmf-server/service/cam-server-base.service
-index 9d4e962..177c80e 100644
+index cd9c8ae..63caa35 100644
 --- a/qmmf-server/service/cam-server-base.service
 +++ b/qmmf-server/service/cam-server-base.service
-@@ -38,8 +38,9 @@ User=system
- Group=video
+@@ -39,8 +39,9 @@ Group=video
+ SupplementaryGroups=system
  Restart=always
  EnvironmentFile=/etc/cam-server-env
 -ExecStartPre=/bin/mkdir -p /tmp/socket/cam_server
