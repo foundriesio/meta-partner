@@ -1,1 +1,2 @@
 system:x:800:800::/:/bin/false
+redis:x:801:801::/var/lib/nfs:/bin/false
