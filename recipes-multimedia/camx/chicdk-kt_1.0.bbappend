@@ -12,9 +12,4 @@ fix_install_sota() {
 }
 do_install[postfuncs] += "fix_install_sota"
 
-# replace pkg_postinst due removed /var/cache/camera
-pkg_postinst:${PN}() {
-    :
-}
-
 FILES:${PN} += "${nonarch_libdir}/tmpfiles.d/${PN}.conf"
