@@ -105,7 +105,7 @@ Now configure the Qualcomm® Robotics RB3G2 Development Kit:
    - `/dev/serial/by-id/usb-FTDI_FT230X_Basic_UART_<serial ID>-if00-port0`
 4. Plug in the USB-C cable from the host.
 5. Run the command to flash:
-   - `./qdl --debug prog_firehose_ddr.elf rawprogram*.xml patch*.xml`
+   - `./qdl prog_firehose_ddr.elf rawprogram*.xml patch*.xml`
 6. Press and hold the F_DL button and connect the power cable.
 
 
