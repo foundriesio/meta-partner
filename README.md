@@ -169,7 +169,7 @@ After you push, the FoundriesFactory will build a new target. Once built, any re
 Once connected to the network you can log in over ssh if desired:
 
 ```bash
-ssh fio@qcm6490.local
+ssh fio@qcs6490-rb3gen2-vision-kit.local
 ```
 
 OR
