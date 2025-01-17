@@ -185,7 +185,7 @@ Password: `fio`
 ### Register Your Device
 
 Register your device with FoundriesFactory:
-`https://docs.foundries.io/latest/getting-started/register-device/index.html`
+https://docs.foundries.io/latest/getting-started/register-device/index.html
 
 ---
 
@@ -212,7 +212,7 @@ The built targets can be found here:
 
 Compose apps fill the gap for Factory devices in distributing applications.
 
-- To build your own compose applications, refer to `https://docs.foundries.io/latest/reference-manual/docker/compose-apps.html`
+- To build your own compose applications, refer to https://docs.foundries.io/latest/reference-manual/docker/compose-apps.html
 - Your factory has some sample compose applications ready to deploy.
 
 ### Qualcomm® AI Hub
