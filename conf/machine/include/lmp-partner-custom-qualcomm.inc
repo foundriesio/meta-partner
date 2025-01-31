@@ -12,6 +12,14 @@ BBMASK += " \
     /meta-qcom-hwe/recipes-containers/kubernetes/kubernetes_git.bbappend \
     /meta-qcom-hwe/recipes-extended/logrotate/logrotate_%.bbappend \
     /meta-qcom-hwe/recipes-connectivity/openssh/openssh_%.bbappend \
+    \
+    /meta-qcom-hwe/recipes-sota/ostree-kernel-initramfs/ostree-kernel-initramfs_%.bbappend \
+    /meta-qcom-hwe/recipes-extended/ostree/ostree_%.bbappend \
+    /meta-qcom-hwe/recipes-multimedia/audio/alsa-utils_%.bbappend \
+    /meta-qcom-hwe/dynamic-layers/core/recipes-extended/logrotate/logrotate_%.bbappend \
+    /meta-qcom-hwe/dynamic-layers/core/recipes-extended/shadow/shadow_4.11.1.bbappend \
+    /meta-qcom-hwe/dynamic-layers/core/recipes-core/dbus/dbus_%.bbappend \
+    /meta-qcom-hwe/dynamic-layers/core/recipes-core/base-files/base-files_3.0.14.bbappend \
 "
 
 # Use GCC by default, way too many different failures with clang
