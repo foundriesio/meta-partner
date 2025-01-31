@@ -7,6 +7,7 @@ BBMASK += " \
 # Mask meta-qcom-hwe recipes which requires fixes
 BBMASK += " \
     /meta-qcom-hwe/recipes-core/systemd/systemd-boot_254.4.bb \
+    /meta-qcom-hwe/recipes-connectivity/hostap-daemon/hostapd_%.bbappend \
     /meta-qcom-hwe/recipes-connectivity/wpa-supplicant/wpa-supplicant_git.bb \
     /meta-qcom-hwe/dynamic-layers/virtualization-layer/recipes-containers/docker/docker-moby_git.bbappend \
     /meta-qcom-hwe/recipes-containers/kubernetes/kubernetes_git.bbappend \
