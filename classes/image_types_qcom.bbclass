@@ -86,6 +86,11 @@ create_qcomflash_pkg() {
         install -m 0644 ${DEPLOY_DIR_IMAGE}/zeros_5sectors.bin zeros_5sectors.bin
     fi
 
+    # copy cdt.bin
+    if [ -f ${DEPLOY_DIR_IMAGE}/cdt.bin ]; then
+        install -m 0644 ${DEPLOY_DIR_IMAGE}/cdt.bin cdt.bin
+    fi
+
     for patchfile in ${DEPLOY_DIR_IMAGE}/patch*.xml; do
         install -m 0644 $patchfile .
     done
