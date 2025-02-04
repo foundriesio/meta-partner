@@ -1,1 +1,1 @@
-# Partner layer image requirements should be added here.  This file is optionally included in the lmp-factory-image recipe.
+lmp-partner-amd-xilinx-image.inc
