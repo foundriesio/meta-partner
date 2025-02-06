@@ -1,0 +1,25 @@
+OPTEEMACHINE:zynqmp = "zynqmp-zcu102"
+OPTEEMACHINE:versal = "versal-generic"
+
+# SoC Settings
+EXTRA_OEMAKE:append:zynqmp = " \
+    CFG_TZDRAM_START=0x7e000000 CFG_TZDRAM_SIZE=0x1c00000 \
+    CFG_SHMEM_START=0x7fc00000 CFG_SHMEM_SIZE=0x400000 \
+    CFG_DT=y CFG_GENERATE_DTB_OVERLAY=y CFG_DT_ADDR=0x22000000 \
+    CFG_ENABLE_EMBEDDED_TESTS=y \
+"
+
+# Machine Settings
+EXTRA_OEMAKE:append:kv260 = " \
+   CFG_UART_BASE=UART1_BASE CFG_UART_IT=IT_UART1 CFG_UART_CLK_HZ=UART1_CLK_IN_HZ \
+"
+EXTRA_OEMAKE:append:versal = " \
+    CFG_DT=y CFG_DT_ADDR=0x00001000 \
+    CFG_ENABLE_EMBEDDED_TESTS=y \
+"
+
+# Extra Settings for Secure Machines
+EXTRA_OEMAKE:append:uz3eg-iocc-sec = " \
+    CFG_REE_FS=n CFG_RPMB_FS=y CFG_RPMB_WRITE_KEY=y \
+    CFG_RPMB_FS_DEV_ID=0 \
+"
