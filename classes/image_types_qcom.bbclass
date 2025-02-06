@@ -81,6 +81,11 @@ create_qcomflash_pkg() {
         install -m 0644 ${DEPLOY_DIR_IMAGE}/logfs_ufs_8mb.bin logfs_ufs_8mb.bin
     fi
 
+    # copy zeros_33sectors.bin
+    if [ -f ${DEPLOY_DIR_IMAGE}/zeros_33sectors.bin ]; then
+        install -m 0644 ${DEPLOY_DIR_IMAGE}/zeros_33sectors.bin zeros_33sectors.bin
+    fi
+
     # copy zeros_5sectors.bin
     if [ -f ${DEPLOY_DIR_IMAGE}/zeros_5sectors.bin ]; then
         install -m 0644 ${DEPLOY_DIR_IMAGE}/zeros_5sectors.bin zeros_5sectors.bin
