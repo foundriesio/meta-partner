@@ -18,7 +18,6 @@ LIC_FILES_CHKSUM = "file://README;beginline=1;endline=4;md5=744e7e3bb0c94b4b9f6b
 HAS_PLATFORM_INIT ?= " \
 		xilinx_zynqmp_virt_config \
 		xilinx_zynq_virt_defconfig \
-		xilinx_versal_vc_p_a2197_revA_x_prc_01_revA \
 		"
 
 # zynqmp: add pmu-firmware and fpga bitstream (loading FPGA from SPL) dependancies

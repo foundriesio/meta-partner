@@ -1,5 +1,4 @@
 OPTEEMACHINE:zynqmp = "zynqmp-zcu102"
-OPTEEMACHINE:versal = "versal-generic"
 
 # SoC Settings
 EXTRA_OEMAKE:append:zynqmp = " \
@@ -12,10 +11,6 @@ EXTRA_OEMAKE:append:zynqmp = " \
 # Machine Settings
 EXTRA_OEMAKE:append:kv260 = " \
    CFG_UART_BASE=UART1_BASE CFG_UART_IT=IT_UART1 CFG_UART_CLK_HZ=UART1_CLK_IN_HZ \
-"
-EXTRA_OEMAKE:append:versal = " \
-    CFG_DT=y CFG_DT_ADDR=0x00001000 \
-    CFG_ENABLE_EMBEDDED_TESTS=y \
 "
 
 # Extra Settings for Secure Machines

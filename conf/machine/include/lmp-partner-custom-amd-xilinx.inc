@@ -21,7 +21,6 @@ OBJCOPY:pn-linux-lmp-xlnx:toolchain-clang = "${HOST_PREFIX}objcopy"
 STRIP:pn-linux-lmp-xlnx:toolchain-clang = "${HOST_PREFIX}strip"
 
 # kv260
-# vck190-versal
 # uz3eg-iocc-ebbr-sec
 TOOLCHAIN:pn-arm-trusted-firmware = "gcc"
 
@@ -43,24 +42,3 @@ LMP_BOOT_FIRMWARE_VERSION:uz3eg-iocc-sec = "8"
 ## Avnet UltraZed with secure boot support and EBBR
 UBOOT_SPL_SIGN_ENABLE:sota:uz3eg-iocc-ebbr-sec = "1"
 UBOOT_SIGN_ENABLE:sota:uz3eg-iocc-ebbr-sec = "0"
-
-## Xilinx Versal
-USE_XSCT_TARBALL:versal = "1"
-PREFERRED_PROVIDER_u-boot:versal = "u-boot-xlnx"
-PREFERRED_PROVIDER_u-boot-fw-utils:versal = "libubootenv"
-PREFERRED_RPROVIDER_u-boot-fw-utils:versal = "libubootenv"
-SOTA_CLIENT_FEATURES:append:versal = " ubootenv"
-WKS_FILE_DEPENDS:append:sota:versal = " u-boot-default-script"
-PREFERRED_PROVIDER_u-boot-default-script:versal = "u-boot-base-scr"
-PREFERRED_PROVIDER_u-boot-default-script:sota:versal = "u-boot-ostree-scr-fit"
-PREFERRED_PROVIDER_virtual/kernel:versal = "linux-lmp-xlnx"
-PREFERRED_PROVIDER_virtual/dtb:versal = "device-tree"
-PREFERRED_PROVIDER_virtual/trusted-firmware-a:versal = "arm-trusted-firmware"
-MACHINE_FEATURES:append:versal = " optee"
-EXTRA_IMAGEDEPENDS:remove:versal = "qemu-devicetrees"
-UBOOT_ENTRYPOINT:versal = "0x18000000"
-OSTREE_KERNEL_ARGS:versal ?= "console=ttyAMA0,115200 earlycon=pl011,mmio32,0xFF000000,115200n8 clk_ignore_unused ${OSTREE_KERNEL_ARGS_COMMON}"
-KERNEL_IMAGETYPE:sota:versal = "fitImage"
-KERNEL_CLASSES:sota:versal = "kernel-lmp-fitimage"
-IMAGE_BOOT_FILES:sota:versal = "boot.bin boot.itb"
-WKS_FILES:sota:versal = "sdimage-sota.wks"
