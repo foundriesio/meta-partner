@@ -10,6 +10,9 @@ XILINX_WITH_ESW ?= "xsct"
 # XILINX_SDK_TOOLCHAIN_BASE = "${@'${COMPONENTS_DIR}/${BUILD_ARCH}/xsct-native' if d.getVar('PN') == 'defaultpkgname' else '${RECIPE_SYSROOT_NATIVE}'}"
 XILINX_SDK_TOOLCHAIN_BASE:zynqmp = "${COMPONENTS_DIR}/${BUILD_ARCH}/xsct-native"
 
+# insane class settings
+INSANE_SKIP:pn-qemu-xilinx-native += "native-last"
+INSANE_SKIP:pn-qemu-xilinx-system-native += "native-last"
 
 # meta-clang:kirkstone: clang is not ready to be used for linux kernel:
 # commit 299a5fd ("linux-yocto: Use binutils provided strip")
