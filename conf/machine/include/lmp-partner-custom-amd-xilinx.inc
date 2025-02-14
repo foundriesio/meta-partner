@@ -6,17 +6,6 @@ XILINX_VER_MAIN ?= "2024.2"
 XILINX_XSCT_VERSION ?= "2024.2"
 XILINX_WITH_ESW ?= "xsct"
 
-# Compatibility with other layers
-BBMASK += " \
-    /meta-virtualization/dynamic-layers/xilinx/recipes-extended/xen/xen_4.14.bbappend \
-"
-
-# meta-xilinx/meta-xilinx-tools: mask recipes not required for lmp
-BBMASK += " \
-    /meta-xilinx-tools/recipes-bsp/ai-engine/aiefal_1.0.bb \
-    /meta-xilinx-tools/recipes-bsp/u-boot/u-boot-xlnx_%.bbappend \
-"
-
 # meta-clang:kirkstone: clang is not ready to be used for linux kernel:
 # commit 299a5fd ("linux-yocto: Use binutils provided strip")
 # We have to remove using clang tools objcopy and strip for all LmP linux
