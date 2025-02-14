@@ -1,16 +1,10 @@
-DESCRIPTION = "Recipe to extract bitstream"
-LICENSE = "MIT"
-LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/MIT;md5=0835ade698e0bcf8506ecda2f7b4f302"
+# Add deployment of bit.bin format used with u-boot and lib/firmware handling
 
-DEPENDS += "virtual/hdf bootgen-native"
+DEPENDS += "bootgen-native"
 
-PROVIDES = "virtual/bitstream"
+unset do_compile[noexec]
 
-PACKAGE_ARCH ?= "${MACHINE_ARCH}"
-
-inherit xsctbit deploy
-
-XSCTH_MISC = "-hwpname ${XSCTH_PROJ}_hwproj -hdf_type ${HDF_EXT}"
+BITSTREAM_NAME ?= "bitstream"
 
 SYSROOT_DIRS += "${nonarch_base_libdir}/firmware"
 
@@ -26,13 +20,13 @@ generate_bin() {
     fi
 }
 
-do_compile() {
+do_compile:append() {
     if [ -e ${XSCTH_WS}/${XSCTH_PROJ}_hwproj/*.bit ]; then
         generate_bin
     fi
 }
 
-do_install() {
+do_install:append() {
     if [ -e ${XSCTH_WS}/${XSCTH_PROJ}_hwproj/*.bit ]; then
         install -d ${D}/${nonarch_base_libdir}/firmware/
         ln -s /var/lib/firmware/bitstream ${D}/${nonarch_base_libdir}/firmware/bitstream
@@ -41,15 +35,12 @@ do_install() {
     fi
 }
 
-do_deploy() {
+do_deploy:append() {
     if [ -e ${XSCTH_WS}/${XSCTH_PROJ}_hwproj/*.bit ]; then
-        install -Dm 0644 ${XSCTH_WS}/*.bit.bin ${DEPLOYDIR}/bitstream-${MACHINE}.bit.bin
-        install -Dm 0644 ${XSCTH_WS}/${XSCTH_PROJ}_hwproj/*.bit ${DEPLOYDIR}/bitstream-${MACHINE}.bit
-        ln -sf bitstream-${MACHINE}.bit.bin ${DEPLOYDIR}/bitstream.bit.bin
-        ln -sf bitstream-${MACHINE}.bit ${DEPLOYDIR}/bitstream.bit
+        install -Dm 0644 ${XSCTH_WS}/*.bit.bin ${DEPLOYDIR}/${BITSTREAM_BASE_NAME}.bit.bin
+        ln -sf ${BITSTREAM_BASE_NAME}.bit.bin ${DEPLOYDIR}/bitstream.bit.bin
+        ln -sf ${BITSTREAM_BASE_NAME}.bit ${DEPLOYDIR}/bitstream.bit
     fi
 }
-
-addtask do_deploy after do_install
 
 FILES:${PN} += "${nonarch_base_libdir}/firmware"
