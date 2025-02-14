@@ -34,7 +34,6 @@ OSTREE_BOOTLOADER ?= "${@bb.utils.contains('MACHINE_FEATURES', 'ebbr', 'grub', '
 KERNEL_IMAGETYPE:sota ?= "${@bb.utils.contains('MACHINE_FEATURES', 'ebbr', 'Image', 'fitImage', d)}"
 KERNEL_CLASSES:sota ?= "${@bb.utils.contains('MACHINE_FEATURES', 'ebbr', '', ' kernel-lmp-fitimage ', d)}"
 PREFERRED_PROVIDER_virtual/dtb ?= "device-tree"
-PREFERRED_PROVIDER_virtual/trusted-firmware-a ?= "arm-trusted-firmware"
 
 EXTRA_IMAGEDEPENDS += " \
     virtual/bitstream \
