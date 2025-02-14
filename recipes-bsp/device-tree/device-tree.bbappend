@@ -1,18 +1,13 @@
 FILESEXTRAPATHS:prepend := "${THISDIR}/${PN}:"
 
 SRC_URI:append:kv260 = " \
-        file://0001-zynqmp-2022.1-optee-firmware-node.patch \
-        file://0001-zynqmp-sm-k26-reva-enable-pwm-fan-for-fancontrol.patch \
+	file://0001-zynqmp-2022.1-optee-firmware-node.patch \
+	file://0001-zynqmp-sm-k26-reva-enable-pwm-fan-for-fancontrol.patch \
 "
 
-# From xilinx-k26-starterkit-2021.1/project-spec/dts_dir
+# From xilinx-kv260-starterkit-xsct-2024.2/project-spec/dts_dir
 EXTRA_DT_FILES:kv260 = " \
-	zynqmp-sck-kv-g-dp.dts \
-	zynqmp-sck-kv-g-rev1.dts \
-	zynqmp-sck-kv-g-revA.dts \
-	zynqmp-sck-kv-g-revB.dts \
-	zynqmp-sck-kv-g-revY.dts \
-	zynqmp-sck-kv-g-revZ.dts \
+	zynqmp-sck-kv-g-revB.dtso \
 "
 
 inherit xilinx-platform-init
