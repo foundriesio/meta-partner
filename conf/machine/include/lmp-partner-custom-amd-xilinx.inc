@@ -36,11 +36,7 @@ TOOLCHAIN:pn-u-boot-xlnx = "gcc"
 # libmali-xlnx calls gcc directly on do_install
 TOOLCHAIN:pn-libmali-xlnx = "gcc"
 
-# disable xsct tarball by default (xilinx)
-USE_XSCT_TARBALL = "0"
-
 # Xilinx
-USE_XSCT_TARBALL:zynqmp = "1"
 ## Avnet UltraZed with secure boot support
 UBOOT_SIGN_ENABLE:sota:uz3eg-iocc-sec = "1"
 SOTA_CLIENT_FEATURES:remove:sota:uz3eg-iocc-sec = "ubootenv"
