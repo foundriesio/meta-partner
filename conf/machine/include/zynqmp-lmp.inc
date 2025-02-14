@@ -30,8 +30,6 @@ ATF_BINARY = "arm-trusted-firmware.bin"
 ATF_MEM_BASE = "0xfffe6000"
 ATF_MEM_SIZE = "0x19fff"
 
-SERIAL_CONSOLES ?= "115200;ttyPS0"
-
 OSTREE_BOOTLOADER ?= "${@bb.utils.contains('MACHINE_FEATURES', 'ebbr', 'grub', 'u-boot', d)}"
 KERNEL_IMAGETYPE:sota ?= "${@bb.utils.contains('MACHINE_FEATURES', 'ebbr', 'Image', 'fitImage', d)}"
 KERNEL_CLASSES:sota ?= "${@bb.utils.contains('MACHINE_FEATURES', 'ebbr', '', ' kernel-lmp-fitimage ', d)}"
