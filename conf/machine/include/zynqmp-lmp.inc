@@ -33,7 +33,6 @@ ATF_MEM_SIZE = "0x19fff"
 OSTREE_BOOTLOADER ?= "${@bb.utils.contains('MACHINE_FEATURES', 'ebbr', 'grub', 'u-boot', d)}"
 KERNEL_IMAGETYPE:sota ?= "${@bb.utils.contains('MACHINE_FEATURES', 'ebbr', 'Image', 'fitImage', d)}"
 KERNEL_CLASSES:sota ?= "${@bb.utils.contains('MACHINE_FEATURES', 'ebbr', '', ' kernel-lmp-fitimage ', d)}"
-OSTREE_KERNEL_ARGS ?= "console=ttyPS0,115200 clk_ignore_unused uio_pdrv_genirq.of_id=generic-uio xilinx_tsn_ep.st_pcp=4 ${OSTREE_KERNEL_ARGS_COMMON}"
 PREFERRED_PROVIDER_virtual/dtb ?= "device-tree"
 PREFERRED_PROVIDER_virtual/trusted-firmware-a ?= "arm-trusted-firmware"
 
