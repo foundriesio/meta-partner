@@ -6,6 +6,11 @@ XILINX_VER_MAIN ?= "2024.2"
 XILINX_XSCT_VERSION ?= "2024.2"
 XILINX_WITH_ESW ?= "xsct"
 
+# HACK: Need to investigate why this isn't setting correctly: meta-xilinx-tools/conf/xsct-tarball.inc:10:
+# XILINX_SDK_TOOLCHAIN_BASE = "${@'${COMPONENTS_DIR}/${BUILD_ARCH}/xsct-native' if d.getVar('PN') == 'defaultpkgname' else '${RECIPE_SYSROOT_NATIVE}'}"
+XILINX_SDK_TOOLCHAIN_BASE:zynqmp = "${COMPONENTS_DIR}/${BUILD_ARCH}/xsct-native"
+
+
 # meta-clang:kirkstone: clang is not ready to be used for linux kernel:
 # commit 299a5fd ("linux-yocto: Use binutils provided strip")
 # We have to remove using clang tools objcopy and strip for all LmP linux
