@@ -1,24 +1,6 @@
-UBOOT_VERSION = "v2022.01"
+FILESEXTRAPATHS:prepend := "${THISDIR}/${PN}:"
 
-UBRANCH = "xilinx-v2022.01-rebase"
-UBOOTURI = "git://github.com/foundriesio/u-boot.git;protocol=https"
-
-SRCREV = "0e833bd2e111fdc59d64aba6bd5121747f1afdda"
-
-include recipes-bsp/u-boot/u-boot-xlnx.inc
-include recipes-bsp/u-boot/u-boot-spl-zynq-init.inc
 include recipes-bsp/u-boot/u-boot-lmp-common.inc
-
-PROVIDES += "u-boot"
-
-LICENSE = "GPL-2.0-or-later"
-LIC_FILES_CHKSUM = "file://README;beginline=1;endline=4;md5=744e7e3bb0c94b4b9f6b3db3bf893897"
-
-# u-boot-xlnx has support for these
-HAS_PLATFORM_INIT ?= " \
-		xilinx_zynqmp_virt_config \
-		xilinx_zynq_virt_defconfig \
-		"
 
 # zynqmp: add pmu-firmware and fpga bitstream (loading FPGA from SPL) dependancies
 do_compile[depends] += "${@bb.utils.contains('SOC_FAMILY', 'zynqmp', 'virtual/pmu-firmware:do_deploy virtual/bitstream:do_deploy', '', d)}"
