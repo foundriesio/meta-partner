@@ -32,6 +32,11 @@ do_configure:append:uz () {
 }
 
 do_install:append:zynqmp () {
+	# Fix psu_init_gpl.c function definition issue for serdes_rst_seq and serdes_illcalib_pcie_gen1
+	sed -i "s|^static int serdes_rst_seq (u32 lane3_protocol|//static int serdes_rst_seq (u32 lane3_protocol|g" ${B}/device-tree/psu_init_gpl.c
+	sed -i "s|^static int serdes_illcalib_pcie_gen1 (u32 lane3_protocol|//static int serdes_illcalib_pcie_gen1 (u32 lane3_protocol|g" ${B}/device-tree/psu_init_gpl.c
+	sed -i "s|^//static int serdes_rst_seq (u32 pllsel|static int serdes_rst_seq (u32 pllsel|g" ${B}/device-tree/psu_init_gpl.c
+	sed -i "s|^//static int serdes_illcalib_pcie_gen1 (u32 pllsel|static int serdes_illcalib_pcie_gen1 (u32 pllsel|g" ${B}/device-tree/psu_init_gpl.c
 	install -d ${D}${PLATFORM_INIT_DIR}
 	for i in ${PLATFORM_INIT_FILES}; do
 		install -m 0644 ${B}/device-tree/$i ${D}${PLATFORM_INIT_DIR}/
