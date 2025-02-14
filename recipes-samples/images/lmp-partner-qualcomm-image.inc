@@ -6,14 +6,14 @@ CORE_IMAGE_BASE_INSTALL:append:qcom = " \
     packagegroup-qcom-perf \
     packagegroup-qcom-ppat \
     packagegroup-qcom-data \
+    packagegroup-qcom-securemsm \
+    var-persist-mount \
+    qcom-resize-partitions \
     wlan-conf \
     cld80211-lib \
     qcom-wlan-tools \
     qcom-ath6kl-utils \
     qcom-ftm \
-    kernel-module-wlan-platform \
-    kernel-module-qcacld-wlan \
-    packagegroup-qcom-securemsm \
     curl \
     ${@bb.utils.contains('DISTRO_FEATURES', 'wayland', '${CORE_IMAGE_BASE_INSTALL_WAYLAND}', '', d)} \
 "
