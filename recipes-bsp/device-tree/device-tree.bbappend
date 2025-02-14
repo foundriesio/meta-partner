@@ -24,7 +24,6 @@ SRC_URI:append:uz = " \
         file://system-board.dtsi \
         file://system-conf.dtsi \
 "
-COMPATIBLE_MACHINE:zynqmp = ".*"
 
 do_configure:append:uz () {
         echo '/include/ "system-som.dtsi"' >> ${DT_FILES_PATH}/system-top.dts
