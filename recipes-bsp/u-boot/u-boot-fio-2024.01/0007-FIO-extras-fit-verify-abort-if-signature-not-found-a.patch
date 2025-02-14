@@ -1,0 +1,136 @@
+From 900fbe1623fea3573d17a59bf7b23d1e25335e94 Mon Sep 17 00:00:00 2001
+From: Ricardo Salveti <ricardo@foundries.io>
+Date: Thu, 20 Aug 2020 18:24:52 -0300
+Subject: [PATCH 7/8] [FIO extras] fit: verify: abort if signature not found
+ and strict
+
+Prefer aborting the fit verification process when a signature node is
+not found by U-Boot and FIT SIGNATURE STRICT is enabled. This is a way
+to always force a proper signature verification via sig verify.
+
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+
+[FIO toup-squash] spl: use spl_simple_fit_parse for STRICT validation
+
+FIT image is already parsed and verified by the spl_simple_fit_parse
+function, so instead of searching for the default config node entry and
+validating its signature, just use the return code from the fit parser
+and hang in case of errors.
+
+Fixes: dd9336eccb ("[FIO fromlist] spl: Add CONFIG_SPL_FIT_SIGNATURE_STRICT")
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@foundries.io>
+---
+ boot/image-fit-sig.c   | 25 +++++++++++++++++++------
+ common/spl/spl_fit.c   | 24 ++++++++----------------
+ tools/image-sig-host.c |  1 +
+ 3 files changed, 28 insertions(+), 22 deletions(-)
+
+diff --git a/boot/image-fit-sig.c b/boot/image-fit-sig.c
+index 12369896fe3..2f70d923084 100644
+--- a/boot/image-fit-sig.c
++++ b/boot/image-fit-sig.c
+@@ -15,6 +15,7 @@ DECLARE_GLOBAL_DATA_PTR;
+ #endif /* !USE_HOSTCC*/
+ #include <fdt_region.h>
+ #include <image.h>
++#include <linux/kconfig.h>
+ #include <u-boot/rsa.h>
+ #include <u-boot/hash-checksum.h>
+ 
+@@ -196,9 +197,15 @@ int fit_image_verify_required_sigs(const void *fit, int image_noffset,
+ 	*no_sigsp = 1;
+ 	key_node = fdt_subnode_offset(key_blob, 0, FIT_SIG_NODENAME);
+ 	if (key_node < 0) {
+-		debug("%s: No signature node found: %s\n", __func__,
+-		      fdt_strerror(key_node));
+-		return 0;
++		if (IS_ENABLED(CONFIG_FIT_SIGNATURE_STRICT)) {
++			printf("%s: No signature node found: %s\n", __func__,
++			       fdt_strerror(key_node));
++			return -1;
++		} else {
++			debug("%s: No signature node found: %s\n", __func__,
++			      fdt_strerror(key_node));
++			return 0;
++		}
+ 	}
+ 
+ 	fdt_for_each_subnode(noffset, key_blob, key_node) {
+@@ -490,9 +497,15 @@ static int fit_config_verify_required_keys(const void *fit, int conf_noffset,
+ 	/* Work out what we need to verify */
+ 	key_node = fdt_subnode_offset(key_blob, 0, FIT_SIG_NODENAME);
+ 	if (key_node < 0) {
+-		debug("%s: No signature node found: %s\n", __func__,
+-		      fdt_strerror(key_node));
+-		return 0;
++		if (IS_ENABLED(CONFIG_FIT_SIGNATURE_STRICT)) {
++			printf("%s: No signature node found: %s\n", __func__,
++			       fdt_strerror(key_node));
++			return -1;
++		} else {
++			debug("%s: No signature node found: %s\n", __func__,
++			      fdt_strerror(key_node));
++			return 0;
++		}
+ 	}
+ 
+ 	/* Get required-mode policy property from DTB */
+diff --git a/common/spl/spl_fit.c b/common/spl/spl_fit.c
+index 5af08eb59c0..4fbdf91b923 100644
+--- a/common/spl/spl_fit.c
++++ b/common/spl/spl_fit.c
+@@ -748,20 +748,6 @@ int spl_load_simple_fit(struct spl_image_info *spl_image,
+ 	if (ret < 0)
+ 		return ret;
+ 
+-	if (CONFIG_IS_ENABLED(FIT_SIGNATURE_STRICT)) {
+-		int cfg_noffset = fit_conf_get_node(fit, NULL);
+-
+-		if (cfg_noffset >= 0) {
+-			if (fit_config_verify(fit, cfg_noffset)) {
+-				puts("Unable to verify the required FIT config.\n");
+-				hang();
+-			}
+-		} else {
+-			puts("SPL_FIT_SIGNATURE_STRICT needs a config node in FIT\n");
+-			hang();
+-		}
+-	}
+-
+ 	/* skip further processing if requested to enable load-only use cases */
+ 	if (spl_load_simple_fit_skip_processing())
+ 		return 0;
+@@ -769,8 +755,14 @@ int spl_load_simple_fit(struct spl_image_info *spl_image,
+ 	ctx.fit = spl_load_simple_fit_fix_load(ctx.fit);
+ 
+ 	ret = spl_simple_fit_parse(&ctx);
+-	if (ret < 0)
+-		return ret;
++	if (ret < 0) {
++		if (CONFIG_IS_ENABLED(FIT_SIGNATURE_STRICT)) {
++			puts("SPL_FIT_SIGNATURE_STRICT needs a valid config node in FIT\n");
++			hang();
++		} else {
++			return ret;
++		}
++	}
+ 
+ 	if (IS_ENABLED(CONFIG_SPL_FPGA))
+ 		spl_fit_load_fpga(&ctx, info, sector);
+diff --git a/tools/image-sig-host.c b/tools/image-sig-host.c
+index d0133aec4c8..5b82e654f6f 100644
+--- a/tools/image-sig-host.c
++++ b/tools/image-sig-host.c
+@@ -11,6 +11,7 @@
+ #include <u-boot/ecdsa.h>
+ #include <u-boot/rsa.h>
+ #include <u-boot/hash-checksum.h>
++#include <linux/kconfig.h>
+ 
+ struct checksum_algo checksum_algos[] = {
+ 	{
+-- 
+2.48.1
+
