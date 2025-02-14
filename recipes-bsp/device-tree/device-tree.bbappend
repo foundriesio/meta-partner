@@ -15,15 +15,14 @@ inherit xilinx-platform-init
 PROVIDES:append:zynqmp = " virtual/xilinx-platform-init"
 
 SRC_URI:append:uz = " \
-        file://system-som.dtsi \
-        file://system-board.dtsi \
-        file://system-conf.dtsi \
+	file://system-bsp.dtsi \
+	file://system-conf.dtsi \
 "
 
+# Use #include as these files have includes of their own
 do_configure:append:uz () {
-        echo '/include/ "system-som.dtsi"' >> ${DT_FILES_PATH}/system-top.dts
-        echo '/include/ "system-board.dtsi"' >> ${DT_FILES_PATH}/system-top.dts
-        echo '/include/ "system-conf.dtsi"' >> ${DT_FILES_PATH}/system-top.dts
+	echo '#include "system-bsp.dtsi"' >> ${DT_FILES_PATH}/${BASE_DTS}.dts
+	echo '#include "system-conf.dtsi"' >> ${DT_FILES_PATH}/${BASE_DTS}.dts
 }
 
 do_install:append:zynqmp () {
