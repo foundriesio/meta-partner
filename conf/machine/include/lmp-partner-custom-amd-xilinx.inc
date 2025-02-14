@@ -1,5 +1,11 @@
 # LMP partner specific customizations (either replace or extend options as defined by meta-lmp)
 
+XILINX_VER_MAIN ?= "2024.2"
+
+# This is an 'XSCT' based BSP
+XILINX_XSCT_VERSION ?= "2024.2"
+XILINX_WITH_ESW ?= "xsct"
+
 # Compatibility with other layers
 BBMASK += " \
     /meta-virtualization/dynamic-layers/xilinx/recipes-extended/xen/xen_4.14.bbappend \

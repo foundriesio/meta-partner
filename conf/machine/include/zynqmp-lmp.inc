@@ -1,5 +1,3 @@
-XILINX_VER_MAIN ?= "2022.1"
-
 PREFERRED_PROVIDER_virtual/kernel:zynqmp ?= "linux-lmp-xlnx"
 
 require conf/machine/include/soc-zynqmp.inc
