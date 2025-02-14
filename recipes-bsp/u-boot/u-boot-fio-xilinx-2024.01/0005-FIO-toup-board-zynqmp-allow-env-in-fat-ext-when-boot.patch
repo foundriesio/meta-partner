@@ -1,0 +1,31 @@
+From 643612719f1fa07d4956837fc6c843e9bd23ebc5 Mon Sep 17 00:00:00 2001
+From: Ricardo Salveti <ricardo@foundries.io>
+Date: Mon, 14 Feb 2022 14:07:12 -0300
+Subject: [PATCH 5/9] [FIO toup] board: zynqmp: allow env in fat/ext when
+ booting out of qspi
+
+Allow saving the environment in fat and in ext4 when bootmode is qspi.
+
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+---
+ board/xilinx/zynqmp/zynqmp.c | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/board/xilinx/zynqmp/zynqmp.c b/board/xilinx/zynqmp/zynqmp.c
+index 262ac6cfdf0..aa9c7224605 100644
+--- a/board/xilinx/zynqmp/zynqmp.c
++++ b/board/xilinx/zynqmp/zynqmp.c
+@@ -746,6 +746,10 @@ enum env_location env_get_location(enum env_operation op, int prio)
+ 	case QSPI_MODE_32BIT:
+ 		if (IS_ENABLED(CONFIG_ENV_IS_IN_SPI_FLASH))
+ 			return ENVL_SPI_FLASH;
++		if (IS_ENABLED(CONFIG_ENV_IS_IN_FAT))
++			return ENVL_FAT;
++		if (IS_ENABLED(CONFIG_ENV_IS_IN_EXT4))
++			return ENVL_EXT4;
+ 		return ENVL_NOWHERE;
+ 	case JTAG_MODE:
+ 	default:
+-- 
+2.48.1
+

@@ -1,0 +1,196 @@
+From 93efac3e449403b34b898c6f9548732a34c6c1eb Mon Sep 17 00:00:00 2001
+From: Igor Opaniuk <igor.opaniuk@foundries.io>
+Date: Fri, 10 Sep 2021 17:35:33 +0300
+Subject: [PATCH 1/9] [FIO toup] arm64: zynqmp: add cmd for adjusting multiboot
+ register
+
+Add command for retrieving/adjusting multiboot register value, which
+permits to force CSU ROM to boot image from particular offset after
+soft reset.
+
+Add additional check to multi_boot cmd implementation, so it permits to set
+values of multiboot offset register that correspond to
+SYS_SPI_BOOT_IMAGE_OFFS/SYS_SPI_BOOT_IMAGE_OFFS2.
+
+Also permits to set 0 for the special case, when Image Selector is used.
+
+Improve multi_boot cmd:
+1. Support both hex and dec values for register value.
+2. Provide more details about boot image offset used during QSPI boot.
+
+Signed-off-by: Igor Opaniuk <igor.opaniuk@foundries.io>
+Signed-off-by: Michael Scott <mike@foundries.io>
+---
+ board/xilinx/zynqmp/zynqmp.c | 105 +++++++++++++++++++++++++++++++++--
+ 1 file changed, 99 insertions(+), 6 deletions(-)
+
+diff --git a/board/xilinx/zynqmp/zynqmp.c b/board/xilinx/zynqmp/zynqmp.c
+index 062e2e829de..c5fc05a6a73 100644
+--- a/board/xilinx/zynqmp/zynqmp.c
++++ b/board/xilinx/zynqmp/zynqmp.c
+@@ -45,6 +45,14 @@
+ 
+ DECLARE_GLOBAL_DATA_PTR;
+ 
++/*
++ * Golden image boundary:
++ * Boot images can be located every 32 KB in the boot memory device,
++ * which allows for more than one boot image to be in the memory
++ * device.
++ */
++const u32 golden_image_boundary = 0x8000;
++
+ #if CONFIG_IS_ENABLED(FPGA) && defined(CONFIG_FPGA_ZYNQMPPL)
+ static xilinx_desc zynqmppl = {
+ 	xilinx_zynqmp, csu_dma, 1, &zynqmp_op, 0, &zynqmp_op, NULL,
+@@ -99,7 +107,7 @@ int board_early_init_f(void)
+ # endif
+ #endif
+ 
+-static int multi_boot(void)
++static u32 multi_boot_get(void)
+ {
+ 	u32 multiboot = 0;
+ 	int ret;
+@@ -111,6 +119,13 @@ static int multi_boot(void)
+ 	return multiboot;
+ }
+ 
++static u32 multi_boot_set(u32 multiboot)
++{
++	zynqmp_mmio_write((ulong)&csu_base->multi_boot, 0xFFFFFFFF, multiboot);
++
++	return 0;
++}
++
+ #if defined(CONFIG_SPL_BUILD)
+ static void restore_jtag(void)
+ {
+@@ -138,8 +153,82 @@ static void print_secure_boot(void)
+ 	       status & ZYNQMP_CSU_STATUS_ENCRYPTED ? "" : "not ");
+ }
+ 
++#ifndef CONFIG_SPL_BUILD
++static int do_multi_boot(struct cmd_tbl *cmdtp, int flag,
++			 int argc, char * const argv[])
++{
++	int ret;
++	ulong multiboot; /* avoid overrun with strict_strtoul() */
++
++	/* If we just want to retrieve current value */
++	if (argc == 1) {
++		multiboot = (u32)multi_boot_get();
++
++		printf("Multiboot register: \t0x%lx (dec: %ld)\n", multiboot,
++		       multiboot);
++		if (!strcmp(env_get("modeboot"), "qspiboot"))
++			printf("QSPI boot offset: \t0x%x\n", (u32)multiboot *
++			       golden_image_boundary);
++
++		if (multiboot > 1)
++			ret = env_set("fiovb.is_secondary_boot", "1");
++		else
++			ret = env_set("fiovb.is_secondary_boot", "0");
++
++		if (ret)
++			return CMD_RET_FAILURE;
++
++		return CMD_RET_SUCCESS;
++	}
++
++	if (strict_strtoul(argv[1], 0, &multiboot) < 0) {
++		printf("Incorrect value of multiboot offset\n");
++		return CMD_RET_USAGE;
++	}
++#if defined(CONFIG_SPL_SPI)
++	if (!strcmp(env_get("modeboot"), "qspiboot")) {
++		u32 boot_image_offset = golden_image_boundary * (u32)multiboot;
++
++		if (boot_image_offset != CONFIG_SYS_SPI_BOOT_IMAGE_OFFS &&
++		    boot_image_offset != CONFIG_SYS_SPI_BOOT_IMAGE_OFFS2 &&
++		    boot_image_offset != 0) {
++			printf("Invalid value of multiboot register, "
++			       "supported values are: 0x0, 0x%x, 0x%x\n",
++			       (CONFIG_SYS_SPI_BOOT_IMAGE_OFFS /
++				golden_image_boundary),
++			       (CONFIG_SYS_SPI_BOOT_IMAGE_OFFS2 /
++				golden_image_boundary));
++			return CMD_RET_FAILURE;
++		}
++	}
++#endif
++
++	printf("Set multiboot register to: \t0x%lx (dec: %ld)\n", multiboot,
++	       multiboot);
++	if (!strcmp(env_get("modeboot"), "qspiboot"))
++		printf("QSPI boot offset to be used after reboot: \t0x%x\n",
++		       (u32)multiboot * golden_image_boundary);
++
++	multi_boot_set((u32)multiboot);
++
++	return CMD_RET_SUCCESS;
++}
++
++U_BOOT_CMD(
++	multi_boot, CONFIG_SYS_MAXARGS, 1, do_multi_boot,
++	"Get/Set CSU multiboot register",
++	"\n"
++	"   no param  - get current register/offset value\n"
++	"   value - set multi_boot register\n"
++);
++#endif /* CONFIG_SPL_BUILD */
++
++#define PS_SYSMON_ANALOG_BUS_VAL	0x3210
++#define PS_SYSMON_ANALOG_BUS_REG	0xFFA50914
++
+ int board_init(void)
+ {
++	u32 multiboot;
+ #if CONFIG_IS_ENABLED(FPGA) && defined(CONFIG_FPGA_ZYNQMPPL)
+ 	struct udevice *soc;
+ 	char name[SOC_MAX_STR_SIZE];
+@@ -191,8 +280,11 @@ int board_init(void)
+ 
+ 	/* display secure boot information */
+ 	print_secure_boot();
+-	if (current_el() == 3)
+-		printf("Multiboot:\t%d\n", multi_boot());
++	if (current_el() == 3) {
++		multiboot = multi_boot_get();
++
++		printf("Multiboot:\t%d\n", multiboot);
++	}
+ 
+ 	return 0;
+ }
+@@ -518,7 +610,8 @@ int board_late_init(void)
+ 	usb_ether_init();
+ #endif
+ 
+-	multiboot = multi_boot();
++	multiboot = multi_boot_get();
++
+ 	if (multiboot >= 0)
+ 		env_set_hex("multiboot", multiboot);
+ 
+@@ -663,7 +756,7 @@ void set_dfu_alt_info(char *interface, char *devstr)
+ 
+ 	memset(buf, 0, sizeof(buf));
+ 
+-	multiboot = multi_boot();
++	multiboot = multi_boot_get();
+ 	if (multiboot < 0)
+ 		multiboot = 0;
+ 
+@@ -733,7 +826,7 @@ void set_dfu_alt_info(char *interface, char *devstr)
+ unsigned int spl_spi_get_uboot_offs(struct spi_flash *flash)
+ {
+ 	u32 offset;
+-	int multiboot = multi_boot();
++	int multiboot = multi_boot_get();
+ 
+ 	offset = multiboot * SZ_32K;
+ 	offset += CONFIG_SYS_SPI_U_BOOT_OFFS;
+-- 
+2.48.1
+

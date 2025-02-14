@@ -1,0 +1,70 @@
+From 2e0112f06604d592d6e266289dd06bd288e275a0 Mon Sep 17 00:00:00 2001
+From: Igor Opaniuk <igor.opaniuk@foundries.io>
+Date: Wed, 6 Oct 2021 14:27:44 +0300
+Subject: [PATCH 4/9] [FIO toup] arm64: zynqmp: add cmd for getting boot auth
+ state
+
+Signed-off-by: Igor Opaniuk <igor.opaniuk@foundries.io>
+---
+ board/xilinx/zynqmp/zynqmp.c | 38 ++++++++++++++++++++++++++++++++++++
+ 1 file changed, 38 insertions(+)
+
+diff --git a/board/xilinx/zynqmp/zynqmp.c b/board/xilinx/zynqmp/zynqmp.c
+index 26cfc59f6c0..262ac6cfdf0 100644
+--- a/board/xilinx/zynqmp/zynqmp.c
++++ b/board/xilinx/zynqmp/zynqmp.c
+@@ -153,6 +153,20 @@ static void print_secure_boot(void)
+ 	       status & ZYNQMP_CSU_STATUS_ENCRYPTED ? "" : "not ");
+ }
+ 
++static bool is_boot_authenticated(void)
++{
++	u32 status = 0;
++	int ret;
++
++	ret = zynqmp_mmio_read((ulong)&csu_base->status, &status);
++	if (ret) {
++		printf("Can't obtain boot auth state");
++		return false;
++	}
++
++	return (status & BIT(0));
++}
++
+ #ifndef CONFIG_SPL_BUILD
+ static int do_multi_boot(struct cmd_tbl *cmdtp, int flag,
+ 			 int argc, char * const argv[])
+@@ -221,6 +235,30 @@ U_BOOT_CMD(
+ 	"   no param  - get current register/offset value\n"
+ 	"   value - set multi_boot register\n"
+ );
++
++static int do_is_boot_authenticated(struct cmd_tbl *cmdtp, int flag,
++				    int argc, char * const argv[])
++{
++	int ret;
++
++	if (is_boot_authenticated()) {
++		printf("Board is in closed state\n");
++
++		ret = env_set("board_is_closed", "1");
++		if (ret)
++			return CMD_RET_FAILURE;
++	} else {
++		printf("Board is in open state\n");
++	}
++
++	return CMD_RET_SUCCESS;
++}
++
++U_BOOT_CMD(
++	is_boot_authenticated, CONFIG_SYS_MAXARGS, 1,
++	do_is_boot_authenticated,
++	"Check if the board is authenticated", ""
++);
+ #endif /* CONFIG_SPL_BUILD */
+ 
+ #define PS_SYSMON_ANALOG_BUS_VAL	0x3210
+-- 
+2.48.1
+

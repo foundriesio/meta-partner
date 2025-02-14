@@ -1,0 +1,75 @@
+From b59f8bba62afbcb3e9d2718336ef5917e504957d Mon Sep 17 00:00:00 2001
+From: Igor Opaniuk <igor.opaniuk@foundries.io>
+Date: Tue, 5 Oct 2021 19:13:36 +0300
+Subject: [PATCH 2/9] [FIO toup] spl: mmc: support dynamic spl payload name on
+ fs
+
+Add weak function for detecting U-Boot SPL payload, this introduces
+possibility to detect SPL payload in runtime (usually handy on A/B setups).
+
+Signed-off-by: Igor Opaniuk <igor.opaniuk@foundries.io>
+---
+ common/spl/spl_mmc.c | 28 ++++++++++++++++++++++++----
+ include/spl.h        |  2 ++
+ 2 files changed, 26 insertions(+), 4 deletions(-)
+
+diff --git a/common/spl/spl_mmc.c b/common/spl/spl_mmc.c
+index 82689da1401..07498cef055 100644
+--- a/common/spl/spl_mmc.c
++++ b/common/spl/spl_mmc.c
+@@ -514,15 +514,35 @@ int spl_mmc_load(struct spl_image_info *spl_image,
+ 	return err;
+ }
+ 
++#ifdef CONFIG_SPL_FS_LOAD_PAYLOAD_NAME
++int __weak spl_mmc_get_uboot_payload_filename(char *filename, size_t len,
++					      const u32 boot_device)
++{
++	if (!filename)
++		return -1;
++
++	strncpy(filename, CONFIG_SPL_FS_LOAD_PAYLOAD_NAME, len);
++
++	return 0;
++}
++#endif
++
++
+ int spl_mmc_load_image(struct spl_image_info *spl_image,
+ 		       struct spl_boot_device *bootdev)
+ {
+-	return spl_mmc_load(spl_image, bootdev,
++
++	char arr[SPL_PAYLOAD_NAME_MAX] = { 0 };
++	char *payload_name = NULL;
++
+ #ifdef CONFIG_SPL_FS_LOAD_PAYLOAD_NAME
+-			    CONFIG_SPL_FS_LOAD_PAYLOAD_NAME,
+-#else
+-			    NULL,
++	if (!spl_mmc_get_uboot_payload_filename(arr, SPL_PAYLOAD_NAME_MAX,
++						bootdev->boot_device))
++		payload_name = arr;
++
+ #endif
++	return spl_mmc_load(spl_image, bootdev,
++			    payload_name,
+ #ifdef CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_PARTITION
+ 			    spl_mmc_boot_partition(bootdev->boot_device),
+ #else
+diff --git a/include/spl.h b/include/spl.h
+index 8ff20adc28e..a219bf24caa 100644
+--- a/include/spl.h
++++ b/include/spl.h
+@@ -28,6 +28,8 @@ struct legacy_img_hdr;
+ #define MMCSD_MODE_FS		2
+ #define MMCSD_MODE_EMMCBOOT	3
+ 
++#define SPL_PAYLOAD_NAME_MAX	128
++
+ struct blk_desc;
+ struct legacy_img_hdr;
+ struct spl_boot_device;
+-- 
+2.48.1
+

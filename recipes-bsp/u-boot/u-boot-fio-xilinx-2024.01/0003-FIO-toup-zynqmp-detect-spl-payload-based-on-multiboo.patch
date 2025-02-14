@@ -1,0 +1,52 @@
+From 1816c798ba1f878f1991ca0a381ec1d401ad16d0 Mon Sep 17 00:00:00 2001
+From: Igor Opaniuk <igor.opaniuk@foundries.io>
+Date: Tue, 5 Oct 2021 19:15:28 +0300
+Subject: [PATCH 3/9] [FIO toup] zynqmp: detect spl payload based on multiboot
+ offset value
+
+Detect a filename of SPL payload based on the value of multiboot offset.
+
+Signed-off-by: Igor Opaniuk <igor.opaniuk@foundries.io>
+---
+ board/xilinx/zynqmp/zynqmp.c | 28 ++++++++++++++++++++++++++++
+ 1 file changed, 28 insertions(+)
+
+diff --git a/board/xilinx/zynqmp/zynqmp.c b/board/xilinx/zynqmp/zynqmp.c
+index c5fc05a6a73..26cfc59f6c0 100644
+--- a/board/xilinx/zynqmp/zynqmp.c
++++ b/board/xilinx/zynqmp/zynqmp.c
+@@ -836,3 +836,31 @@ unsigned int spl_spi_get_uboot_offs(struct spi_flash *flash)
+ 	return offset;
+ }
+ #endif
++
++#if defined(CONFIG_SPL_FS_LOAD_PAYLOAD_NAME)
++int spl_mmc_get_uboot_payload_filename(char *filename, size_t len,
++				       const u32 boot_device)
++{
++	int ret;
++	u32 multiboot;
++
++	if (!filename)
++		return -1;
++
++	multiboot = multi_boot_get();
++
++	if (multiboot)
++		ret = snprintf(filename, len, "u-boot%04d.itb", multiboot);
++	else
++		ret = snprintf(filename, len, "u-boot.itb");
++
++	if (ret < 0) {
++		printf("Can't construct SPL payload filename");
++		return ret;
++	}
++
++	printf("SPL: Booting %s\n", filename);
++
++	return 0;
++}
++#endif
+-- 
+2.48.1
+

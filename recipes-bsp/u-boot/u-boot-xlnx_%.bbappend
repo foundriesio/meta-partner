@@ -2,6 +2,7 @@ FILESEXTRAPATHS:prepend := "${THISDIR}/${PN}:"
 
 include recipes-bsp/u-boot/u-boot-lmp-common.inc
 include recipes-bsp/u-boot/u-boot-fio-2024.01.inc
+include recipes-bsp/u-boot/u-boot-fio-xilinx-2024.01.inc
 
 # zynqmp: add pmu-firmware and fpga bitstream (loading FPGA from SPL) dependancies
 do_compile[depends] += "${@bb.utils.contains('SOC_FAMILY', 'zynqmp', 'virtual/pmu-firmware:do_deploy virtual/bitstream:do_deploy', '', d)}"

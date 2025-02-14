@@ -1,0 +1,43 @@
+From 2188f64f003e16eeeb697d34ea71e3cedb3d2201 Mon Sep 17 00:00:00 2001
+From: Ricardo Salveti <ricardo@foundries.io>
+Date: Mon, 29 Aug 2022 22:11:54 -0300
+Subject: [PATCH 8/9] [FIO toup] arm64: zynqmp: add OP-TEE nodes
+
+Add required OP-TEE nodes by default in zynqmp.dtsi, which allows having
+a functional runtime when OP-TEE is enabled.
+
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+---
+ arch/arm/dts/zynqmp.dtsi | 16 ++++++++++++++++
+ 1 file changed, 16 insertions(+)
+
+diff --git a/arch/arm/dts/zynqmp.dtsi b/arch/arm/dts/zynqmp.dtsi
+index 229afd8db09..ceb68f96a31 100644
+--- a/arch/arm/dts/zynqmp.dtsi
++++ b/arch/arm/dts/zynqmp.dtsi
+@@ -170,6 +170,22 @@
+ 		method = "smc";
+ 	};
+ 
++	reserved-memory {
++		#size-cells = <2>;
++		#address-cells = <2>;
++		ranges;
++
++		optee_core@7e000000 {
++			reg = <0x00 0x7e000000 0x00 0x1c00000>;
++			no-map;
++		};
++
++		optee_shm@7fc00000 {
++			reg = <0x00 0x7fc00000 0x00 0x400000>;
++			no-map;
++		};
++	};
++
+ 	firmware {
+ 		optee: optee  {
+ 			compatible = "linaro,optee-tz";
+-- 
+2.48.1
+

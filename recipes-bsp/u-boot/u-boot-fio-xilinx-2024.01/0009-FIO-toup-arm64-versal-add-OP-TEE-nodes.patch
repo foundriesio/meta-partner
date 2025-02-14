@@ -1,0 +1,50 @@
+From 28171780d3ea444307eeec5099470f6900da25f7 Mon Sep 17 00:00:00 2001
+From: Ricardo Salveti <ricardo@foundries.io>
+Date: Mon, 29 Aug 2022 22:25:32 -0300
+Subject: [PATCH 9/9] [FIO toup] arm64: versal: add OP-TEE nodes
+
+Add required OP-TEE nodes by default in versal.dtsi, which allows having
+a functional runtime when OP-TEE is enabled.
+
+Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
+---
+ arch/arm/dts/versal.dtsi | 23 +++++++++++++++++++++++
+ 1 file changed, 23 insertions(+)
+
+diff --git a/arch/arm/dts/versal.dtsi b/arch/arm/dts/versal.dtsi
+index 2b1e79c7853..dc269b6b18e 100644
+--- a/arch/arm/dts/versal.dtsi
++++ b/arch/arm/dts/versal.dtsi
+@@ -15,6 +15,29 @@
+ 	#size-cells = <2>;
+ 	model = "Xilinx Versal";
+ 
++	firmware {
++		optee {
++			compatible = "linaro,optee-tz";
++			method = "smc";
++		};
++	};
++
++	reserved-memory {
++		#size-cells = <2>;
++		#address-cells = <2>;
++		ranges;
++
++		optee_core@60000000 {
++			reg = <0x00 0x60000000 0x00 0x10000000>;
++			no-map;
++		};
++
++		optee_shm@70000000 {
++			reg = <0x00 0x70000000 0x00 0x10000000>;
++			no-map;
++		};
++	};
++
+ 	options {
+ 		u-boot {
+ 			compatible = "u-boot,config";
+-- 
+2.48.1
+
