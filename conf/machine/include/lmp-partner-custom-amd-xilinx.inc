@@ -34,6 +34,11 @@ TOOLCHAIN:pn-u-boot-xlnx = "gcc"
 TOOLCHAIN:pn-libmali-xlnx = "gcc"
 
 # Xilinx
+
+# On kria we need the default provider (fit-based) + scr for compatibility with
+# the standard boot firmware, so drop provides to avoid multiple providers
+PROVIDES:pn-u-boot-ostree-scr:remove:kv260 = "u-boot-default-script"
+
 ## Avnet UltraZed with secure boot support
 UBOOT_SIGN_ENABLE:sota:uz3eg-iocc-sec = "1"
 SOTA_CLIENT_FEATURES:remove:sota:uz3eg-iocc-sec = "ubootenv"
