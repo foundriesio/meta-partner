@@ -7,7 +7,6 @@ fix_install_sota() {
         # qprebuilt class moves all files from S on install
         mkdir -p ${D}${nonarch_libdir}/tmpfiles.d
         mv ${D}/tmpfiles.conf ${D}${nonarch_libdir}/tmpfiles.d/${PN}.conf
-        (cd ${D}; rmdir -v --parents var/cache/camera)
     fi
 }
 do_install[postfuncs] += "fix_install_sota"
