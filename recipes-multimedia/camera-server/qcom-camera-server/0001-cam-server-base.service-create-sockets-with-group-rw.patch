@@ -14,15 +14,16 @@ Signed-off-by: Ricardo Salveti <ricardo@foundries.io>
  1 file changed, 2 insertions(+), 1 deletion(-)
 
 diff --git a/qmmf-server/service/cam-server-base.service b/qmmf-server/service/cam-server-base.service
-index cd9c8ae..63caa35 100644
+index 29f59eb..2c05297 100644
 --- a/qmmf-server/service/cam-server-base.service
 +++ b/qmmf-server/service/cam-server-base.service
-@@ -39,8 +39,9 @@ Group=video
+@@ -40,9 +40,10 @@ Group=video
  SupplementaryGroups=system
  Restart=always
  EnvironmentFile=/etc/cam-server-env
 -ExecStartPre=/bin/mkdir -p /tmp/socket/cam_server
 +ExecStartPre=/bin/mkdir -m 775 -p /tmp/socket/cam_server
+ CacheDirectory=camera
  ExecStart=/usr/bin/cam-server
 +UMask=0002
  
