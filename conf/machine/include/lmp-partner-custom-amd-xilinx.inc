@@ -20,8 +20,8 @@ INSANE_SKIP:pn-qemu-xilinx-system-native += "native-last"
 # kernel recipes to avoid building errors like:
 # aarch64-lmp-linux-llvm-strip: error: Link field value 30 in section .rela.dyn is not a symbol table
 # do_assemble_fitimage.520200: 841: arm-lmp-linux-gnueabi-llvm-objcopy: not found
-OBJCOPY:pn-linux-lmp-xlnx:toolchain-clang = "${HOST_PREFIX}objcopy"
-STRIP:pn-linux-lmp-xlnx:toolchain-clang = "${HOST_PREFIX}strip"
+OBJCOPY:pn-linux-xlnx:toolchain-clang = "${HOST_PREFIX}objcopy"
+STRIP:pn-linux-xlnx:toolchain-clang = "${HOST_PREFIX}strip"
 
 # kv260
 # uz3eg-iocc-ebbr-sec
