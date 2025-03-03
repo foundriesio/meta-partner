@@ -47,6 +47,7 @@ EXTRA_IMAGEDEPENDS += " \
 # Used to create a wic image to boot from emmc
 WKS_FILE = "sdimage-bootpart.wks"
 WKS_FILE:sota = "${@bb.utils.contains('MACHINE_FEATURES', 'ebbr', 'sdimage-mbr-efi-sota.wks', 'sdimage-sota.wks', d)}"
+WKS_FILES:sota = "${@bb.utils.contains('MACHINE_FEATURES', 'ebbr', 'sdimage-mbr-efi-sota.wks', 'sdimage-sota.wks', d)}"
 WKS_FILE_DEPENDS:append = " virtual/bootloader"
 IMAGE_BOOT_FILES = "${@get_default_image_boot_files(d)} boot.bin boot.scr uEnv.txt devicetree/system-top.dtb;system-top.dtb bitstream.bit.bin"
 IMAGE_BOOT_FILES:sota = "boot.bin;boot0001.bin u-boot.itb;u-boot0001.itb boot.bin;boot0002.bin u-boot.itb;u-boot0002.itb"
