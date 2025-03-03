@@ -1,18 +1,20 @@
 FILESEXTRAPATHS:prepend := "${THISDIR}/${PN}:"
 
-SRC_URI:append:kv260 = " \
-	file://0001-zynqmp-2022.1-optee-firmware-node.patch \
-	file://0001-zynqmp-sm-k26-reva-enable-pwm-fan-for-fancontrol.patch \
-"
-
-# From xilinx-kv260-starterkit-xsct-2024.2/project-spec/dts_dir
-EXTRA_DT_FILES:kv260 = " \
-	zynqmp-sck-kv-g-revB.dtso \
-"
-
 inherit xilinx-platform-init
 
 PROVIDES:append:zynqmp = " virtual/xilinx-platform-init"
+
+SRC_URI:append:kv260 = " \
+        file://system-optee-memory.dtsi \
+        file://system-pwm-fan-enable.dtsi \
+        file://system-fix-sd-wp.dtsi \
+"
+
+do_configure:append:kv260 () {
+	echo '#include "system-optee-memory.dtsi"' >> ${DT_FILES_PATH}/${BASE_DTS}.dts
+	echo '#include "system-pwm-fan-enable.dtsi"' >> ${DT_FILES_PATH}/${BASE_DTS}.dts
+	echo '#include "system-fix-sd-wp.dtsi"' >> ${DT_FILES_PATH}/${BASE_DTS}.dts
+}
 
 SRC_URI:append:uz = " \
 	file://system-bsp.dtsi \

@@ -1,0 +1,8 @@
+&sdhci1 { /* Fixing: /dev/mmcblk1 errors found -- read-only lock */
+	broken-cd;
+	disable-wp;
+	/* Do not run SD in HS mode from bootloader */
+	sdhci-caps-mask = <0 0x200000>;
+	sdhci-caps = <0 0>;
+	max-frequency = <19000000>;
+};
