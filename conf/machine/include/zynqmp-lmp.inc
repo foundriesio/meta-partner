@@ -1,4 +1,4 @@
-PREFERRED_PROVIDER_virtual/kernel:zynqmp ?= "linux-lmp-xlnx"
+PREFERRED_PROVIDER_virtual/kernel:zynqmp ?= "linux-xlnx"
 
 require conf/machine/include/soc-zynqmp.inc
 require conf/machine/include/machine-xilinx-default.inc
