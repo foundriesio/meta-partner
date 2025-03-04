@@ -12,6 +12,7 @@ SRC_URI:append:lmp = " \
         file://wireguard.cfg \
         file://docker.cfg \
         file://zram.cfg \
+        file://bpf.cfg \
 "
 
 # Kernel config
