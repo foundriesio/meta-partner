@@ -24,6 +24,9 @@ CORE_IMAGE_BASE_INSTALL:append:qcom = " \
     packagegroup-qcom-iot-base-utils \
 "
 
+CORE_IMAGE_BASE_INSTALL:remove:qcom = " \
+    psplash \
+"
 CORE_IMAGE_BASE_INSTALL_WAYLAND ?= ""
 CORE_IMAGE_BASE_INSTALL_WAYLAND:qcom = " \
     packagegroup-qcom-camera \
