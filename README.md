@@ -105,7 +105,7 @@ Now configure the Qualcomm® Robotics RB3G2 Development Kit:
    - `/dev/serial/by-id/usb-FTDI_FT230X_Basic_UART_<serial ID>-if00-port0`
 4. Plug in the USB-C cable from the host.
 5. Run the command to flash:
-   - `./qdl --debug prog_firehose_ddr.elf rawprogram*.xml patch*.xml`
+   - `./qdl prog_firehose_ddr.elf rawprogram*.xml patch*.xml`
 6. Press and hold the F_DL button and connect the power cable.
 
 
@@ -169,7 +169,7 @@ After you push, the FoundriesFactory will build a new target. Once built, any re
 Once connected to the network you can log in over ssh if desired:
 
 ```bash
-ssh fio@qcm6490.local
+ssh fio@qcs6490-rb3gen2-vision-kit.local
 ```
 
 OR
@@ -185,7 +185,7 @@ Password: `fio`
 ### Register Your Device
 
 Register your device with FoundriesFactory:
-`https://docs.foundries.io/latest/getting-started/register-device/index.html`
+https://docs.foundries.io/latest/getting-started/register-device/index.html
 
 ---
 
@@ -212,7 +212,7 @@ The built targets can be found here:
 
 Compose apps fill the gap for Factory devices in distributing applications.
 
-- To build your own compose applications, refer to `https://docs.foundries.io/latest/reference-manual/docker/compose-apps.html`
+- To build your own compose applications, refer to https://docs.foundries.io/latest/reference-manual/docker/compose-apps.html
 - Your factory has some sample compose applications ready to deploy.
 
 ### Qualcomm® AI Hub
