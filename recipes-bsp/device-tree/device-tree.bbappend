@@ -13,11 +13,9 @@ do_configure:append:zynqmp () {
 }
 
 SRC_URI:append:kv260 = " \
-        file://system-pwm-fan-enable.dtsi \
         file://system-fix-sd-wp.dtsi \
 "
 do_configure:append:kv260 () {
-	echo '#include "system-pwm-fan-enable.dtsi"' >> ${DT_FILES_PATH}/${BASE_DTS}.dts
 	echo '#include "system-fix-sd-wp.dtsi"' >> ${DT_FILES_PATH}/${BASE_DTS}.dts
 }
 
