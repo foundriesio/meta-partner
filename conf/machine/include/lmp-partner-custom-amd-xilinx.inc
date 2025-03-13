@@ -46,3 +46,8 @@ LMP_BOOT_FIRMWARE_VERSION:uz3eg-iocc-sec = "8"
 ## Avnet UltraZed with secure boot support and EBBR
 UBOOT_SPL_SIGN_ENABLE:sota:uz3eg-iocc-ebbr-sec = "1"
 UBOOT_SIGN_ENABLE:sota:uz3eg-iocc-ebbr-sec = "0"
+
+## Add lmsensors for kv260 to enable fancontrol
+MACHINE_EXTRA_RRECOMMENDS:append:kv260 = " lmsensors"
+# Drop graphics dependencies
+PACKAGECONFIG:remove:pn-rrdtool:kv260 = "graph"
