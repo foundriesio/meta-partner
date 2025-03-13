@@ -1,0 +1,20 @@
+&spi_flash {
+	partitions {
+		partition@200000 {
+			label = "Image A (FSBL, PMU)";
+			reg = <0x200000 0x100000>; /* 1MB */
+		};
+		partition@300000 {
+			label = "Image A (U-Boot FitImage: ATF, OP-TEE)";
+			reg = <0x300000 0xC00000>; /* 12MB */
+		};
+		partition@f80000 {
+			label = "Image B (FSBL, PMU)";
+			reg = <0xF80000 0x100000>; /* 1MB */
+		};
+		partition@1080000 {
+			label = "Image B (U-Boot FitImage: ATF, OP-TEE)";
+			reg = <0x1080000 0xC00000>; /* 12MB */
+		};
+	};
+};

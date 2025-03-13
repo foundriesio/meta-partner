@@ -14,9 +14,11 @@ do_configure:append:zynqmp () {
 
 SRC_URI:append:kv260 = " \
         file://system-fix-sd-wp.dtsi \
+	file://system-qspi-partitions.dtsi \
 "
 do_configure:append:kv260 () {
 	echo '#include "system-fix-sd-wp.dtsi"' >> ${DT_FILES_PATH}/${BASE_DTS}.dts
+	echo '#include "system-qspi-partitions.dtsi"' >> ${DT_FILES_PATH}/${BASE_DTS}.dts
 }
 
 SRC_URI:append:uz = " \
