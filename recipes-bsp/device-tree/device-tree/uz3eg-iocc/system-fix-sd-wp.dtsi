@@ -1,0 +1,3 @@
+&sdhci1 { /* Fixing: /dev/mmcblk1 -- read-only lock */
+	disable-wp;
+};

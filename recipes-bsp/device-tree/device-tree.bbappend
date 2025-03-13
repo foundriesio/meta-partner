@@ -23,9 +23,11 @@ do_configure:append:kv260 () {
 
 SRC_URI:append:uz = " \
 	file://system-bsp.dtsi \
+        file://system-fix-sd-wp.dtsi \
 "
 do_configure:append:uz () {
 	echo '#include "system-bsp.dtsi"' >> ${DT_FILES_PATH}/${BASE_DTS}.dts
+	echo '#include "system-fix-sd-wp.dtsi"' >> ${DT_FILES_PATH}/${BASE_DTS}.dts
 }
 
 do_install:append:zynqmp () {
