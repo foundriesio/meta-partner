@@ -15,6 +15,13 @@ SRC_URI:append:lmp = " \
         file://bpf.cfg \
 "
 
+# From uz3eg_iocc_base_2024_1/project-spec/meta-avnet/recipes-kernel/linux/linux-xlnx
+SRC_URI:append:uz3eg-iocc = " \
+	file://avnet-bsp.cfg \
+	file://vitis_kconfig.cfg \
+	file://0001-hwmon-pmbus-Add-support-Infineon-IR38062-IR38063.patch \
+"
+
 # Kernel config
 KERNEL_CONFIG_NAME ?= "${KERNEL_PACKAGE_NAME}-config-${KERNEL_ARTIFACT_NAME}"
 KERNEL_CONFIG_LINK_NAME ?= "${KERNEL_PACKAGE_NAME}-config"
