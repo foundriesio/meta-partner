@@ -13,6 +13,7 @@ SRC_URI:append:lmp = " \
         file://docker.cfg \
         file://zram.cfg \
         file://bpf.cfg \
+        file://tee.cfg \
 "
 
 # From uz3eg_iocc_base_2024_1/project-spec/meta-avnet/recipes-kernel/linux/linux-xlnx
