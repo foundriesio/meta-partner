@@ -1,3 +1,9 @@
+FILESEXTRAPATHS:prepend := "${THISDIR}/${PN}:"
+
+SRC_URI += "file://lmp.cfg"
+
+KERNEL_CONFIG_FRAGMENTS:append = " ${WORKDIR}/lmp.cfg"
+
 # Kernel config
 KERNEL_CONFIG_NAME ?= "${KERNEL_PACKAGE_NAME}-config-${KERNEL_ARTIFACT_NAME}"
 KERNEL_CONFIG_LINK_NAME ?= "${KERNEL_PACKAGE_NAME}-config"
