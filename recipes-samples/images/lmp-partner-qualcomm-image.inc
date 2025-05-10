@@ -21,7 +21,6 @@ CORE_IMAGE_BASE_INSTALL:append:qcom = " \
 CORE_IMAGE_BASE_INSTALL:append:qcom = " \
     packagegroup-qcom-audio \
     packagegroup-qcom-bluetooth \
-    packagegroup-qcom-iot-base-utils \
 "
 
 CORE_IMAGE_BASE_INSTALL:remove:qcom = " \
@@ -35,6 +34,7 @@ CORE_IMAGE_BASE_INSTALL_WAYLAND:qcom = " \
     packagegroup-qcom-graphics \
     packagegroup-qcom-opencv \
     packagegroup-qcom-video \
+    packagegroup-qcom-iot-base-utils \
     packagegroup-qcom-qim-product \
 "
 CORE_IMAGE_BASE_INSTALL_WAYLAND:append:qcm6490 = " \
