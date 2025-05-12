@@ -4,7 +4,6 @@ CORE_IMAGE_BASE_INSTALL:append:qcom = " \
     packagegroup-qcom-core \
     packagegroup-qcom-initscripts \
     packagegroup-qcom-perf \
-    packagegroup-qcom-ppat \
     packagegroup-qcom-data \
     packagegroup-qcom-securemsm \
     var-persist-mount \
