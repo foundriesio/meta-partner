@@ -41,6 +41,10 @@ CORE_IMAGE_BASE_INSTALL_WAYLAND:append:qcm6490 = " \
     qcom-camera-server \
 "
 
+CORE_IMAGE_EXTRA_INSTALL:remove:sota = " \
+    varmount \
+"
+
 # Add default LmP user in additional groups
 EXTRA_USERS_PARAMS += "\
 usermod -a -G video ${LMP_USER}; \
