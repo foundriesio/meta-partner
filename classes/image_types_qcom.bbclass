@@ -96,6 +96,12 @@ create_qcomflash_pkg() {
         install -m 0644 ${DEPLOY_DIR_IMAGE}/cdt.bin cdt.bin
     fi
 
+    # copy sail_nor firmware
+    if [ -d ${DEPLOY_DIR_IMAGE}/sail_nor ]; then
+        mkdir sail_nor
+        find ${DEPLOY_DIR_IMAGE}/sail_nor -type f -exec install -m 0644 {} sail_nor \;
+    fi
+
     for patchfile in ${DEPLOY_DIR_IMAGE}/patch*.xml; do
         install -m 0644 $patchfile .
     done
