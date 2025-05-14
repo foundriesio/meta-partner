@@ -6,21 +6,23 @@ BBMASK += " \
 "
 # Mask meta-qcom-hwe recipes which requires fixes
 BBMASK += " \
-    /meta-qcom-hwe/recipes-core/systemd/systemd-boot_254.4.bb \
-    /meta-qcom-hwe/recipes-connectivity/hostap-daemon/hostapd_%.bbappend \
-    /meta-qcom-hwe/recipes-connectivity/wpa-supplicant/wpa-supplicant_2.10.bbappend \
-    /meta-qcom-hwe/dynamic-layers/virtualization-layer/recipes-containers/docker/docker-moby_git.bbappend \
-    /meta-qcom-hwe/recipes-containers/kubernetes/kubernetes_git.bbappend \
     /meta-qcom-hwe/recipes-extended/logrotate/logrotate_%.bbappend \
     /meta-qcom-hwe/recipes-connectivity/openssh/openssh_%.bbappend \
-    \
-    /meta-qcom-hwe/recipes-sota/ostree-kernel-initramfs/ostree-kernel-initramfs_%.bbappend \
+    /meta-qcom-hwe/recipes-core/uutils-coreutils/uutils-coreutils_0.0.27.bbappend \
     /meta-qcom-hwe/recipes-extended/ostree/ostree_%.bbappend \
     /meta-qcom-hwe/recipes-multimedia/audio/alsa-utils_%.bbappend \
-    /meta-qcom-hwe/dynamic-layers/core/recipes-extended/logrotate/logrotate_%.bbappend \
-    /meta-qcom-hwe/dynamic-layers/core/recipes-extended/shadow/shadow_4.11.1.bbappend \
+    /meta-qcom-hwe/dynamic-layers/virtualization-layer/recipes-containers/docker/docker-moby_git.bbappend \
+    /meta-qcom-hwe/dynamic-layers/virtualization-layer/recipes-containers/kubernetes/kubernetes_git.bbappend \
+    /meta-qcom-hwe/dynamic-layers/virtualization-layer/recipes-containers/docker-compose/docker-compose_git.bbappend \
+    /meta-qcom-hwe/dynamic-layers/sota/recipes-sota/ostree-kernel-initramfs/ostree-kernel-initramfs_%.bbappend \
     /meta-qcom-hwe/dynamic-layers/core/recipes-core/dbus/dbus_%.bbappend \
     /meta-qcom-hwe/dynamic-layers/core/recipes-core/base-files/base-files_3.0.14.bbappend \
+    \
+    /meta-qcom-qim-product-sdk/recipes-gst/gstreamer/gstreamer1.0-plugins-bad_1.20%.bbappend \
+    /meta-qcom-qim-product-sdk/recipes-gst/gstreamer/gstreamer1.0-plugins-bad_1.24%.bbappend \
+    /meta-qcom-qim-product-sdk/recipes-gst/gstreamer/gstreamer1.0-plugins-base_1.24%.bbappend \
+    /meta-qcom-qim-product-sdk/recipes-gst/gstreamer/gstreamer1.0-plugins-good_1.20%.bbappend \
+    /meta-qcom-qim-product-sdk/recipes-gst/gstreamer/gstreamer1.0-plugins-good_1.24%.bbappend \
 "
 
 # Use GCC by default, way too many different failures with clang
@@ -48,6 +50,9 @@ DISTRO_FEATURES:append = " pulseaudio acl xattr selinux"
 
 # Qcom specific forks/updates
 PREFERRED_VERSION_wpa-supplicant ??= "2.10.qcom"
+PREFERRED_VERSION_modemmanager:qcom-custom-bsp = "1.22.0"
+PREFERRED_VERSION_libqmi:qcom-custom-bsp = "1.34.0"
+PREFERRED_VERSION_libqrtr-glib:qcom-custom-bsp = "1.2.2+git"
 
 # Adreno does not provide libgl, use mesa-gl
 PREFERRED_PROVIDER_virtual/mesa = "mesa-gl"
