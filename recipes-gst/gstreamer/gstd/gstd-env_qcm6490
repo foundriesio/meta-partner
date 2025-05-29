@@ -1,0 +1,3 @@
+OPTARGS="-l /var/log/gstd/gstd.log -d /var/log/gstd/gst.log -f /run/gstd -a 0.0.0.0"
+XDG_RUNTIME_DIR=/run/user/63
+WAYLAND_DISPLAY=wayland-1
