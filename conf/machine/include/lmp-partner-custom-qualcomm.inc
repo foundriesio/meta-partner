@@ -96,5 +96,11 @@ IMAGE_FSTYPES:remove:qcom = "wic wic.gz wic.bmap"
 OSTREE_KERNEL_ARGS:qcm6490 ?= "console=ttyMSM0,115200n8 earlycon pcie_pme=nomsi kernel.sched_pelt_multiplier=4 rcupdate.rcu_expedited=1 rcu_nocbs=0-7 kpti=off kasan=off kasan.stacktrace=off no-steal-acc selinux=0 swiotlb=128 audit=0 ${OSTREE_KERNEL_ARGS_COMMON}"
 OSTREE_KERNEL_ARGS:qcs9100 ?= "console=ttyMSM0,115200n8 earlycon pcie_pme=nomsi pci=noaer kpti=off kasan=off kasan.stacktrace=off swiotlb=128 mitigations=auto kernel.sched_pelt_multiplier=4 rcupdate.rcu_expedited=1 rcu_nocbs=0-7 no-steal-acc vfio_iommu_type1.allow_unsafe_interrupts=1 fw_devlink.strict=1 vfio_platform.reset_required=0 audit=0 ${OSTREE_KERNEL_ARGS_COMMON}"
 
+# CDTs
+QCOM_CDT_FILE:qcs6490-rb3gen2-core-kit ?= "cdt_core_kit"
+QCOM_CDT_FILE:qcs6490-rb3gen2-vision-kit ?= "cdt_vision_kit"
+QCOM_CDT_FILE:qcs9100-ride-sx ?= "cdt_ride_sx"
+QCOM_CDT_FILE:qcs9075-iq-9075-evk ?= "cdt_rb8_core_kit"
+
 # Compatibility with QCLinux 1.3
 IMAGE_CLASSES:remove = "image_types_ota_sdboot"
