@@ -11,6 +11,8 @@ IMAGE_QCOMFLASH_ESPIMG ?= "${DEPLOY_DIR_IMAGE}/efi.bin"
 IMAGE_QCOMFLASH_FS_TYPE ??= "ext4"
 IMAGE_QCOMFLASH_ROOTFS ?= "${IMGDEPLOYDIR}/${IMAGE_LINK_NAME}.${IMAGE_QCOMFLASH_FS_TYPE}"
 
+QCOM_CDT_FILE ?= "cdt.bin"
+
 IMAGE_CMD:qcomflash = "create_qcomflash_pkg"
 do_image_qcomflash[depends] += "python3-native:do_populate_sysroot \
                                 virtual/bootbins:do_deploy qcom-gen-partition-bins:do_deploy \
@@ -92,8 +94,8 @@ create_qcomflash_pkg() {
     fi
 
     # copy cdt.bin
-    if [ -f ${DEPLOY_DIR_IMAGE}/cdt.bin ]; then
-        install -m 0644 ${DEPLOY_DIR_IMAGE}/cdt.bin cdt.bin
+    if [ -f ${DEPLOY_DIR_IMAGE}/${QCOM_CDT_FILE} ]; then
+        install -m 0644 ${DEPLOY_DIR_IMAGE}/${QCOM_CDT_FILE} cdt.bin
     fi
 
     # copy sail_nor firmware
