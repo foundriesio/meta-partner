@@ -268,8 +268,20 @@ The applications below which have a prefix of `gst-ai` use the models from [AIHu
 - If you are curious how this process works, refer to `https://source.foundries.io/<factory>/containers.git/tree/qimsdk-lmp/Dockerfile`
 - Should you want to add or replace a model from [AIHub](https://aihub.qualcomm.com),
   modify the `qimsdk-lmp` Dockerfile and add a `RUN` command to download the file into `/src/models/` inside the container.
-  - During runtime, the models will be placed in `/opt` and can be referenced in the Compose command to instruct the application to use a specific model.
+  - During runtime, the models will be placed in `/opt/models` and can be referenced in the Compose command to instruct the application to use a specific model.
   - Please review the `gst-ai-classification` `docker-compose.yml` in `https://source.foundries.io/<factory>/containers.git` as an example of how to run a different model.
+
+`YOLOv8` is not available by default in `qimsdk-lmp`, export the model by following the [Qualcomm Intelligent Multimedia Software Development Kit (IM SDK) documentation](https://docs.qualcomm.com/bundle/publicresource/topics/80-70018-50/download-model-and-label-files.html) before enabling compose apps depending on this model. Create a [Qualcomm AI Hub account](https://app.aihub.qualcomm.com/account/), generate an API token and run the ``export_model.sh`` script to export the model, then include it as part of the `qimsdk-lmp` repository:
+
+```bash
+curl -L -O https://raw.githubusercontent.com/quic/sample-apps-for-qualcomm-linux/refs/heads/main/scripts/export_model.sh
+chmod +x export_model.sh
+./export_model.sh --api-token=<API_TOKEN>
+cp build/yolov8_det/yolov8_det.tflite qimsdk-lmp/yolov8_det_quantized.tflite
+sed -i 's/^#COPY yolov8_det_quantized.tflite/COPY yolov8_det_quantized.tflite/' qimsdk-lmp/Dockerfile
+git add qimsdk-lmp
+git commit -s -m “qimsdk-lmp: add yolov8_det_quantized.tflite” && git push
+```
 
 #### Httpd Server App
 
@@ -298,7 +310,7 @@ The Video wall command-line application (`gst-concurrent-videoplay-composition`)
 and performs composition on a display for the video wall application.
 This application requires at least one input video file, which is expected to be an MP4 file with the AVC codec.
 
-For a more detailed description please see [Qualcomm Linux Sample Apps](https://docs.qualcomm.com/bundle/publicresource/topics/80-70014-50/gst-concurrent-videoplay-composition.html?product=1601111740013072&facet=Qualcomm%20Intelligent%20Multimedia%20SDK).
+For a more detailed description please see [Qualcomm Linux Sample Apps](https://docs.qualcomm.com/bundle/publicresource/topics/80-70018-50/gst-concurrent-videoplay-composition.html?vproduct=1601111740013072&version=1.4&facet=Qualcomm%20Intelligent%20Multimedia%20SDK).
 
 [![video wall YouTube example](https://img.youtube.com/vi/TGe8TS7-ZTw/0.jpg)](https://www.youtube.com/watch?v=TGe8TS7-ZTw)
 
@@ -316,9 +328,9 @@ This compose-app requires a connected display to function properly.
 
 The Classification application (`gst-ai-classification`) enables subject recognition in the image.
 This can use the Qualcomm Neural Processing SDK runtime or the TensorFlow Lite (TFLite) runtime.
-The Compose file provides you will a few commands you can comment/uncomment to use different models for classification.
+The Compose file provides you a few commands you can comment/uncomment to use different models for classification.
 
-For a detailed description see [Qualcomm Linux Sample Apps](https://docs.qualcomm.com/bundle/publicresource/topics/80-70014-50/gst-ai-classification.html?product=1601111740013072&facet=Qualcomm%20Intelligent%20Multimedia%20SDK).
+For a detailed description see [Qualcomm Linux Sample Apps](https://docs.qualcomm.com/bundle/publicresource/topics/80-70018-50/gst-ai-classification.html?vproduct=1601111740013072&version=1.4&facet=Qualcomm%20Intelligent%20Multimedia%20SDK).
 
 [![classification YouTube example ](https://img.youtube.com/vi/L1t0hqYkM_4/0.jpg)](https://www.youtube.com/watch?v=L1t0hqYkM_4)
 
@@ -337,7 +349,7 @@ This App requires a connected display and the camera mezzanine to function prope
 The Daisy chain detection and classification application (`gst-ai-daisychain-detection-classification`) enables cascaded object detection and classification with a camera and a file source.
 This use case involves detecting objects and classifying the detected objects.
 
-For a detailed description see [Qualcomm Linux Sample Apps](https://docs.qualcomm.com/bundle/publicresource/topics/80-70014-50/daisy-chain-detection-and-classification.html?product=1601111740013072&facet=Qualcomm%20Intelligent%20Multimedia%20SDK).
+For a detailed description see [Qualcomm Linux Sample Apps](https://docs.qualcomm.com/bundle/publicresource/topics/80-70018-50/daisy-chain-detection-and-classification.html?vproduct=1601111740013072&version=1.4&facet=Qualcomm%20Intelligent%20Multimedia%20SDK). This example depends on the YOLOv8 model, please include this extra model as part of qimsdk-lmp.
 
 [![daisy chain detection and classification YouTube example](https://img.youtube.com/vi/WWgbooxy6sE/0.jpg)](https://www.youtube.com/watch?v=WWgbooxy6sE)
 
@@ -346,6 +358,8 @@ Enable the `gst-ai-daisychain-detection-classification` Compose App:
 ```bash
 git clone https://source.foundries.io/factories/<factory>/containers.git
 git mv gst-ai-daisychain-detection-classification.disabled gst-ai-daisychain-detection-classification
+cp <exported model directory/>build/yolov8_det/yolov8_det.tflite yolov8_det_quantized.tflite
+git add yolov8_det.tflite
 git commit -s -m “gst-ai-daisychain-detection-classification” && git push
 ```
 
@@ -355,7 +369,7 @@ This App requires a connected display and the camera mezzanine to function prope
 
 The Mono depth from video application (`gst-ai-monodepth`) infers depth from a live camera stream.
 
-For detailed description see [Qualcomm Linux Sample Apps](https://docs.qualcomm.com/bundle/publicresource/topics/80-70014-50/mono-depth-from-video.html?product=1601111740013072&facet=Qualcomm%20Intelligent%20Multimedia%20SDK).
+For detailed description see [Qualcomm Linux Sample Apps](https://docs.qualcomm.com/bundle/publicresource/topics/80-70018-50/mono-depth-from-video.html?vproduct=1601111740013072&version=1.4&facet=Qualcomm%20Intelligent%20Multimedia%20SDK).
 
 [![mono depth YouTube example](https://img.youtube.com/vi/ddw2JM5ySQ0/0.jpg)](https://www.youtube.com/watch?v=ddw2JM5ySQ0)
 
@@ -374,7 +388,7 @@ This App requires a connected display and the camera mezzanine to function prope
 The Object detection application (`gst-ai-object-detection`) detects objects within images and videos.
 This use case demonstrates the execution of YOLOv5, YOLOv8, and YOLO-NAS using the Qualcomm Neural Processing SDK runtime.
 
-For a detailed description see [Qualcomm Linux Sample Apps](https://docs.qualcomm.com/bundle/publicresource/topics/80-70014-50/gst-ai-object-detection.html?product=1601111740013072&facet=Qualcomm%20Intelligent%20Multimedia%20SDK).
+For a detailed description see [Qualcomm Linux Sample Apps](https://docs.qualcomm.com/bundle/publicresource/topics/80-70018-50/gst-ai-object-detection.html?vproduct=1601111740013072&version=1.4&facet=Qualcomm%20Intelligent%20Multimedia%20SDK).
 
 [![Object detection YouTube example](https://img.youtube.com/vi/Fax6rqp1YeI/0.jpg)](https://www.youtube.com/watch?v=Fax6rqp1YeI)
 
@@ -394,7 +408,7 @@ The Parallel AI fusion application (`gst-ai-parallel-inference`) enables object 
 This use case utilizes the Qualcomm Neural Processing SDK runtime for object detection and image segmentation,
 and the TFLite runtime for classification and pose detection.
 
-For a detailed description see [Qualcomm Linux Sample Apps](https://docs.qualcomm.com/bundle/publicresource/topics/80-70014-50/gst-ai-parallel-inference.html?product=1601111740013072&facet=Qualcomm%20Intelligent%20Multimedia%20SDK).
+For a detailed description see [Qualcomm Linux Sample Apps](https://docs.qualcomm.com/bundle/publicresource/topics/80-70018-50/gst-ai-parallel-inference.html?vproduct=1601111740013072&version=1.4&facet=Qualcomm%20Intelligent%20Multimedia%20SDK). This example depends on the YOLOv8 model, please include this extra model as part of qimsdk-lmp.
 
 [![parallel ai fusion YouTube example](https://img.youtube.com/vi/Uxk4xZtPi9Y/0.jpg)](https://www.youtube.com/watch?v=Uxk4xZtPi9Y)
 
@@ -413,7 +427,7 @@ This App requires a connected display and the camera mezzanine to function prope
 The Pose detection application (`gst-ai-pose-detection`) enables detection of a subjects body pose in an image or video.
 This use case utilizes a video stream from a camera, then leverages TFLite for pose detection, display the results on the screen.
 
-For a detailed description see [Qualcomm Linux Sample Apps](https://docs.qualcomm.com/bundle/publicresource/topics/80-70014-50/gst-ai-pose-detection.html?product=1601111740013072&facet=Qualcomm%20Intelligent%20Multimedia%20SDK).
+For a detailed description see [Qualcomm Linux Sample Apps](https://docs.qualcomm.com/bundle/publicresource/topics/80-70018-50/gst-ai-pose-detection.html?vproduct=1601111740013072&version=1.4&facet=Qualcomm%20Intelligent%20Multimedia%20SDK).
 
 [![pose detection YouTube example](https://img.youtube.com/vi/eDf4BoL6dKQ/0.jpg)](https://www.youtube.com/watch?v=eDf4BoL6dKQ)
 
@@ -433,7 +447,7 @@ The Image segmentation application (`gst-ai-segmentation`) divides an image into
 assigning a label to each homogenous segment based on similarity of attributes.
 This App utilizes both the Qualcomm Neural Processing SDK runtime and TFLite runtime for image segmentation.
 
-For a detailed description see [Qualcomm Linux Sample Apps](https://docs.qualcomm.com/bundle/publicresource/topics/80-70014-50/gst-ai-segmentation.html?product=1601111740013072&facet=Qualcomm%20Intelligent%20Multimedia%20SDK).
+For a detailed description see [Qualcomm Linux Sample Apps](https://docs.qualcomm.com/bundle/publicresource/topics/80-70018-50/gst-ai-segmentation.html?vproduct=1601111740013072&version=1.4&facet=Qualcomm%20Intelligent%20Multimedia%20SDK).
 
 [![image segmentation YouTube example](https://img.youtube.com/vi/QJTRbk2hv2Y/0.jpg)](https://www.youtube.com/watch?v=QJTRbk2hv2Y)
 
@@ -453,7 +467,7 @@ The multiple camera streaming application (`gst-multi-camera-example`) enables s
 It composes camera feeds side-by-side to display on a screen, or encodes and stores the video streams to file.
 Typical use cases that need multiple camera inputs are dash cameras or stereo cameras, which can use this app as a reference.
 
-For a detailed description see [Qualcomm Linux Sample Apps](https://docs.qualcomm.com/bundle/publicresource/topics/80-70014-50/gst-multi-camera-stream-example.html?product=1601111740013072&facet=Qualcomm%20Intelligent%20Multimedia%20SDK).
+For a detailed description see [Qualcomm Linux Sample Apps](https://docs.qualcomm.com/bundle/publicresource/topics/80-70018-50/gst-multi-camera-stream-example.html?vproduct=1601111740013072&version=1.4&facet=Qualcomm%20Intelligent%20Multimedia%20SDK).
 
 [![multiple camera streaming YouTube example](https://img.youtube.com/vi/k7Gg_kdIbFg/0.jpg)](https://www.youtube.com/watch?v=k7Gg_kdIbFg)
 
