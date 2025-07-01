@@ -75,6 +75,7 @@ IMAGE_CLASSES += "${IMAGE_CLASSES_EXTRAS}"
 
 # Sota / LmP customizations
 MACHINE_FEATURES:append:qcom = " efi"
+UEFI_SIGN_ENABLE:qcom = "1"
 PREFERRED_PROVIDER_virtual/partconf = "qcom-partition-confs"
 PREFERRED_PROVIDER_virtual/kernel:qcom ?= "linux-qcom-custom"
 OSTREE_BOOTLOADER:qcom ?= "none"
