@@ -141,3 +141,23 @@ addtask uki before do_deploy after do_bundle_initramfs
 kernel_do_install:prepend() {
 	touch ${KERNEL_OUTPUT_DIR}/uki
 }
+
+# UKI signing
+do_uki_sign() {
+	if [ "${UEFI_SIGN_ENABLE}" = "1" ]; then
+		if [ ! -f "${UEFI_SIGN_KEYDIR}/DB.key" -o ! -f "${UEFI_SIGN_KEYDIR}/DB.crt" ]; then
+			bbfatal "UEFI_SIGN_KEYDIR or DB.key/crt is invalid"
+		fi
+		kernel=${B}/${KERNEL_OUTPUT_DIR}/uki
+		if ! sbsign --key ${UEFI_SIGN_KEYDIR}/DB.key --cert ${UEFI_SIGN_KEYDIR}/DB.crt $kernel; then
+			bbfatal "Failed to sign kernel: ${kernel}"
+		fi
+		if ! sbverify --cert ${UEFI_SIGN_KEYDIR}/DB.crt $kernel.signed; then
+			bbfatal "sbverify failed for kernel: ${kernel}.signed"
+		fi
+		mv $kernel.signed $kernel
+	fi
+}
+do_uki_sign[depends] += "sbsigntool-native:do_populate_sysroot"
+do_uki_sign[vardeps] += "UEFI_SIGN_ENABLE UEFI_SIGN_KEYDIR"
+addtask uki_sign before do_deploy after do_uki
