@@ -1,5 +1,7 @@
 FILESEXTRAPATHS:prepend := "${THISDIR}/${PN}:"
 
+require ${@bb.utils.contains_any('DISTRO_FEATURES', 'modsign', 'recipes-kernel/linux/linux-qcom-custom-signing.inc', '', d)}
+
 SRC_URI += "file://lmp.cfg"
 
 KERNEL_CONFIG_FRAGMENTS:append = " ${WORKDIR}/lmp.cfg"
