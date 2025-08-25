@@ -18,11 +18,14 @@ BBMASK += " \
     /meta-qcom-hwe/dynamic-layers/core/recipes-core/dbus/dbus_%.bbappend \
     /meta-qcom-hwe/dynamic-layers/core/recipes-core/base-files/base-files_3.0.14.bbappend \
     \
+    /meta-qcom-qim-product-sdk/recipes-gst/gstreamer/gstreamer1.0_1.24%.bbappend \
     /meta-qcom-qim-product-sdk/recipes-gst/gstreamer/gstreamer1.0-plugins-bad_1.20%.bbappend \
-    /meta-qcom-qim-product-sdk/recipes-gst/gstreamer/gstreamer1.0-plugins-bad_1.24%.bbappend \
+    /meta-qcom-qim-product-sdk/recipes-gst/gstreamer/gstreamer1.0-plugins-bad_1.24.2.bbappend \
+    /meta-qcom-qim-product-sdk/recipes-gst/gstreamer/gstreamer1.0-plugins-bad_1.24.9.bbappend \
     /meta-qcom-qim-product-sdk/recipes-gst/gstreamer/gstreamer1.0-plugins-base_1.24%.bbappend \
     /meta-qcom-qim-product-sdk/recipes-gst/gstreamer/gstreamer1.0-plugins-good_1.20%.bbappend \
-    /meta-qcom-qim-product-sdk/recipes-gst/gstreamer/gstreamer1.0-plugins-good_1.24%.bbappend \
+    /meta-qcom-qim-product-sdk/recipes-gst/gstreamer/gstreamer1.0-plugins-good_1.24.2.bbappend \
+    /meta-qcom-qim-product-sdk/recipes-gst/gstreamer/gstreamer1.0-plugins-good_1.24.9.bbappend \
 "
 
 # Use GCC by default, way too many different failures with clang
