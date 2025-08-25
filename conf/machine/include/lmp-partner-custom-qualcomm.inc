@@ -17,6 +17,9 @@ BBMASK += " \
     /meta-qcom-hwe/dynamic-layers/sota/recipes-sota/ostree-kernel-initramfs/ostree-kernel-initramfs_%.bbappend \
     /meta-qcom-hwe/dynamic-layers/core/recipes-core/dbus/dbus_%.bbappend \
     /meta-qcom-hwe/dynamic-layers/core/recipes-core/base-files/base-files_3.0.14.bbappend \
+    /meta-qcom-hwe/dynamic-layers/core/recipes-connectivity/iproute2/iproute2_%.bbappend \
+    /meta-qcom-hwe/dynamic-layers/core/recipes-extended/shadow/shadow_%.bbappend \
+    /meta-qcom-hwe/dynamic-layers/core/recipes-extended/logrotate/logrotate_%.bbappend \
     \
     /meta-qcom-qim-product-sdk/recipes-gst/gstreamer/gstreamer1.0_1.24%.bbappend \
     /meta-qcom-qim-product-sdk/recipes-gst/gstreamer/gstreamer1.0-plugins-bad_1.20%.bbappend \
