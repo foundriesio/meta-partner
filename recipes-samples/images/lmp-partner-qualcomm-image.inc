@@ -20,7 +20,6 @@ CORE_IMAGE_BASE_INSTALL:append:qcom = " \
 
 CORE_IMAGE_BASE_INSTALL:append:qcom = " \
     packagegroup-qcom-audio \
-    packagegroup-qcom-bluetooth \
 "
 
 CORE_IMAGE_BASE_INSTALL:remove:qcom = " \
