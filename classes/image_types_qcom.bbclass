@@ -16,7 +16,8 @@ QCOM_CDT_FILE ?= "cdt"
 IMAGE_CMD:qcomflash = "create_qcomflash_pkg"
 do_image_qcomflash[depends] += "python3-native:do_populate_sysroot \
                                 virtual/bootbins:do_deploy qcom-gen-partition-bins:do_deploy \
-                                virtual/kernel:do_deploy dtb-qcom-image:do_image_complete"
+                                virtual/kernel:do_deploy dtb-qcom-image:do_image_complete \
+                                dtb-el2-qcom-image:do_image_complete"
 IMAGE_TYPEDEP:qcomflash += "${@bb.utils.contains('DISTRO_FEATURES', 'sota', 'ota-ext4 ota-esp', '', d)}"
 
 # TODO: adapt to generic images (not sota)
@@ -35,6 +36,11 @@ create_qcomflash_pkg() {
     # copy dtb.bin
     if [ -f ${DEPLOY_DIR_IMAGE}/dtb-qcom-image-${MACHINE}.vfat ]; then
         install -m 0644 ${DEPLOY_DIR_IMAGE}/dtb-qcom-image-${MACHINE}.vfat dtb.bin
+    fi
+
+    # copy el2-dtb.bin
+    if [ -f ${DEPLOY_DIR_IMAGE}/dtb-el2-qcom-image-${MACHINE}.vfat ]; then
+        install -m 0644 ${DEPLOY_DIR_IMAGE}/dtb-el2-qcom-image-${MACHINE}.vfat el2-dtb.bin
     fi
 
     # copy rootfs.img
