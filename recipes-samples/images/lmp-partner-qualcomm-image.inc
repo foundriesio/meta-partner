@@ -6,6 +6,7 @@ CORE_IMAGE_BASE_INSTALL:append:qcom = " \
     packagegroup-qcom-perf \
     packagegroup-qcom-data \
     packagegroup-qcom-securemsm \
+    docker-conf \
     cbsp-boot-utilities \
     var-persist-mount \
     qcom-resize-partitions \
