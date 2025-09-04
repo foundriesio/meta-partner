@@ -1,0 +1,16 @@
+[Unit]
+Description=PulseAudio Sound Service
+ConditionPathExistsGlob=/dev/snd/control*
+Requires=sound.target
+After=sound.target
+
+[Service]
+# Note that notify will only work if --daemonize=no
+Type=notify
+ExecStart=/usr/bin/pulseaudio --system --daemonize=no -v
+Restart=on-failure
+RestartSec=3
+StateDirectory=pulse
+
+[Install]
+WantedBy=sound.target
