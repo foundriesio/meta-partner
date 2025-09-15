@@ -6,7 +6,6 @@ CORE_IMAGE_BASE_INSTALL:append:qcom = " \
     packagegroup-qcom-perf \
     packagegroup-qcom-data \
     packagegroup-qcom-securemsm \
-    docker-conf \
     cbsp-boot-utilities \
     var-persist-mount \
     qcom-resize-partitions \
@@ -28,6 +27,7 @@ CORE_IMAGE_BASE_INSTALL:remove:qcom = " \
 "
 CORE_IMAGE_BASE_INSTALL_WAYLAND ?= ""
 CORE_IMAGE_BASE_INSTALL_WAYLAND:qcom = " \
+    docker-conf \
     packagegroup-qcom-camera \
     packagegroup-qcom-display \
     packagegroup-qcom-fastcv \
