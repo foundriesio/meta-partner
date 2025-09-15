@@ -68,8 +68,8 @@ Group=video
 SupplementaryGroups=system
 Type=forking
 EnvironmentFile=-/etc/default/gstd
-ExecStart=/usr/bin/gstd $OPTARGS
-PIDFile=/var/run/gstd/gstd.pid
+ExecStart=/usr/bin/gstd -l /var/log/gstd/gstd.log -d /var/log/gstd/gst.log -f /run/gstd -a 0.0.0.0 --daemon $OPTARGS
+PIDFile=/run/gstd/gstd.pid
 Restart=always
 
 [Install]
