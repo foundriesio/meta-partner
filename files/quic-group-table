@@ -1,2 +1,3 @@
 system:x:800:
-redis:x:801
+redis:x:801:
+fastrpc:x:802:
