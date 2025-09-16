@@ -1,6 +1,6 @@
 FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 
-require ${@bb.utils.contains_any('DISTRO_FEATURES', 'modsign', 'recipes-kernel/linux/linux-qcom-custom-signing.inc', '', d)}
+require ${@bb.utils.contains_any('DISTRO_FEATURES', 'modsign', 'recipes-kernel/linux/linux-qcom-signing.inc', '', d)}
 
 SRC_URI += "file://lmp.cfg"
 
