@@ -1,27 +1,25 @@
 # Additions for qcom partner image
 
 CORE_IMAGE_BASE_INSTALL:append:qcom = " \
-    packagegroup-qcom-core \
+    packagegroup-qcom-audio \
     packagegroup-qcom-initscripts \
-    packagegroup-qcom-perf \
-    packagegroup-qcom-data \
-    packagegroup-qcom-securemsm \
-    cbsp-boot-utilities \
     var-persist-mount \
     qcom-resize-partitions \
     wlan-conf \
     cld80211-lib \
-    qcom-wlan-tools \
-    qcom-ath6kl-utils \
-    qcom-ftm \
     curl \
     ${@bb.utils.contains('DISTRO_FEATURES', 'wayland', '${CORE_IMAGE_BASE_INSTALL_WAYLAND}', '', d)} \
 "
-
-CORE_IMAGE_BASE_INSTALL:append:qcom = " \
-    packagegroup-qcom-audio \
+CORE_IMAGE_BASE_INSTALL:append:qcom-custom-distro = " \
+    cbsp-boot-utilities \
+    packagegroup-qcom-core \
+    packagegroup-qcom-data \
+    packagegroup-qcom-perf \
+    packagegroup-qcom-securemsm \
+    qcom-ath6kl-utils \
+    qcom-ftm \
+    qcom-wlan-tools \
 "
-
 CORE_IMAGE_BASE_INSTALL:remove:qcom = " \
     psplash \
 "
@@ -30,12 +28,14 @@ CORE_IMAGE_BASE_INSTALL_WAYLAND:qcom = " \
     docker-conf \
     packagegroup-qcom-camera \
     packagegroup-qcom-display \
-    packagegroup-qcom-fastcv \
-    packagegroup-qcom-graphics \
     packagegroup-qcom-opencv \
+    packagegroup-qcom-qim-product \
+"
+CORE_IMAGE_BASE_INSTALL_WAYLAND::append:qcom-custom-distro = " \
+    packagegroup-qcom-graphics \
+    packagegroup-qcom-fastcv \
     packagegroup-qcom-video \
     packagegroup-qcom-iot-base-utils \
-    packagegroup-qcom-qim-product \
 "
 CORE_IMAGE_BASE_INSTALL_WAYLAND:append:qcm6490 = " \
     packagegroup-qcom-sensors \
