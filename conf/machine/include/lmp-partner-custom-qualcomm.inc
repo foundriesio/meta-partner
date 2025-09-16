@@ -61,8 +61,8 @@ PREFERRED_VERSION_libqmi:qcom-custom-bsp = "1.34.0"
 PREFERRED_VERSION_libqrtr-glib:qcom-custom-bsp = "1.2.2+git"
 
 # Adreno does not provide libgl, use mesa-gl
-PREFERRED_PROVIDER_virtual/mesa = "mesa-gl"
-PREFERRED_PROVIDER_virtual/libgl = "mesa-gl"
+PREFERRED_PROVIDER_virtual/mesa:qcom-custom-bsp = "mesa-gl"
+PREFERRED_PROVIDER_virtual/libgl:qcom-custom-bsp = "mesa-gl"
 
 # SELinux
 PREFERRED_PROVIDER_virtual/refpolicy = "refpolicy-mls"
