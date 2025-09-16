@@ -1,4 +1,4 @@
-FILESEXTRAPATHS:prepend := "${THISDIR}/${PN}:"
+FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 
 require ${@bb.utils.contains_any('DISTRO_FEATURES', 'modsign', 'recipes-kernel/linux/linux-qcom-custom-signing.inc', '', d)}
 
