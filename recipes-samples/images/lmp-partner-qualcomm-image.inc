@@ -3,6 +3,7 @@
 CORE_IMAGE_BASE_INSTALL:append:qcom = " \
     cld80211-lib \
     curl \
+    linux-firmware-ath10k \
     packagegroup-qcom-audio \
     packagegroup-qcom-initscripts \
     qcom-resize-partitions \
