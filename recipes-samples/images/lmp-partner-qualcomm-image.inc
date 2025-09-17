@@ -9,7 +9,7 @@ CORE_IMAGE_BASE_INSTALL:append:qcom = " \
     var-persist-mount \
     ${@bb.utils.contains('DISTRO_FEATURES', 'wayland', '${CORE_IMAGE_BASE_INSTALL_WAYLAND}', '', d)} \
 "
-CORE_IMAGE_BASE_INSTALL:append:qcom-custom-distro = " \
+CORE_IMAGE_BASE_INSTALL:append:qcom-custom-bsp = " \
     cbsp-boot-utilities \
     cld80211-lib \
     packagegroup-qcom-core \
@@ -32,7 +32,7 @@ CORE_IMAGE_BASE_INSTALL_WAYLAND:qcom = " \
     packagegroup-qcom-opencv \
     packagegroup-qcom-qim-product \
 "
-CORE_IMAGE_BASE_INSTALL_WAYLAND::append:qcom-custom-distro = " \
+CORE_IMAGE_BASE_INSTALL_WAYLAND:append:qcom-custom-bsp = " \
     packagegroup-qcom-fastcv \
     packagegroup-qcom-graphics \
     packagegroup-qcom-iot-base-utils \
