@@ -1,18 +1,17 @@
 # Additions for qcom partner image
 
 CORE_IMAGE_BASE_INSTALL:append:qcom = " \
-    cld80211-lib \
     curl \
     linux-firmware-ath10k \
     packagegroup-qcom-audio \
     packagegroup-qcom-initscripts \
     qcom-resize-partitions \
     var-persist-mount \
-    wlan-conf \
     ${@bb.utils.contains('DISTRO_FEATURES', 'wayland', '${CORE_IMAGE_BASE_INSTALL_WAYLAND}', '', d)} \
 "
 CORE_IMAGE_BASE_INSTALL:append:qcom-custom-distro = " \
     cbsp-boot-utilities \
+    cld80211-lib \
     packagegroup-qcom-core \
     packagegroup-qcom-data \
     packagegroup-qcom-perf \
@@ -20,6 +19,7 @@ CORE_IMAGE_BASE_INSTALL:append:qcom-custom-distro = " \
     qcom-ath6kl-utils \
     qcom-ftm \
     qcom-wlan-tools \
+    wlan-conf \
 "
 CORE_IMAGE_BASE_INSTALL:remove:qcom = " \
     psplash \
