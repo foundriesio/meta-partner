@@ -52,7 +52,8 @@ TOOLCHAIN:pn-btvendorhal = "gcc"
 TOOLCHAIN:pn-fluoride = "gcc"
 
 # Distro Features
-DISTRO_FEATURES:append = " pulseaudio acl xattr selinux"
+DISTRO_FEATURES:append = " pulseaudio acl xattr"
+DISTRO_FEATURES:append:qcom-custom-bsp = " selinux"
 
 # Qcom specific forks/updates
 PREFERRED_VERSION_wpa-supplicant ??= "2.10.qcom"
