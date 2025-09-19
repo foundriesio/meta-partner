@@ -13,7 +13,10 @@ IMAGE_QCOMFLASH_ROOTFS ?= "${IMGDEPLOYDIR}/${IMAGE_LINK_NAME}.${IMAGE_QCOMFLASH_
 
 QCOM_CDT_FILE ?= "cdt"
 
+QCOMFLASH_DIR = "${IMGDEPLOYDIR}/${IMAGE_NAME}.qcomflash"
 IMAGE_CMD:qcomflash = "create_qcomflash_pkg"
+do_image_qcomflash[dirs] = "${QCOMFLASH_DIR}"
+do_image_qcomflash[cleandirs] = "${QCOMFLASH_DIR}"
 do_image_qcomflash[depends] += "python3-native:do_populate_sysroot \
                                 virtual/bootbins:do_deploy qcom-gen-partition-bins:do_deploy \
                                 virtual/kernel:do_deploy dtb-qcom-image:do_image_complete \
@@ -22,12 +25,6 @@ IMAGE_TYPEDEP:qcomflash += "${@bb.utils.contains('DISTRO_FEATURES', 'sota', 'ota
 
 # TODO: adapt to generic images (not sota)
 create_qcomflash_pkg() {
-    # qcomflash tarball creation
-    rm -rf "${WORKDIR}/qcomflash"
-    mkdir -p "${WORKDIR}/qcomflash"
-    oldwd=`pwd`
-    cd "${WORKDIR}/qcomflash"
-
     # copy efi.bin
     if [ -f ${IMAGE_QCOMFLASH_ESPIMG} ]; then
         install -m 0644 ${IMAGE_QCOMFLASH_ESPIMG} efi.bin
@@ -118,8 +115,6 @@ create_qcomflash_pkg() {
     rm -f ${IMGDEPLOYDIR}/${IMAGE_NAME}.qcomflash.tar.gz
     ${IMAGE_CMD_TAR} --sparse --numeric-owner --transform="s,^\./,${IMAGE_BASENAME}-${MACHINE}/," -cf- . | gzip -f -9 -n -c --rsyncable > ${IMGDEPLOYDIR}/${IMAGE_NAME}.qcomflash.tar.gz
     ln -sf ${IMAGE_NAME}.qcomflash.tar.gz ${IMGDEPLOYDIR}/${IMAGE_LINK_NAME}.qcomflash.tar.gz
-
-    cd "$oldwd"
 }
 
 create_qcomflash_pkg[vardepsexclude] += "DATETIME"
