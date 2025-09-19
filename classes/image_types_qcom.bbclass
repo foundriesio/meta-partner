@@ -17,7 +17,7 @@ QCOMFLASH_DIR = "${IMGDEPLOYDIR}/${IMAGE_NAME}.qcomflash"
 IMAGE_CMD:qcomflash = "create_qcomflash_pkg"
 do_image_qcomflash[dirs] = "${QCOMFLASH_DIR}"
 do_image_qcomflash[cleandirs] = "${QCOMFLASH_DIR}"
-do_image_qcomflash[depends] += "python3-native:do_populate_sysroot \
+do_image_qcomflash[depends] += "python3-native:do_populate_sysroot zip-native:do_populate_sysroot \
                                 virtual/bootbins:do_deploy qcom-gen-partition-bins:do_deploy \
                                 virtual/kernel:do_deploy dtb-qcom-image:do_image_complete \
                                 dtb-el2-qcom-image:do_image_complete"
@@ -115,6 +115,15 @@ create_qcomflash_pkg() {
     rm -f ${IMGDEPLOYDIR}/${IMAGE_NAME}.qcomflash.tar.gz
     ${IMAGE_CMD_TAR} --sparse --numeric-owner --transform="s,^\./,${IMAGE_BASENAME}-${MACHINE}/," -cf- . | gzip -f -9 -n -c --rsyncable > ${IMGDEPLOYDIR}/${IMAGE_NAME}.qcomflash.tar.gz
     ln -sf ${IMAGE_NAME}.qcomflash.tar.gz ${IMGDEPLOYDIR}/${IMAGE_LINK_NAME}.qcomflash.tar.gz
+
+    # Create zip for windows users (follow same directory pattern as the tarball)
+    rm -f ${IMGDEPLOYDIR}/${IMAGE_NAME}.qcomflash.zip
+    cd ..
+    ln -sf ${IMGDEPLOYDIR}/${IMAGE_NAME}.qcomflash ${IMAGE_LINK_NAME}
+    zip -r ${ZIP_COMPRESSION_LEVEL} ${IMGDEPLOYDIR}/${IMAGE_NAME}.qcomflash.zip ${IMAGE_LINK_NAME}
+    rm -f ${IMAGE_LINK_NAME}
+    cd -
+    ln -sf ${IMAGE_NAME}.qcomflash.zip ${IMGDEPLOYDIR}/${IMAGE_LINK_NAME}.qcomflash.zip
 }
 
 create_qcomflash_pkg[vardepsexclude] += "DATETIME"
