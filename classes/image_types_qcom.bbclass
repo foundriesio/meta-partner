@@ -10,6 +10,7 @@ ROOTFSIMAGE_TARGET ?= "rootfs.img"
 IMAGE_QCOMFLASH_ESPIMG ?= "${DEPLOY_DIR_IMAGE}/efi.bin"
 IMAGE_QCOMFLASH_FS_TYPE ??= "ext4"
 IMAGE_QCOMFLASH_ROOTFS ?= "${IMGDEPLOYDIR}/${IMAGE_LINK_NAME}.${IMAGE_QCOMFLASH_FS_TYPE}"
+IMAGE_QCOMFLASH_CUSTOM_FILES ?= ""
 
 QCOM_CDT_FILE ?= "cdt"
 
@@ -110,6 +111,15 @@ create_qcomflash_pkg() {
     for patchfile in ${DEPLOY_DIR_IMAGE}/patch*.xml; do
         install -m 0644 $patchfile .
     done
+
+    # copy custom files
+    if [ ! -z ${IMAGE_QCOMFLASH_CUSTOM_FILES} ]; then
+        for custfile in ${IMAGE_QCOMFLASH_CUSTOM_FILES}; do
+            if [ -f "$custfile" ]; then
+                install -m 0644 $custfile .
+            fi
+        done
+    fi
 
     # Create tarball
     rm -f ${IMGDEPLOYDIR}/${IMAGE_NAME}.qcomflash.tar.gz
