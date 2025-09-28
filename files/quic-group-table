@@ -1,3 +1,4 @@
 system:x:800:
 redis:x:801:
 fastrpc:x:802:
+pipewire:x:803:

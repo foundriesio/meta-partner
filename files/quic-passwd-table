@@ -1,3 +1,4 @@
 system:x:800:800::/:/bin/false
 redis:x:801:801::/var/lib/nfs:/bin/false
 fastrpc:x:802:802::/:/bin/false
+pipewire:x:803:803::/:/bin/false
