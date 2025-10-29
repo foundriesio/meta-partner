@@ -8,7 +8,7 @@ BBMASK += " \
 BBMASK += " \
     /meta-qcom-hwe/recipes-extended/logrotate/logrotate_%.bbappend \
     /meta-qcom-hwe/recipes-connectivity/openssh/openssh_%.bbappend \
-    /meta-qcom-hwe/recipes-core/uutils-coreutils/uutils-coreutils_0.0.27.bbappend \
+    /meta-qcom-hwe/recipes-core/uutils-coreutils/uutils-coreutils_%.bbappend \
     /meta-qcom-hwe/recipes-extended/ostree/ostree_%.bbappend \
     /meta-qcom-hwe/recipes-multimedia/audio/alsa-utils_%.bbappend \
     /meta-qcom-hwe/dynamic-layers/virtualization-layer/recipes-containers/docker/docker-moby_git.bbappend \
