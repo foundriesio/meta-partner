@@ -7,6 +7,7 @@ BBMASK += " \
 # Mask meta-qcom-hwe recipes which requires fixes
 BBMASK += " \
     /meta-qcom-hwe/recipes-extended/logrotate/logrotate_%.bbappend \
+    /meta-qcom-hwe/recipes-connectivity/networkmanager/networkmanager_%.bbappend \
     /meta-qcom-hwe/recipes-connectivity/openssh/openssh_%.bbappend \
     /meta-qcom-hwe/recipes-core/uutils-coreutils/uutils-coreutils_%.bbappend \
     /meta-qcom-hwe/recipes-extended/ostree/ostree_%.bbappend \
