@@ -1,5 +1,8 @@
 require recipes-bsp/u-boot/u-boot-fio-common.inc
 
+# HACK: include base u-boot-fio dir for files like lmp-common.cfg
+FILESEXTRAPATHS:prepend := "${COREBASE}/../meta-lmp/meta-lmp-base/recipes-bsp/u-boot/u-boot-fio:"
+
 UUU_BOOTLOADER_TAG = ""
 UUU_BOOTLOADER_TAG:imx-generic-bsp = "uuu_bootloader_tag"
 UUU_BOOTLOADER_TAG:mx8-generic-bsp = ""
