@@ -1,0 +1,1 @@
+lmp-mfgtool-partner-custom-nxp-imx.inc
