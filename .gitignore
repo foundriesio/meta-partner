@@ -1,0 +1,5 @@
+# Serial-console capture logs from device test-plan runs.
+# Kept locally as run evidence (alongside the test-record), not committed —
+# they are large and per-run. The markdown reports under test-reports/ are committed.
+serial-*.log
+test-reports/**/serial-*.log
