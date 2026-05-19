@@ -1,0 +1,14 @@
+Phase 3.6 anti-thrash — lmp-v96 — start 00:52:57Z
+Expect: all 4 stay on target 13; no 2nd target-17 update session (no re-attempt).
+[00:52:57Z]  imx8mm=t13/17x1  imx8mn=t13/17x1  imx8mp=t13/17x1  imx8mq=t13/17x1
+[00:53:59Z]  imx8mm=t13/17x1  imx8mn=t13/17x1  imx8mp=t13/17x1  imx8mq=t13/17x1
+[00:55:02Z]  imx8mm=t13/17x1  imx8mn=t13/17x1  imx8mp=t13/17x1  imx8mq=t13/17x1
+[00:56:05Z]  imx8mm=t13/17x1  imx8mn=t13/17x1  imx8mp=t13/17x1  imx8mq=t13/17x1
+[00:57:08Z]  imx8mm=t13/17x1  imx8mn=t13/17x1  imx8mp=t13/17x1  imx8mq=t13/17x1
+[00:58:11Z]  imx8mm=t13/17x1  imx8mn=t13/17x1  imx8mp=t13/17x1  imx8mq=t13/17x1
+[00:59:14Z]  imx8mm=t13/17x1  imx8mn=t13/17x1  imx8mp=t13/17x1  imx8mq=t13/17x1
+[01:00:17Z]  imx8mm=t13/17x1  imx8mn=t13/17x1  imx8mp=t13/17x1  imx8mq=t13/17x1
+[01:01:20Z]  imx8mm=t13/17x1  imx8mn=t13/17x1  imx8mp=t13/17x1  imx8mq=t13/17x1
+[01:02:23Z]  imx8mm=t13/17x1  imx8mn=t13/17x1  imx8mp=t13/17x1  imx8mq=t13/17x1
+[01:03:25Z]  imx8mm=t13/17x1  imx8mn=t13/17x1  imx8mp=t13/17x1  imx8mq=t13/17x1
+VERDICT: OK  — end 01:04:28Z
