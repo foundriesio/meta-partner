@@ -167,7 +167,11 @@ assuming the device will move.
   serial consoles; reports panic counts and exits when each board has rolled back.
   Usage: `./phase3-rollback-monitor.sh NAME=LOGFILE[:OFFSET] …`. Start it just before the
   Phase 2 reveal. Grep serial-log *files* directly by byte offset — never slurp a
-  multi-hundred-KB log into a shell variable.
+  multi-hundred-KB log into a shell variable. A board's serial capture can drop a fast
+  panic→watchdog-reset line, so the monitor's `panics=` count may read low; it still marks
+  the board DONE on the post-panic healthy login (flagged `panics M/N`). The authoritative
+  failed-boot count is **on-device** — `fw_printenv fiovb.bootcount` counts every failed
+  boot regardless of serial capture — cross-check it when the monitor flags an undercount.
 
 ## 7. Where run artifacts go — `test-reports/`, never `test-plan/`
 
